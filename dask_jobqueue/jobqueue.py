@@ -19,6 +19,10 @@ class JobQueueCluster(object):
     PBSCluster
     SLURMCluster
     """
+
+    self.submitcmd = 'qsub'
+    self.cancelcmd = 'qdel'
+
     def __init__(self):
         raise NotImplemented
 
@@ -39,7 +43,7 @@ class JobQueueCluster(object):
         workers = []
         for _ in range(n):
             with self.job_file() as fn:
-                out = self._call([self._submitcmd, fn])
+                out = self._call([self.submitcmd, fn])
                 job = out.decode().split('.')[0]
                 self.jobs[self.n] = job
                 workers.append(self.n)
@@ -99,7 +103,7 @@ class JobQueueCluster(object):
             return
         workers = list(map(int, workers))
         jobs = [self.jobs[w] for w in workers]
-        self._call([self._cancelcmd] + list(jobs))
+        self._call([self.cancelcmd] + list(jobs))
         for w in workers:
             with ignoring(KeyError):
                 del self.jobs[w]

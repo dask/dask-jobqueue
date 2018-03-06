@@ -122,7 +122,7 @@ export LC_ALL="en_US.utf8"
         self.jobs = dict()
         self.n = 0
         self._adaptive = None
-        self._submitcmd = 'sbatch'
-        self._cancelcmd = 'scancel'
+        self.submitcmd = 'sbatch'
+        self.cancelcmd = 'scancel'
 
         logger.debug("Job script: \n %s" % self.job_script())

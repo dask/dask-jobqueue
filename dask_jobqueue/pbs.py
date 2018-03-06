@@ -119,7 +119,5 @@ class PBSCluster(JobQueueCluster):
         self.jobs = dict()
         self.n = 0
         self._adaptive = None
-        self._submitcmd = 'qsub'
-        self._cancelcmd = 'qdel'
 
         logger.debug("Job script: \n %s" % self.job_script())
