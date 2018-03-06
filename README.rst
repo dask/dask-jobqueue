@@ -1,7 +1,7 @@
 Deploy Dask on Job Queueing systems
 ===================================
 
-This helps to deploy Dask on batch-style job schedulers like PBS and SLURM.
+This helps to deploy Dask on batch-style job schedulers like PBS, SGE and SLURM.
 
 Example
 -------
@@ -40,4 +40,4 @@ Original developers include the following:
 
 -  `Jim Edwards <https://github.com/jedwards4b>`_
 -  `Joe Hamman <https://github.com/jhamman>`_
--  `Matthew ROcklin <https://github.com/mrocklin>`_
+-  `Matthew Rocklin <https://github.com/mrocklin>`_
