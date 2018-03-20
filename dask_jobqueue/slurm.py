@@ -53,7 +53,7 @@ class SLURMCluster(JobQueueCluster):
             Passed to `#SBATCH -p` option.
         project : str
             Accounting string associated with each worker job. Passed to
-            `#SBATCH -A` option.
+            `#SBATCH --account` option.
         threads_per_worker : int
             Number of threads per process.
         processes : int
@@ -78,7 +78,7 @@ class SLURMCluster(JobQueueCluster):
 #SBATCH -J %(name)s
 #SBATCH -n %(processes)d
 #SBATCH -p %(queue)s
-#SBATCH -A %(project)s
+#SBATCH --account %(project)s
 #SBATCH -t %(walltime)s
 #SBATCH -e %(name)s.err
 #SBATCH -o %(name)s.out
