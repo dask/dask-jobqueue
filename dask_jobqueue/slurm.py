@@ -48,12 +48,9 @@ class SLURMCluster(JobQueueCluster):
         ----------
         name : str
             Name of worker jobs. Passed to `#SBATCH -J` option.
-        queue : str
-            Destination queue for each worker job.
-            Passed to `#SBATCH -p` option.
         project : str
             Accounting string associated with each worker job. Passed to
-            `#SBATCH --account` option.
+            `#SBATCH -A` option.
         threads_per_worker : int
             Number of threads per process.
         processes : int
@@ -77,8 +74,7 @@ class SLURMCluster(JobQueueCluster):
 
 #SBATCH -J %(name)s
 #SBATCH -n %(processes)d
-#SBATCH -p %(queue)s
-#SBATCH --account %(project)s
+#SBATCH -A %(project)s
 #SBATCH -t %(walltime)s
 #SBATCH -e %(name)s.err
 #SBATCH -o %(name)s.out
@@ -87,7 +83,7 @@ export LANG="en_US.utf8"
 export LANGUAGE="en_US.utf8"
 export LC_ALL="en_US.utf8"
 
-%(base_path)s/dask-worker %(scheduler)s \
+"%(base_path)s/dask-worker" %(scheduler)s \
     --nthreads %(threads_per_worker)d \
     --nprocs %(processes)s \
     --memory-limit %(memory)s \

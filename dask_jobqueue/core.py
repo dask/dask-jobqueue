@@ -4,9 +4,7 @@ import subprocess
 import toolz
 
 from distributed.utils import tmpfile, ignoring
-
 logger = logging.getLogger(__name__)
-
 
 class JobQueueCluster(object):
     """ Base class to launch Dask Clusters for Job queues
@@ -75,6 +73,7 @@ class JobQueueCluster(object):
         Also logs any stderr information
         """
         logger.debug("Submitting the following calls to command line")
+        
         for cmd in cmds:
             logger.debug(' '.join(cmd))
         procs = [subprocess.Popen(cmd,
