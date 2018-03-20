@@ -83,7 +83,7 @@ class PBSCluster(JobQueueCluster):
 #PBS -l walltime=%(walltime)s
 #PBS -j oe
 
-%(base_path)s/dask-worker %(scheduler)s \
+"%(base_path)s/dask-worker" %(scheduler)s \
     --nthreads %(threads_per_worker)d \
     --nprocs %(processes)s \
     --memory-limit %(memory)s \
