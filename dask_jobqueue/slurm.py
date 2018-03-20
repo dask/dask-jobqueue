@@ -87,7 +87,7 @@ export LANG="en_US.utf8"
 export LANGUAGE="en_US.utf8"
 export LC_ALL="en_US.utf8"
 
-%(base_path)s/dask-worker %(scheduler)s \
+"%(base_path)s/dask-worker" %(scheduler)s \
     --nthreads %(threads_per_worker)d \
     --nprocs %(processes)s \
     --memory-limit %(memory)s \
