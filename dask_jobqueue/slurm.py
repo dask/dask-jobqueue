@@ -32,7 +32,6 @@ class SLURMCluster(JobQueueCluster):
     """
     def __init__(self,
                  name='dask',
-                 queue='',
                  project=None,
                  threads_per_worker=4,
                  processes=8,
@@ -105,7 +104,6 @@ export LC_ALL="en_US.utf8"
         self.cluster = LocalCluster(n_workers=0, ip=host, **kwargs)
         memory = memory.replace(' ', '')
         self.config = {'name': name,
-                       'queue': queue,
                        'project': project,
                        'threads_per_worker': threads_per_worker,
                        'processes': processes,
