@@ -32,7 +32,6 @@ class SLURMCluster(JobQueueCluster):
     """
     def __init__(self,
                  name='dask',
-                 queue='',
                  project=None,
                  threads_per_worker=4,
                  processes=8,
@@ -48,9 +47,6 @@ class SLURMCluster(JobQueueCluster):
         ----------
         name : str
             Name of worker jobs. Passed to `#SBATCH -J` option.
-        queue : str
-            Destination queue for each worker job.
-            Passed to `#SBATCH -p` option.
         project : str
             Accounting string associated with each worker job. Passed to
             `#SBATCH -A` option.
@@ -77,7 +73,6 @@ class SLURMCluster(JobQueueCluster):
 
 #SBATCH -J %(name)s
 #SBATCH -n %(processes)d
-#SBATCH -p %(queue)s
 #SBATCH -A %(project)s
 #SBATCH -t %(walltime)s
 #SBATCH -e %(name)s.err
@@ -87,7 +82,7 @@ export LANG="en_US.utf8"
 export LANGUAGE="en_US.utf8"
 export LC_ALL="en_US.utf8"
 
-%(base_path)s/dask-worker %(scheduler)s \
+"%(base_path)s/dask-worker" %(scheduler)s \
     --nthreads %(threads_per_worker)d \
     --nprocs %(processes)s \
     --memory-limit %(memory)s \
@@ -109,7 +104,6 @@ export LC_ALL="en_US.utf8"
         self.cluster = LocalCluster(n_workers=0, ip=host, **kwargs)
         memory = memory.replace(' ', '')
         self.config = {'name': name,
-                       'queue': queue,
                        'project': project,
                        'threads_per_worker': threads_per_worker,
                        'processes': processes,
