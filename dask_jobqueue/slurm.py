@@ -2,6 +2,8 @@ import logging
 import os
 import socket
 import sys
+import subprocess
+import re
 
 from distributed import LocalCluster
 from distributed.utils import get_ip_interface
@@ -108,6 +110,17 @@ export LC_ALL="en_US.utf8"
                              "or set SLURM_ACCOUNT environment variable")
         self.cluster = LocalCluster(n_workers=0, ip=host, **kwargs)
         memory = memory.replace(' ', '')
+        if not queue:
+            try:
+                queues = subprocess.check_output(['sinfo -o "%P"'],
+                                                 shell=True,
+                                                 universal_newlines=True)
+                # Look for the queue that ends with * (the default queue)
+                queue = re.search(r'\w*\*', queues).group(0)[:-1]
+            except Exception as e:
+                print(e, "No queue specified and a default could not be found")
+                raise e
+
         self.config = {'name': name,
                        'queue': queue,
                        'project': project,
