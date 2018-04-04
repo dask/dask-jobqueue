@@ -7,7 +7,8 @@ from dask.distributed import Client
 from distributed.utils_test import loop  # noqa: F401
 from dask_jobqueue import SLURMCluster
 
-pytestmark = pytest.mark.env("pbs")
+#Run test only if py.test -E slurm is called
+pytestmark = pytest.mark.env("slurm")
 
 
 def test_basic(loop):  # noqa: F811

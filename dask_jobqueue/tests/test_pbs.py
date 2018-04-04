@@ -7,6 +7,7 @@ from dask.distributed import Client
 from distributed.utils_test import loop  # noqa: F401
 from dask_jobqueue import PBSCluster
 
+#Run test only if py.test -E pbs is called
 pytestmark = pytest.mark.env("pbs")
 
 
