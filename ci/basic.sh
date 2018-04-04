@@ -6,7 +6,7 @@ function jobqueue_before_install {
     docker version
     docker-compose version
 
-    # start a container
+    # just build and start a container with python dependencies
     docker build -t dask-jobqueue:latest basic/
     docker run -d --name test_server -v `pwd`../..:/dask-jobqueue dask-jobqueue:latest sleep 600
 
