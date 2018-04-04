@@ -23,5 +23,5 @@ function jobqueue_script {
 }
 
 function jobqueue_after_success {
-
+    echo "Hurrah"
 }
