@@ -12,7 +12,8 @@ function jobqueue_install {
 }
 
 function jobqueue_script {
-  echo "script: Run tests without enf"
+  echo "script: Run tests without env for basic checks"
+  py.test --verbose
 }
 
 function jobqueue_after_success {

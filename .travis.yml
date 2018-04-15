@@ -40,9 +40,8 @@ install:
   - pip install --no-deps -e .
   - jobqueue_install
 script:
-  #Always run flake and pytest without environment for basic tests
   - flake8 -j auto dask_jobqueue
-  - py.test --verbose
+  #Do not run py.test outside and inside the docker image, this will fail, so rnu basic tests in "none" jobqueue script
   - jobqueue_script
 after_success:
   - jobqueue_after_success
