@@ -78,8 +78,8 @@ def test_job_script():
 
 
 #Run test only if py.test -E pbs is called, ie. when a docker compose PBS cluster is launched
-@pytest.mark.env("pbs")
-def test_basic(loop):  # noqa: F811
+@pytest.mark.env("pbs")  # noqa: F811
+def test_basic(loop):
     with PBSCluster(walltime='00:02:00', threads_per_worker=2, memory='7GB',
                     interface='ib0', loop=loop) as cluster:
         with Client(cluster) as client:
@@ -104,8 +104,8 @@ def test_basic(loop):  # noqa: F811
 
 
 #Run test only if py.test -E pbs is called, ie. when a docker compose PBS cluster is launched
-@pytest.mark.env("pbs")
-def test_adaptive(loop):  # noqa: F811
+@pytest.mark.env("pbs")  # noqa: F811
+def test_adaptive(loop):
     with PBSCluster(walltime='00:02:00', loop=loop) as cluster:
         cluster.adapt()
         with Client(cluster) as client:

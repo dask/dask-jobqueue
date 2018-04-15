@@ -84,8 +84,8 @@ def test_job_script():
 
 
 #Run test only if py.test -E slurm is called, and a docker test cluster is up
-@pytest.mark.env("slurm")
-def test_basic(loop):  # noqa: F811
+@pytest.mark.env("slurm")  # noqa: F811
+def test_basic(loop):
     with SLURMCluster(walltime='00:02:00', threads_per_worker=2, memory='7GB',
                       loop=loop) as cluster:
         with Client(cluster) as client:
@@ -109,8 +109,8 @@ def test_basic(loop):  # noqa: F811
             assert not cluster.jobs
 
 
-@pytest.mark.env("slurm")
-def test_adaptive(loop):  # noqa: F811
+@pytest.mark.env("slurm")  # noqa: F811
+def test_adaptive(loop):
     with SLURMCluster(walltime='00:02:00', loop=loop) as cluster:
         cluster.adapt()
         with Client(cluster) as client:
