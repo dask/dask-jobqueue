@@ -1,4 +1,3 @@
-import os
 from time import sleep, time
 
 import pytest
@@ -132,4 +131,3 @@ def test_adaptive(loop):  # noqa: F811
             while cluster.jobs:
                 sleep(0.100)
                 assert time() < start + 10
-
