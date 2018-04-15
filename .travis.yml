@@ -19,20 +19,19 @@ matrix:
         - JOBQUEUE=sge
     - python: "3.6"
       env:
+        #For launching only basic unit tests
         - OS=ubuntu-14.04
-        - JOBQUEUE=basic
+        - JOBQUEUE=none
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.6.0
 
 before_install:
   - pwd
-  - docker version
-  - docker-compose version
-  # Install miniconda
+  # Install miniconda (only needed for basi unit tests)
   - ./ci/conda_setup.sh
   - export PATH="$HOME/miniconda/bin:$PATH"
-  - conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION dask distributed flake8
+  - conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION dask distributed flake8 pytest
   # Start jobqueue
   - source ci/${JOBQUEUE}.sh
   - jobqueue_before_install
@@ -41,7 +40,9 @@ install:
   - pip install --no-deps -e .
   - jobqueue_install
 script:
+  #Always run flake and pytest without environment for basic tests
   - flake8 -j auto dask_jobqueue
+  - py.test --verbose
   - jobqueue_script
 after_success:
   - jobqueue_after_success
