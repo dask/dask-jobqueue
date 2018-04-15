@@ -1,10 +1,10 @@
 import os
-from time import time, sleep
+from time import sleep, time
 
 import pytest
-
-from dask.distributed import Client
+from distributed import Client
 from distributed.utils_test import loop  # noqa: F401
+
 from dask_jobqueue import PBSCluster
 
 #Run test only if py.test -E pbs is called
@@ -45,7 +45,8 @@ def test_adaptive(loop):  # noqa: F811
             assert cluster.jobs
 
             start = time()
-            while len(client.scheduler_info()['workers']) != cluster.config['processes']:
+            processes = cluster.config['processes']
+            while len(client.scheduler_info()['workers']) != processes:
                 sleep(0.1)
                 assert time() < start + 10
 
@@ -62,7 +63,8 @@ def test_adaptive(loop):  # noqa: F811
                 assert time() < start + 10
 
 
-@pytest.mark.skipif('PBS_ACCOUNT' in os.environ, reason='PBS_ACCOUNT defined')  # noqa: F811
+@pytest.mark.skipif('PBS_ACCOUNT' in os.environ,    # noqa: F811
+                    reason='PBS_ACCOUNT defined')
 def test_errors(loop):
     with pytest.raises(ValueError) as info:
         PBSCluster()
