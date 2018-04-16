@@ -28,6 +28,6 @@ def test_basic(loop):  # noqa: F811
             start = time()
             while len(client.scheduler_info()['workers']) > 0:
                 sleep(0.100)
-                assert time() < start + 20
+                assert time() < start + 10
 
             assert not cluster.jobs
