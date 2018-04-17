@@ -5,9 +5,9 @@ from .core import JobQueueCluster, docstrings
 logger = logging.getLogger(__name__)
 
 
-@docstrings.with_indent(4)
 class SGECluster(JobQueueCluster):
-    """ Launch Dask on a SGE cluster
+    #Defining docstring this way for python 2 and docrep compatibility. See #35.
+    __doc__ = docstrings.with_indents(""" Launch Dask on a SGE cluster
 
     Parameters
     ----------
@@ -36,7 +36,7 @@ class SGECluster(JobQueueCluster):
     kill workers based on load.
 
     >>> cluster.adapt()
-    """
+    """, 4)
 
     # Override class variables
     submit_command = 'qsub -terse'

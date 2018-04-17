@@ -7,9 +7,9 @@ from .core import JobQueueCluster, docstrings
 logger = logging.getLogger(__name__)
 
 
-@docstrings.with_indent(4)
 class PBSCluster(JobQueueCluster):
-    """ Launch Dask on a PBS cluster
+    #Defining docstring this way for python 2 and docrep compatibility. See #35.
+    __doc__ = docstrings.with_indents(""" Launch Dask on a PBS cluster
 
     Parameters
     ----------
@@ -50,7 +50,7 @@ class PBSCluster(JobQueueCluster):
                              local_directory=os.getenv('TMPDIR', '/tmp'),
                              threads=4, processes=6, memory='16GB',
                              resource_spec='select=1:ncpus=24:mem=100GB')
-    """
+    """, 4)
 
     # Override class variables
     submit_command = 'qsub'
