@@ -17,6 +17,11 @@ matrix:
       env:
         - OS=ubuntu-14.04
         - JOBQUEUE=sge
+    - python: "2.7"
+      env:
+        #For launching only basic unit tests
+        - OS=ubuntu-14.04
+        - JOBQUEUE=none
     - python: "3.6"
       env:
         #For launching only basic unit tests
