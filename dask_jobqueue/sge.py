@@ -6,7 +6,6 @@ logger = logging.getLogger(__name__)
 
 
 class SGECluster(JobQueueCluster):
-    #Defining docstring this way for python 2 and docrep compatibility. See #35.
     __doc__ = docstrings.with_indents(""" Launch Dask on a SGE cluster
 
     Parameters

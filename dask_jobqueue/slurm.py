@@ -13,7 +13,6 @@ dirname = os.path.dirname(sys.executable)
 
 
 class SLURMCluster(JobQueueCluster):
-    #Defining docstring this way for python 2 and docrep compatibility. See #35.
     __doc__ = docstrings.with_indents(""" Launch Dask on a SLURM cluster
 
     Parameters

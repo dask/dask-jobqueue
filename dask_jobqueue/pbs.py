@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 class PBSCluster(JobQueueCluster):
-    #Defining docstring this way for python 2 and docrep compatibility. See #35.
     __doc__ = docstrings.with_indents(""" Launch Dask on a PBS cluster
 
     Parameters
