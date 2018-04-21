@@ -99,6 +99,7 @@ class PBSCluster(JobQueueCluster):
         """ Get the unique identifier for a job from the submission status. """
         return out.decode().split('.')[0].strip()
 
+
 def pbs_format_bytes_ceil(n):
     """ Format bytes as text
     PBS expects KiB, MiB or Gib, but names it KB, MB, GB

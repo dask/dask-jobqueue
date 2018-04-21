@@ -106,6 +106,7 @@ class SLURMCluster(JobQueueCluster):
         """ Get the unique identifier for a job from the submission status. """
         return out.decode().split(' ')[3].strip()
 
+
 def slurm_format_bytes_ceil(n):
     """ Format bytes as text
     SLURM expects KiB, MiB or Gib, but names it KB, MB, GB
