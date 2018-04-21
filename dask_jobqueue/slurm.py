@@ -102,6 +102,9 @@ class SLURMCluster(JobQueueCluster):
 
         logger.debug("Job script: \n %s" % self.job_script())
 
+    def _jobid_from_submit_output(self, out):
+        """ Get the unique identifier for a job from the submission status. """
+        return out.decode().split(' ')[3].strip()
 
 def slurm_format_bytes_ceil(n):
     """ Format bytes as text

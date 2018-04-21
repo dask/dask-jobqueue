@@ -161,7 +161,7 @@ class JobQueueCluster(Cluster):
         for _ in range(n):
             with self.job_file() as fn:
                 out = self._call(shlex.split(self.submit_command) + [fn])
-                job = out.decode().split('.')[0].strip()
+                job = self._jobid_from_submit_output(out)
                 self.jobs[self.n] = job
                 workers.append(self.n)
         return workers
