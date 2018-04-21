@@ -52,7 +52,7 @@ class SLURMCluster(JobQueueCluster):
     """, 4)
 
     #Override class variables
-    submit_command = 'sbatch'
+    submit_command = 'sbatch --parsable'
     cancel_command = 'scancel'
 
     def __init__(self,
@@ -104,7 +104,7 @@ class SLURMCluster(JobQueueCluster):
 
     def _jobid_from_submit_output(self, out):
         """ Get the unique identifier for a job from the submission status. """
-        return out.decode().split(' ')[3].strip()
+        return out.decode().split(';')[0].strip()
 
 
 def slurm_format_bytes_ceil(n):
