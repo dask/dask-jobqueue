@@ -33,20 +33,12 @@ env:
 
 before_install:
   - pwd
-  # Install miniconda (only needed for basic unit tests)
-  - ./ci/conda_setup.sh
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION dask distributed flake8 pytest docrep
-  # Start jobqueue
+  # Init jobqueue environment: load init and test methods
   - source ci/${JOBQUEUE}.sh
   - jobqueue_before_install
 install:
-  - which python
-  - pip install --no-deps -e .
   - jobqueue_install
 script:
-  - flake8 -j auto dask_jobqueue
-  # do not add a pytest line just here (this will fail for most JOBQUEUE env) but inside the jobqueue_script function
   - jobqueue_script
 after_success:
   - jobqueue_after_success

@@ -3,15 +3,19 @@
 set -x
 
 function jobqueue_before_install {
-  echo "Before install, nothing to do"
+  # Install miniconda
+  ./ci/conda_setup.sh
+  export PATH="$HOME/miniconda/bin:$PATH"
+  conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION dask distributed flake8 pytest docrep
 }
 
 function jobqueue_install {
-  echo "Install, nothing to do"
+  which python
+  pip install --no-deps -e .
 }
 
 function jobqueue_script {
-  echo "script: Run tests without env for basic checks"
+  flake8 -j auto dask_jobqueue
   py.test --verbose
 }
 
