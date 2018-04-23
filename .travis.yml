@@ -33,7 +33,7 @@ env:
 
 before_install:
   - pwd
-  # Install miniconda (only needed for basi unit tests)
+  # Install miniconda (only needed for basic unit tests)
   - ./ci/conda_setup.sh
   - export PATH="$HOME/miniconda/bin:$PATH"
   - conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION dask distributed flake8 pytest docrep
