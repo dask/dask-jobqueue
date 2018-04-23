@@ -95,9 +95,8 @@ class PBSCluster(JobQueueCluster):
 
         logger.debug("Job script: \n %s" % self.job_script())
 
-    def _jobid_from_submit_output(self, out):
-        """ Get the unique identifier for a job from the submission status. """
-        return out.decode().split('.')[0].strip()
+    def _job_id_from_submit_output(self, out):
+        return out.split('.')[0].strip()
 
 
 def pbs_format_bytes_ceil(n):
