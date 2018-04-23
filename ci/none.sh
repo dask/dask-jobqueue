@@ -3,7 +3,6 @@
 set -x
 
 function jobqueue_before_install {
-  # Nothing to go
   echo "Before install, nothing to do"
 }
 

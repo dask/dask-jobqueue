@@ -7,8 +7,6 @@ from distributed.utils_test import loop  # noqa: F401
 from dask_jobqueue import SLURMCluster
 
 
-#No mark in order to run these simple unit tests all the time
-
 def test_header():
     with SLURMCluster(walltime='00:02:00', processes=4, threads=2, memory='7GB') as cluster:
 
@@ -83,7 +81,6 @@ def test_job_script():
         assert '--nthreads 2 --nprocs 4 --memory-limit 7GB' in job_script
 
 
-#Run test only if py.test -E slurm is called, and a docker test cluster is up
 @pytest.mark.env("slurm")  # noqa: F811
 def test_basic(loop):
     with SLURMCluster(walltime='00:02:00', threads_per_worker=2, memory='7GB',

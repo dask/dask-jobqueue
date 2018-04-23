@@ -7,8 +7,6 @@ from distributed.utils_test import loop  # noqa: F401
 from dask_jobqueue import PBSCluster
 
 
-#No default mark in order to run these simple unit tests all the time
-
 def test_header():
     with PBSCluster(walltime='00:02:00', processes=4, threads=2, memory='7GB') as cluster:
 
@@ -77,7 +75,6 @@ def test_job_script():
         assert '--nthreads 2 --nprocs 4 --memory-limit 7GB' in job_script
 
 
-#Run test only if py.test -E pbs is called, ie. when a docker compose PBS cluster is launched
 @pytest.mark.env("pbs")  # noqa: F811
 def test_basic(loop):
     with PBSCluster(walltime='00:02:00', threads_per_worker=2, memory='7GB',
@@ -103,7 +100,6 @@ def test_basic(loop):
             assert not cluster.jobs
 
 
-#Run test only if py.test -E pbs is called, ie. when a docker compose PBS cluster is launched
 @pytest.mark.env("pbs")  # noqa: F811
 def test_adaptive(loop):
     with PBSCluster(walltime='00:02:00', loop=loop) as cluster:
