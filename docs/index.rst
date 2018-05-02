@@ -102,7 +102,7 @@ starts, a dask-worker process will start up and connect back to the scheduler
 running within this process.
 
 If the job queue is busy then it's possible that the workers will take a while
-to get through or that not all of them arrive.  Operating with fewer workers
-than expected is OK, Dask can elastically scale.  We recommend submitting small
-jobs with short wall times in order to fill in small gaps in the job queue's
-schedule.
+to get through or that not all of them arrive.  In practive we find that
+because dask-jobqueue submits many small jobs rather than a single large one
+workers are often able to start relatively quickly.  This will depend on the
+state of your cluster's job queue though.
