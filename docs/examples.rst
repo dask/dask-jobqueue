@@ -4,6 +4,7 @@ Example Deployments
 Deploying dask-jobqueue on different clusters requires a bit of customization.
 Below, we provide a few examples from real deployments in the wild:
 
+Additional examples from other cluster welcome `here <https://github.com/dask/dask-jobqueue/issues/40>`_.
 
 PBS Deployments
 ---------------
@@ -37,4 +38,13 @@ Examples welcome `here <https://github.com/dask/dask-jobqueue/issues/40>`_
 SLURM Deployments
 -----------------
 
-Examples welcome `here <https://github.com/dask/dask-jobqueue/issues/40>`_
+.. code-block:: python
+
+   from dask_jobqueue import SLURMCluster
+
+   cluster = SLURMCluster(processes=4,
+                          threads=2,
+                          memory="16GB",
+                          project="woodshole",
+                          walltime="01:00",
+                          queue="normal")
