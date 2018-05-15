@@ -23,7 +23,7 @@ function jobqueue_script {
     docker exec -it slurmctld /bin/bash -c "cd /dask-jobqueue; py.test dask_jobqueue --verbose -E slurm"
 }
 
-function jobqueue_after_success {
+function jobqueue_after_script {
     docker exec -it slurmctld bash -c 'sinfo'
     docker exec -it slurmctld bash -c 'squeue'
     docker exec -it slurmctld bash -c 'sacct -l'

@@ -30,7 +30,12 @@ matrix:
     - python: "3.6"
       env:
         - OS=ubuntu-14.04
+        - JOBQUEUE=pbs
+    - python: "3.6"
+      env:
+        - OS=ubuntu-14.04
         - JOBQUEUE=slurm
+
 env:
   global:
     - DOCKER_COMPOSE_VERSION=1.6.0
@@ -44,8 +49,8 @@ install:
   - jobqueue_install
 script:
   - jobqueue_script
-after_success:
-  - jobqueue_after_success
+after_script:
+  - jobqueue_after_script
 
   # TODO
   # - pip install --no-cache-dir coveralls
