@@ -6,9 +6,6 @@ RUN curl -o miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-L
     rm -f miniconda.sh
 ENV PATH /opt/anaconda/bin:$PATH
 RUN conda install --yes -c conda-forge python=3.6 dask distributed flake8 pytest docrep
-# Take the latest version of dask and distributed
-RUN pip install --no-cache-dir git+https://github.com/dask/dask.git --upgrade && \
-    pip install --no-cache-dir git+https://github.com/dask/distributed.git --upgrade
 
 ENV LC_ALL en_US.UTF-8
 
