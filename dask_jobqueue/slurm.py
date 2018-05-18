@@ -99,7 +99,7 @@ class SLURMCluster(JobQueueCluster):
 
         if walltime is not None:
             header_lines.append('#SBATCH -t %s' % walltime)
-        header_lines.append('JOB_ID=${SLURM_JOB_ID}')
+        header_lines.append('JOB_ID=${SLURM_JOB_ID%;*}')
         header_lines.extend(['#SBATCH %s' % arg for arg in job_extra])
 
         # Declare class attribute that shall be overriden
