@@ -73,7 +73,7 @@ class PBSCluster(JobQueueCluster):
         # Try to find a project name from environment variable
         project = project or os.environ.get('PBS_ACCOUNT')
 
-        header_lines = []
+        header_lines = ['#!/usr/bin/env bash']
         # PBS header build
         if self.name is not None:
             header_lines.append('#PBS -N %s' % self.name)
@@ -93,6 +93,7 @@ class PBSCluster(JobQueueCluster):
         if walltime is not None:
             header_lines.append('#PBS -l walltime=%s' % walltime)
         header_lines.extend(['#PBS %s' % arg for arg in job_extra])
+        header_lines.append('JOB_ID=${PBS_JOBID}')
 
         # Declare class attribute that shall be overriden
         self.job_header = '\n'.join(header_lines)

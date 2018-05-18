@@ -133,8 +133,10 @@ class JobQueueCluster(Cluster):
         if memory is not None:
             self._command_template += " --memory-limit %s" % memory
         if name is not None:
-            self._command_template += " --name %s" % name
-            self._command_template += "-%(n)d" # Keep %(n) to be replaced later
+            self._command_template += " --name %s" % name  # e.g. "dask-worker"
+            # Keep %(n) to be replaced later (worker id on this job)
+            # ${JOB_ID} is an environment variable describing this job
+            self._command_template += "${JOB_ID}-%(n)d"
         if death_timeout is not None:
             self._command_template += " --death-timeout %s" % death_timeout
         if local_directory is not None:
