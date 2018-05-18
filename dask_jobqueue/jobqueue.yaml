@@ -1,5 +1,5 @@
 jobqueue:
-  name: dask-worker
+  name: dask_worker
   threads: 2
   processes: 4
   memory: 8GB

@@ -71,7 +71,7 @@ class SLURMCluster(JobQueueCluster):
         super(SLURMCluster, self).__init__(**kwargs)
 
         # Always ask for only one task
-        header_lines = []
+        header_lines = ['#!/usr/bin/env bash']
         # SLURM header build
         if self.name is not None:
             header_lines.append('#SBATCH -J %s' % self.name)
@@ -99,6 +99,7 @@ class SLURMCluster(JobQueueCluster):
 
         if walltime is not None:
             header_lines.append('#SBATCH -t %s' % walltime)
+        header_lines.append('JOB_ID=${SLURM_JOB_ID%;*}')
         header_lines.extend(['#SBATCH %s' % arg for arg in job_extra])
 
         # Declare class attribute that shall be overriden

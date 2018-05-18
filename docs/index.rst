@@ -25,7 +25,7 @@ Example
    from dask_jobqueue import PBSCluster
 
    cluster = PBSCluster(processes=6, threads=4, memory="16GB")
-   cluster.start_workers(10)
+   cluster.start_workers(12)  # this equates to 2 PBS jobs, each with 6 workers
 
    from dask.distributed import Client
    client = Client(cluster)
@@ -42,7 +42,7 @@ resources when not actively computing.
 
 .. code-block:: python
 
-   cluster.adapt(minimum=1, maximum=100)
+   cluster.adapt(minimum=6, maximum=90)
 
 .. toctree::
    :maxdepth: 1
@@ -50,6 +50,7 @@ resources when not actively computing.
 
    install.rst
    examples.rst
+   faq.rst
    history.rst
    api.rst
 
@@ -73,7 +74,7 @@ When you ask for more workers, such as with the ``scale`` command
 
 .. code-block:: python
 
-   cluster.scale(10)
+   cluster.scale(36)
 
 The cluster generates a traditional job script and submits that an appropriate
 number of times to the job queue.  You can see the job script that it will

@@ -1,21 +1,96 @@
+from __future__ import absolute_import, division, print_function
+
 import logging
+import math
 import os
 import shlex
 import socket
 import subprocess
 import sys
+from collections import OrderedDict
 from contextlib import contextmanager
 
 import dask
 import docrep
 from distributed import LocalCluster
 from distributed.deploy import Cluster
-from distributed.utils import get_ip_interface, ignoring, parse_bytes, tmpfile
+from distributed.utils import get_ip_interface, parse_bytes, tmpfile
+from distributed.diagnostics.plugin import SchedulerPlugin
+from sortedcontainers import SortedDict
 
 dirname = os.path.dirname(sys.executable)
 
 logger = logging.getLogger(__name__)
 docstrings = docrep.DocstringProcessor()
+
+
+def _job_id_from_worker_name(name):
+    ''' utility to parse the job ID from the worker name
+
+    template: 'prefix-jobid[-proc]'
+    '''
+    pieces = name.split('-')
+    if len(pieces) == 2:
+        return pieces[-1]
+    else:
+        return pieces[-2]
+
+
+class Job(object):
+    def __init__(self, job_id, status=None):
+        self.job_id = job_id
+        self.status = status
+        self.workers = SortedDict()
+
+    def update(self, worker=None, status=None):
+        ''' update the status this job'''
+        if worker is not None:
+            self.workers[worker.address] = worker
+        if status is not None:
+            self.status = status
+
+    def __repr__(self):
+        return "<%s: %r, status: %r, workers: %r>" % (
+            self.__class__.__name__, self.job_id, self.status, self.workers)
+
+
+class JobQueuePlugin(SchedulerPlugin):
+    def __init__(self):
+        self.pending_jobs = OrderedDict()
+        self.running_jobs = OrderedDict()
+        self.finished_jobs = OrderedDict()
+
+    def add_worker(self, scheduler, worker=None, name=None, **kwargs):
+        ''' Run when a new worker enters the cluster'''
+        w = scheduler.workers[worker]
+        job_id = _job_id_from_worker_name(w.name)
+
+        # if this is the first worker for this job, move job to running
+        if job_id not in self.running_jobs:
+            if job_id not in self.pending_jobs:
+                raise KeyError(
+                    '%s not in pending jobs: %s' % (job_id, self.pending_jobs))
+            self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
+            self.running_jobs[job_id].update(status='running')
+
+        # add worker to dict of workers in this job
+        self.running_jobs[job_id].update(worker=w)
+
+    def remove_worker(self, scheduler=None, worker=None, **kwargs):
+        ''' Run when a worker leaves the cluster'''
+        # the worker may have already been removed from the scheduler so we
+        # need to check in running_jobs for a job that has this worker
+        for job_id, job in self.running_jobs.items():
+            if worker in job.workers:
+                # remove worker from dict of workers on this job id
+                del self.running_jobs[job_id].workers[worker]
+
+                # if there are no more workers, move job to finished status
+                if not self.running_jobs[job_id].workers:
+                    self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
+                    self.finished_jobs[job_id].update(status='finished')
+
+                break
 
 
 @docstrings.get_sectionsf('JobQueueCluster')
@@ -77,6 +152,8 @@ class JobQueueCluster(Cluster):
     # Following class attributes should be overriden by extending classes.
     submit_command = None
     cancel_command = None
+    _adaptive_options = {
+        'worker_key': lambda ws: _job_id_from_worker_name(ws.name)}
 
     def __init__(self,
                  name=dask.config.get('jobqueue.name'),
@@ -99,7 +176,10 @@ class JobQueueCluster(Cluster):
             raise NotImplementedError('JobQueueCluster is an abstract class '
                                       'that should not be instanciated.')
 
-        #This attribute should be overriden
+        if '-' in name:
+            raise ValueError('name (%s) can not include the `-` character')
+
+        # This attribute should be overriden
         self.job_header = None
 
         if interface:
@@ -110,6 +190,10 @@ class JobQueueCluster(Cluster):
 
         self.cluster = LocalCluster(n_workers=0, ip=host, **kwargs)
 
+        # plugin for tracking job status
+        self._scheduler_plugin = JobQueuePlugin()
+        self.cluster.scheduler.add_plugin(self._scheduler_plugin)
+
         # Keep information on process, threads and memory, for use in
         # subclasses
         self.worker_memory = parse_bytes(memory) if memory is not None else None
@@ -117,8 +201,6 @@ class JobQueueCluster(Cluster):
         self.worker_threads = threads
         self.name = name
 
-        self.jobs = dict()
-        self.n = 0
         self._adaptive = None
 
         self._env_header = '\n'.join(env_extra)
@@ -133,8 +215,8 @@ class JobQueueCluster(Cluster):
         if memory is not None:
             self._command_template += " --memory-limit %s" % memory
         if name is not None:
-            self._command_template += " --name %s" % name
-            self._command_template += "-%(n)d" # Keep %(n) to be replaced later
+            # worker names follow this template: {NAME}-{JOB_ID}
+            self._command_template += " --name %s-${JOB_ID}" % name
         if death_timeout is not None:
             self._command_template += " --death-timeout %s" % death_timeout
         if local_directory is not None:
@@ -142,13 +224,27 @@ class JobQueueCluster(Cluster):
         if extra is not None:
             self._command_template += extra
 
+    @property
+    def pending_jobs(self):
+        """ Jobs pending in the queue """
+        return self._scheduler_plugin.pending_jobs
+
+    @property
+    def running_jobs(self):
+        """ Jobs with currenly active workers """
+        return self._scheduler_plugin.running_jobs
+
+    @property
+    def finished_jobs(self):
+        """ Jobs that have finished """
+        return self._scheduler_plugin.finished_jobs
+
     def job_script(self):
         """ Construct a job submission script """
-        self.n += 1
-        template = self._command_template % {'n': self.n}
-        return self._script_template % {'job_header': self.job_header,
-                                        'env_header': self._env_header,
-                                        'worker_command': template}
+        pieces = {'job_header': self.job_header,
+                  'env_header': self._env_header,
+                  'worker_command': self._command_template}
+        return self._script_template % pieces
 
     @contextmanager
     def job_file(self):
@@ -160,14 +256,13 @@ class JobQueueCluster(Cluster):
 
     def start_workers(self, n=1):
         """ Start workers and point them to our local scheduler """
-        workers = []
-        for _ in range(n):
+        num_jobs = math.ceil(n / self.worker_processes)
+        for _ in range(num_jobs):
             with self.job_file() as fn:
                 out = self._call(shlex.split(self.submit_command) + [fn])
                 job = self._job_id_from_submit_output(out.decode())
-                self.jobs[self.n] = job
-                workers.append(self.n)
-        return workers
+                self._scheduler_plugin.pending_jobs[job] = Job(
+                    job, status='pending')
 
     @property
     def scheduler(self):
@@ -196,12 +291,12 @@ class JobQueueCluster(Cluster):
         Also logs any stderr information
         """
         logger.debug("Submitting the following calls to command line")
+        procs = []
         for cmd in cmds:
             logger.debug(' '.join(cmd))
-        procs = [subprocess.Popen(cmd,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE)
-                 for cmd in cmds]
+            procs.append(subprocess.Popen(cmd,
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.PIPE))
 
         result = []
         for proc in procs:
@@ -219,29 +314,38 @@ class JobQueueCluster(Cluster):
         """ Stop a list of workers"""
         if not workers:
             return
-        workers = list(map(int, workers))
-        jobs = [self.jobs[w] for w in workers]
-        self._call([self.cancel_command] + list(jobs))
-        for w in workers:
-            with ignoring(KeyError):
-                del self.jobs[w]
+        jobs = {_job_id_from_worker_name(w.name) for w in workers}
+        self.stop_jobs(jobs)
+
+    def stop_jobs(self, jobs):
+        """ Stop a list of jobs"""
+        if jobs:
+            self._call([self.cancel_command] + list(jobs))
 
     def scale_up(self, n, **kwargs):
         """ Brings total worker count up to ``n`` """
-        return self.start_workers(n - len(self.jobs))
+        active_and_pending = sum([len(j.workers) for j in
+                                  self.running_jobs.values()])
+        active_and_pending += self.worker_processes * len(self.pending_jobs)
+        return self.start_workers(n - active_and_pending)
 
     def scale_down(self, workers):
         ''' Close the workers with the given addresses '''
-        if isinstance(workers, dict):
-            names = {v['name'] for v in workers.values()}
-            job_ids = {name.split('-')[-2] for name in names}
-            self.stop_workers(job_ids)
+        worker_states = []
+        for w in workers:
+            try:
+                # Get the actual WorkerState
+                worker_states.append(self.scheduler.workers[w])
+            except KeyError:
+                logger.debug('worker %s is already gone' % w)
+        self.stop_workers(worker_states)
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
-        self.stop_workers(self.jobs)
+        jobs = list(self.pending_jobs.keys()) + list(self.running_jobs.keys())
+        self.stop_jobs(jobs)
         self.cluster.__exit__(type, value, traceback)
 
     def _job_id_from_submit_output(self, out):
