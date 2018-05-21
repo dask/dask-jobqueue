@@ -1,4 +1,7 @@
+from __future__ import absolute_import, division, print_function
+
 import logging
+import math
 import os
 import shlex
 import socket
@@ -133,6 +136,7 @@ class JobQueueCluster(Cluster):
         if memory is not None:
             self._command_template += " --memory-limit %s" % memory
         if name is not None:
+            # worker names follow this template: {NAME}-{JOB_ID}-{WORKER_NUM}
             self._command_template += " --name %s" % name  # e.g. "dask-worker"
             # Keep %(n) to be replaced later (worker id on this job)
             # ${JOB_ID} is an environment variable describing this job
@@ -163,7 +167,8 @@ class JobQueueCluster(Cluster):
     def start_workers(self, n=1):
         """ Start workers and point them to our local scheduler """
         workers = []
-        for _ in range(n):
+        num_jobs = min(1, math.ceil(n / self.worker_processes))
+        for _ in range(num_jobs):
             with self.job_file() as fn:
                 out = self._call(shlex.split(self.submit_command) + [fn])
                 job = self._job_id_from_submit_output(out.decode())
@@ -198,12 +203,12 @@ class JobQueueCluster(Cluster):
         Also logs any stderr information
         """
         logger.debug("Submitting the following calls to command line")
+        procs = []
         for cmd in cmds:
             logger.debug(' '.join(cmd))
-        procs = [subprocess.Popen(cmd,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE)
-                 for cmd in cmds]
+            procs.append(subprocess.Popen(cmd,
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.PIPE))
 
         result = []
         for proc in procs:
@@ -234,10 +239,13 @@ class JobQueueCluster(Cluster):
 
     def scale_down(self, workers):
         ''' Close the workers with the given addresses '''
-        if isinstance(workers, dict):
-            names = {v['name'] for v in workers.values()}
-            job_ids = {name.split('-')[-2] for name in names}
-            self.stop_workers(job_ids)
+        if not isinstance(workers, dict):
+            raise ValueError(
+                'Expected dictionary of workers, got %s' % type(workers))
+        names = {v['name'] for v in workers.values()}
+        # This will close down the full group of workers
+        job_ids = {name.split('-')[-2] for name in names}
+        self.stop_workers(job_ids)
 
     def __enter__(self):
         return self
