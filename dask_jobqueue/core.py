@@ -80,6 +80,7 @@ class JobQueueCluster(Cluster):
     # Following class attributes should be overriden by extending classes.
     submit_command = None
     cancel_command = None
+    _adaptive_options = {'worker_key': lambda ws: ws.name.name.split('-')[-2]}
 
     def __init__(self,
                  name=dask.config.get('jobqueue.name'),
