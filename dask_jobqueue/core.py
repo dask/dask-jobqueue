@@ -80,7 +80,8 @@ class JobQueueCluster(Cluster):
     # Following class attributes should be overriden by extending classes.
     submit_command = None
     cancel_command = None
-    _adaptive_options = {'worker_key': lambda ws: ws.name.name.split('-')[-2]}
+    _adaptive_options = {
+        'worker_key': lambda ws: _job_id_from_worker_name(ws.name)}
 
     def __init__(self,
                  name=dask.config.get('jobqueue.name'),
@@ -245,7 +246,7 @@ class JobQueueCluster(Cluster):
                 'Expected dictionary of workers, got %s' % type(workers))
         names = {v['name'] for v in workers.values()}
         # This will close down the full group of workers
-        job_ids = {name.split('-')[-2] for name in names}
+        job_ids = {_job_id_from_worker_name(name) for name in names}
         self.stop_workers(job_ids)
 
     def __enter__(self):
@@ -260,3 +261,8 @@ class JobQueueCluster(Cluster):
                                   'implemented when JobQueueCluster is '
                                   'inherited. It should convert the stdout '
                                   'from submit_command to the job id')
+
+
+def _job_id_from_worker_name(name):
+    ''' utility to parse the job ID from the worker name'''
+    return name.name.split('-')[-2]
