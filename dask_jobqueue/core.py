@@ -265,4 +265,4 @@ class JobQueueCluster(Cluster):
 
 def _job_id_from_worker_name(name):
     ''' utility to parse the job ID from the worker name'''
-    return name.name.split('-')[-2]
+    return name.split('-')[-2]
