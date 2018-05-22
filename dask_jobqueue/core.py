@@ -104,7 +104,7 @@ class JobQueueCluster(Cluster):
             raise NotImplementedError('JobQueueCluster is an abstract class '
                                       'that should not be instanciated.')
 
-        #This attribute should be overriden
+        # This attribute should be overriden
         self.job_header = None
 
         if interface:
@@ -122,7 +122,6 @@ class JobQueueCluster(Cluster):
         self.worker_threads = threads
         self.name = name
 
-        self.jobs = dict()
         self.n = 0
         self._adaptive = None
 
@@ -168,15 +167,14 @@ class JobQueueCluster(Cluster):
 
     def start_workers(self, n=1):
         """ Start workers and point them to our local scheduler """
-        workers = []
-        num_jobs = min(1, math.ceil(n / self.worker_processes))
+        job_ids = []
+        num_jobs = math.ceil(n / self.worker_processes)
         for _ in range(num_jobs):
             with self.job_file() as fn:
                 out = self._call(shlex.split(self.submit_command) + [fn])
                 job = self._job_id_from_submit_output(out.decode())
-                self.jobs[self.n] = job
-                workers.append(self.n)
-        return workers
+                job_ids.append(job)
+        return job_ids
 
     @property
     def scheduler(self):
@@ -228,32 +226,29 @@ class JobQueueCluster(Cluster):
         """ Stop a list of workers"""
         if not workers:
             return
-        workers = list(map(int, workers))
-        jobs = [self.jobs[w] for w in workers]
+        jobs = {_job_id_from_worker_name(w.name) for w in workers}
         self._call([self.cancel_command] + list(jobs))
-        for w in workers:
-            with ignoring(KeyError):
-                del self.jobs[w]
 
     def scale_up(self, n, **kwargs):
         """ Brings total worker count up to ``n`` """
-        return self.start_workers(n - len(self.jobs))
+        return self.start_workers(n - len(self.scheduler.workers))
 
     def scale_down(self, workers):
         ''' Close the workers with the given addresses '''
-        if not isinstance(workers, dict):
-            raise ValueError(
-                'Expected dictionary of workers, got %s' % type(workers))
-        names = {v['name'] for v in workers.values()}
-        # This will close down the full group of workers
-        job_ids = {_job_id_from_worker_name(name) for name in names}
-        self.stop_workers(job_ids)
+        workers = []
+        for w in workers:
+            try:
+                # Get the actual "Worker"
+                workers.append(self.scheduler.workers[w])
+            except KeyError:
+                logger.debug('worker %s is already gone' % w)
+        self.stop_workers(workers)
 
     def __enter__(self):
         return self
 
     def __exit__(self, type, value, traceback):
-        self.stop_workers(self.jobs)
+        self.stop_workers(self.scheduler.workers)
         self.cluster.__exit__(type, value, traceback)
 
     def _job_id_from_submit_output(self, out):
