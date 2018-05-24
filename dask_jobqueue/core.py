@@ -7,18 +7,61 @@ import shlex
 import socket
 import subprocess
 import sys
+from collections import OrderedDict
 from contextlib import contextmanager
 
 import dask
 import docrep
 from distributed import LocalCluster
 from distributed.deploy import Cluster
-from distributed.utils import get_ip_interface, ignoring, parse_bytes, tmpfile
+from distributed.utils import get_ip_interface, parse_bytes, tmpfile
+from distributed.diagnostics.plugin import SchedulerPlugin
 
 dirname = os.path.dirname(sys.executable)
 
 logger = logging.getLogger(__name__)
 docstrings = docrep.DocstringProcessor()
+
+
+def _job_id_from_worker_name(name):
+    ''' utility to parse the job ID from the worker name'''
+    return name.split('-')[-1]
+
+
+class Job(object):
+    def __init__(self, job_id, workers=None, status=None):
+        self.job_id = job_id
+        self.status = status
+        if workers is None:
+            workers = []
+        self.workers = workers
+
+    def update(self, workers=None, status=None):
+        if workers is not None:
+            self.workers.extend(workers)
+        if status is not None:
+            self.status = status
+
+    def __repr__(self):
+        return "<%s: %r, status: %r, workers: %r>" % (
+            self.__class__.__name__, self.job_id, self.status, self.workers)
+
+
+class JobQueuePlugin(SchedulerPlugin):
+    def __init__(self):
+        self.pending_jobs = OrderedDict()
+        self.running_jobs = OrderedDict()
+        self.finished_jobs = OrderedDict()
+
+    def add_worker(self, scheduler, worker=None, name=None, **kwargs):
+        job_id = _job_id_from_worker_name(worker.name)
+        self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
+        self.running_jobs[job_id].update(workers=[worker], status='running')
+
+    def remove_worker(self, scheduler=None, worker=None, **kwargs):
+        job_id = _job_id_from_worker_name(worker.name)
+        self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
+        self.finished_jobs[job_id].update(status='finished')
 
 
 @docstrings.get_sectionsf('JobQueueCluster')
@@ -115,6 +158,16 @@ class JobQueueCluster(Cluster):
 
         self.cluster = LocalCluster(n_workers=0, ip=host, **kwargs)
 
+        # plugin for tracking job status
+        self._scheduler_plugin = JobQueuePlugin()
+        self.cluster.scheduler.add_plugin(self._scheduler_plugin)
+        self.pending_jobs = self._scheduler_plugin.pending_jobs
+        self.running_jobs = self._scheduler_plugin.running_jobs
+        self.finished_jobs = self._scheduler_plugin.finished_jobs
+
+        # counter to keep track of how many jobs have been submitted
+        self._n = 0
+
         # Keep information on process, threads and memory, for use in
         # subclasses
         self.worker_memory = parse_bytes(memory)
@@ -122,7 +175,6 @@ class JobQueueCluster(Cluster):
         self.worker_threads = threads
         self.name = name
 
-        self.n = 0
         self._adaptive = None
 
         self._env_header = '\n'.join(env_extra)
@@ -137,11 +189,9 @@ class JobQueueCluster(Cluster):
         if memory is not None:
             self._command_template += " --memory-limit %s" % memory
         if name is not None:
-            # worker names follow this template: {NAME}-{JOB_ID}-{WORKER_NUM}
+            # worker names follow this template: {NAME}-{JOB_ID}
             self._command_template += " --name %s" % name  # e.g. "dask-worker"
-            # Keep %(n) to be replaced later (worker id on this job)
-            # ${JOB_ID} is an environment variable describing this job
-            self._command_template += "-${JOB_ID}-%(n)d"
+            self._command_template += "-${JOB_ID}"
         if death_timeout is not None:
             self._command_template += " --death-timeout %s" % death_timeout
         if local_directory is not None:
@@ -151,8 +201,8 @@ class JobQueueCluster(Cluster):
 
     def job_script(self):
         """ Construct a job submission script """
-        self.n += 1
-        template = self._command_template % {'n': self.n}
+        self._n += 1
+        template = self._command_template % {'n': self._n}
         return self._script_template % {'job_header': self.job_header,
                                         'env_header': self._env_header,
                                         'worker_command': template}
@@ -167,14 +217,12 @@ class JobQueueCluster(Cluster):
 
     def start_workers(self, n=1):
         """ Start workers and point them to our local scheduler """
-        job_ids = []
         num_jobs = math.ceil(n / self.worker_processes)
         for _ in range(num_jobs):
             with self.job_file() as fn:
                 out = self._call(shlex.split(self.submit_command) + [fn])
                 job = self._job_id_from_submit_output(out.decode())
-                job_ids.append(job)
-        return job_ids
+                self.pending_jobs[job] = Job(job, status='pending')
 
     @property
     def scheduler(self):
@@ -231,7 +279,9 @@ class JobQueueCluster(Cluster):
 
     def scale_up(self, n, **kwargs):
         """ Brings total worker count up to ``n`` """
-        return self.start_workers(n - len(self.scheduler.workers))
+        pending_workers = self.worker_processes * len(self.pending_jobs)
+        active_and_pending = len(self.scheduler.workers) + pending_workers
+        return self.start_workers(n - active_and_pending)
 
     def scale_down(self, workers):
         ''' Close the workers with the given addresses '''
@@ -256,8 +306,3 @@ class JobQueueCluster(Cluster):
                                   'implemented when JobQueueCluster is '
                                   'inherited. It should convert the stdout '
                                   'from submit_command to the job id')
-
-
-def _job_id_from_worker_name(name):
-    ''' utility to parse the job ID from the worker name'''
-    return name.split('-')[-2]
