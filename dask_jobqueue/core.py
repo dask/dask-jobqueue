@@ -36,9 +36,9 @@ class Job(object):
             workers = []
         self.workers = workers
 
-    def update(self, workers=None, status=None):
-        if workers is not None:
-            self.workers.extend(workers)
+    def update(self, worker=None, status=None):
+        if worker is not None:
+            self.workers.append(worker)
         if status is not None:
             self.status = status
 
@@ -55,13 +55,17 @@ class JobQueuePlugin(SchedulerPlugin):
 
     def add_worker(self, scheduler, worker=None, name=None, **kwargs):
         job_id = _job_id_from_worker_name(worker.name)
-        self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
-        self.running_jobs[job_id].update(workers=[worker], status='running')
+        if job_id not in self.running_jobs:
+            self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
+        self.running_jobs[job_id].update(worker=worker, status='running')
 
     def remove_worker(self, scheduler=None, worker=None, **kwargs):
         job_id = _job_id_from_worker_name(worker.name)
-        self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
+        if job_id not in self.finished_jobs:
+            self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
         self.finished_jobs[job_id].update(status='finished')
+        if self.finished_jobs[job_id].workers:
+            self.finished_jobs[job_id].workers = []
 
 
 @docstrings.get_sectionsf('JobQueueCluster')

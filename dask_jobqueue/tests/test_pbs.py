@@ -102,14 +102,23 @@ def test_basic(loop):
 
 @pytest.mark.env("pbs")  # noqa: F811
 def test_adaptive(loop):
-    with PBSCluster(walltime='00:02:00', processes=1, threads=2, memory='2GB', local_directory='/tmp',
-                    job_extra=['-V'], loop=loop) as cluster:
+    with PBSCluster(walltime='00:02:00', processes=1, threads=2, memory='2GB',
+                    local_directory='/tmp', ob_extra=['-V'],
+                    loop=loop) as cluster:
         cluster.adapt()
         with Client(cluster) as client:
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(60) == 11
 
-            assert cluster.jobs
+            start = time()
+            while not len(cluster.pending_jobs):
+                sleep(0.100)
+                assert time() < start + 10
+
+            start = time()
+            while not len(cluster.running_jobs):
+                sleep(0.100)
+                assert time() < start + 10
 
             start = time()
             processes = cluster.worker_processes
@@ -124,9 +133,46 @@ def test_adaptive(loop):
                 sleep(0.100)
                 assert time() < start + 10
 
-            # There is probably a bug to fix in the adaptive methods of the JobQueueCluster
-            # Currently cluster.jobs is not cleaned up.
-            #start = time()
-            #while cluster.jobs:
-            #    sleep(0.100)
-            #    assert time() < start + 10
+            start = time()
+            while cluster.pending_jobs or cluster.running_jobs:
+                sleep(0.100)
+                assert time() < start + 10
+
+
+@pytest.mark.env("pbs")  # noqa: F811
+def test_adaptive_grouped(loop):
+    with PBSCluster(walltime='00:02:00', processes=2, threads=1, memory='2GB',
+                    local_directory='/tmp', ob_extra=['-V'],
+                    loop=loop) as cluster:
+        cluster.adapt(minimum=1)
+        with Client(cluster) as client:
+            future = client.submit(lambda x: x + 1, 10)
+            assert future.result(60) == 11
+
+            start = time()
+            while not len(cluster.pending_jobs):
+                sleep(0.100)
+                assert time() < start + 10
+
+            start = time()
+            while not len(cluster.running_jobs):
+                sleep(0.100)
+                assert time() < start + 10
+
+            start = time()
+            processes = cluster.worker_processes
+            while len(client.scheduler_info()['workers']) != processes:
+                sleep(0.1)
+                assert time() < start + 10
+
+            del future
+
+            start = time()
+            while len(client.scheduler_info()['workers']) > 0:
+                sleep(0.100)
+                assert time() < start + 10
+
+            start = time()
+            while cluster.pending_jobs or cluster.running_jobs:
+                sleep(0.100)
+                assert time() < start + 10
