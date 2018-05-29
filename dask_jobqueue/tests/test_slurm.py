@@ -94,7 +94,7 @@ def test_basic(loop):
             workers = cluster.start_workers(2)
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(60) == 11
-            assert cluster.jobs
+            assert cluster.running_jobs
 
             info = client.scheduler_info()
             w = list(info['workers'].values())[0]
@@ -108,7 +108,7 @@ def test_basic(loop):
                 sleep(0.100)
                 assert time() < start + 10
 
-            assert not cluster.jobs
+            assert not cluster.running_jobs
 
 
 @pytest.mark.env("slurm")  # noqa: F811

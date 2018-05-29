@@ -279,12 +279,17 @@ class JobQueueCluster(Cluster):
         if not workers:
             return
         jobs = {_job_id_from_worker_name(w.name) for w in workers}
+        self.stop_jobs(jobs)
+
+    def stop_jobs(self, jobs):
+        """ Stop a list of jobs"""
         self._call([self.cancel_command] + list(jobs))
 
     def scale_up(self, n, **kwargs):
         """ Brings total worker count up to ``n`` """
-        active_and_pending = (self.worker_processes *
-                              (self.pending_jobs + self.running_jobs))
+        active_and_pending = sum([len(j.workers) for j in
+                                  self.running_jobs.values()])
+        active_and_pending += self.worker_processes * self.pending_jobs
         return self.start_workers(n - active_and_pending)
 
     def scale_down(self, workers):
@@ -302,7 +307,8 @@ class JobQueueCluster(Cluster):
         return self
 
     def __exit__(self, type, value, traceback):
-        self.stop_workers(self.pending_jobs + self.running_jobs)
+        jobs = list(self.pending_jobs.keys()) + list(self.running_jobs.keys())
+        self.stop_jobs(jobs)
         self.cluster.__exit__(type, value, traceback)
 
     def _job_id_from_submit_output(self, out):
