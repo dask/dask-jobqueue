@@ -78,8 +78,7 @@ class JobQueuePlugin(SchedulerPlugin):
             raise ValueError('did not find a job that owned this worker')
 
         # remove worker from dict of workers on this job id
-        if worker in self.running_jobs[job_id].workers:
-            del self.running_jobs[job_id].workers[worker]
+        del self.running_jobs[job_id].workers[worker]
 
         # if there are no more workers, move job to finished status
         if not self.running_jobs[job_id].workers:
