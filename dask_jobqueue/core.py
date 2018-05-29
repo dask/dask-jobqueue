@@ -68,17 +68,15 @@ class JobQueuePlugin(SchedulerPlugin):
 
     def remove_worker(self, scheduler=None, worker=None, **kwargs):
         ''' Run when a worker leaves the cluster'''
-
-        job_id = None
+        # the worker may have already been removed from the scheduler so we
+        # need to check in running_jobs for a job that has this worker
         for job_id, job in self.running_jobs.items():
             if worker in job.workers:
+                # remove worker from dict of workers on this job id
+                del self.running_jobs[job_id].workers[worker]
                 break
-
-        if job_id is None:
+        else:
             raise ValueError('did not find a job that owned this worker')
-
-        # remove worker from dict of workers on this job id
-        del self.running_jobs[job_id].workers[worker]
 
         # if there are no more workers, move job to finished status
         if not self.running_jobs[job_id].workers:
