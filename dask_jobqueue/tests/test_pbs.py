@@ -103,7 +103,7 @@ def test_basic(loop):
 @pytest.mark.env("pbs")  # noqa: F811
 def test_adaptive(loop):
     with PBSCluster(walltime='00:02:00', processes=1, threads=2, memory='2GB',
-                    local_directory='/tmp', ob_extra=['-V'],
+                    local_directory='/tmp', job_extra=['-V'],
                     loop=loop) as cluster:
         cluster.adapt()
         with Client(cluster) as client:
@@ -142,7 +142,7 @@ def test_adaptive(loop):
 @pytest.mark.env("pbs")  # noqa: F811
 def test_adaptive_grouped(loop):
     with PBSCluster(walltime='00:02:00', processes=2, threads=1, memory='2GB',
-                    local_directory='/tmp', ob_extra=['-V'],
+                    local_directory='/tmp', job_extra=['-V'],
                     loop=loop) as cluster:
         cluster.adapt(minimum=1)
         with Client(cluster) as client:

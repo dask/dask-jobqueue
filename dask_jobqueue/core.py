@@ -61,11 +61,11 @@ class JobQueuePlugin(SchedulerPlugin):
 
     def remove_worker(self, scheduler=None, worker=None, **kwargs):
         job_id = _job_id_from_worker_name(worker.name)
-        if job_id not in self.finished_jobs:
+        if self.running_jobs[job_id].workers:
+            self.running_jobs[job_id].workers.remove(worker)
+        if not self.running_jobs[job_id].workers:
             self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
-        self.finished_jobs[job_id].update(status='finished')
-        if self.finished_jobs[job_id].workers:
-            self.finished_jobs[job_id].workers = []
+            self.finished_jobs[job_id].update(status='finished')
 
 
 @docstrings.get_sectionsf('JobQueueCluster')
@@ -206,10 +206,10 @@ class JobQueueCluster(Cluster):
     def job_script(self):
         """ Construct a job submission script """
         self._n += 1
-        template = self._command_template % {'n': self._n}
-        return self._script_template % {'job_header': self.job_header,
-                                        'env_header': self._env_header,
-                                        'worker_command': template}
+        pieces = {'job_header': self.job_header,
+                  'env_header': self._env_header,
+                  'worker_command': self._command_template}
+        return self._script_template % pieces
 
     @contextmanager
     def job_file(self):
@@ -283,8 +283,8 @@ class JobQueueCluster(Cluster):
 
     def scale_up(self, n, **kwargs):
         """ Brings total worker count up to ``n`` """
-        pending_workers = self.worker_processes * len(self.pending_jobs)
-        active_and_pending = len(self.scheduler.workers) + pending_workers
+        active_and_pending = (self.worker_processes *
+                              (self.pending_jobs + self.running_jobs))
         return self.start_workers(n - active_and_pending)
 
     def scale_down(self, workers):
@@ -302,7 +302,7 @@ class JobQueueCluster(Cluster):
         return self
 
     def __exit__(self, type, value, traceback):
-        self.stop_workers(self.scheduler.workers)
+        self.stop_workers(self.pending_jobs + self.running_jobs)
         self.cluster.__exit__(type, value, traceback)
 
     def _job_id_from_submit_output(self, out):
