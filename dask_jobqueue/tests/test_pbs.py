@@ -79,13 +79,14 @@ def test_job_script():
 
 @pytest.mark.env("pbs")  # noqa: F811
 def test_basic(loop):
-    with PBSCluster(walltime='00:02:00', processes=1, threads=2, memory='2GB', local_directory='/tmp',
-                    job_extra=['-V'], loop=loop) as cluster:
+    with PBSCluster(walltime='00:02:00', processes=1, threads=2, memory='2GB',
+                    local_directory='/tmp', job_extra=['-V'],
+                    loop=loop) as cluster:
         with Client(cluster) as client:
             workers = cluster.start_workers(2)
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(60) == 11
-            assert cluster.jobs
+            assert cluster.running_jobs
 
             info = client.scheduler_info()
             w = list(info['workers'].values())[0]
@@ -99,7 +100,7 @@ def test_basic(loop):
                 sleep(0.100)
                 assert time() < start + 10
 
-            assert not cluster.jobs
+            assert not cluster.running_jobs
 
 
 @pytest.mark.env("pbs")  # noqa: F811
