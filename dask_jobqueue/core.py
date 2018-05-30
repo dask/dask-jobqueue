@@ -16,6 +16,7 @@ from distributed import LocalCluster
 from distributed.deploy import Cluster
 from distributed.utils import get_ip_interface, parse_bytes, tmpfile
 from distributed.diagnostics.plugin import SchedulerPlugin
+from sortedcontainers import SortedDict
 
 dirname = os.path.dirname(sys.executable)
 
@@ -25,20 +26,19 @@ docstrings = docrep.DocstringProcessor()
 
 def _job_id_from_worker_name(name):
     ''' utility to parse the job ID from the worker name'''
-    return name.split('-')[-1]
+    return name.split('-')[-2]
 
 
 class Job(object):
-    def __init__(self, job_id, workers=None, status=None):
+    def __init__(self, job_id, status=None):
         self.job_id = job_id
         self.status = status
-        if workers is None:
-            workers = []
-        self.workers = workers
+        self.workers = SortedDict()
 
     def update(self, worker=None, status=None):
+        ''' update the status this job'''
         if worker is not None:
-            self.workers.append(worker)
+            self.workers[worker.address] = worker
         if status is not None:
             self.status = status
 
@@ -54,15 +54,31 @@ class JobQueuePlugin(SchedulerPlugin):
         self.finished_jobs = OrderedDict()
 
     def add_worker(self, scheduler, worker=None, name=None, **kwargs):
-        job_id = _job_id_from_worker_name(worker.name)
+        ''' Run when a new worker enters the cluster'''
+        w = scheduler.workers[worker]
+        job_id = _job_id_from_worker_name(w.name)
+
+        # if this is the first worker for this job, move job to running
         if job_id not in self.running_jobs:
             self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
-        self.running_jobs[job_id].update(worker=worker, status='running')
+            self.running_jobs[job_id].update(status='running')
+
+        # add worker to dict of workers in this job
+        self.running_jobs[job_id].update(worker=w)
 
     def remove_worker(self, scheduler=None, worker=None, **kwargs):
-        job_id = _job_id_from_worker_name(worker.name)
-        if self.running_jobs[job_id].workers:
-            self.running_jobs[job_id].workers.remove(worker)
+        ''' Run when a worker leaves the cluster'''
+        # the worker may have already been removed from the scheduler so we
+        # need to check in running_jobs for a job that has this worker
+        for job_id, job in self.running_jobs.items():
+            if worker in job.workers:
+                # remove worker from dict of workers on this job id
+                del self.running_jobs[job_id].workers[worker]
+                break
+        else:
+            raise ValueError('did not find a job that owned this worker')
+
+        # if there are no more workers, move job to finished status
         if not self.running_jobs[job_id].workers:
             self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
             self.finished_jobs[job_id].update(status='finished')
@@ -289,7 +305,7 @@ class JobQueueCluster(Cluster):
         """ Brings total worker count up to ``n`` """
         active_and_pending = sum([len(j.workers) for j in
                                   self.running_jobs.values()])
-        active_and_pending += self.worker_processes * self.pending_jobs
+        active_and_pending += self.worker_processes * len(self.pending_jobs)
         return self.start_workers(n - active_and_pending)
 
     def scale_down(self, workers):
