@@ -181,12 +181,6 @@ class JobQueueCluster(Cluster):
         # plugin for tracking job status
         self._scheduler_plugin = JobQueuePlugin()
         self.cluster.scheduler.add_plugin(self._scheduler_plugin)
-        self.pending_jobs = self._scheduler_plugin.pending_jobs
-        self.running_jobs = self._scheduler_plugin.running_jobs
-        self.finished_jobs = self._scheduler_plugin.finished_jobs
-
-        # counter to keep track of how many jobs have been submitted
-        self._n = 0
 
         # Keep information on process, threads and memory, for use in
         # subclasses
@@ -210,8 +204,7 @@ class JobQueueCluster(Cluster):
             self._command_template += " --memory-limit %s" % memory
         if name is not None:
             # worker names follow this template: {NAME}-{JOB_ID}
-            self._command_template += " --name %s" % name  # e.g. "dask-worker"
-            self._command_template += "-${JOB_ID}"
+            self._command_template += " --name %s-${JOB_ID}" % name
         if death_timeout is not None:
             self._command_template += " --death-timeout %s" % death_timeout
         if local_directory is not None:
@@ -219,9 +212,23 @@ class JobQueueCluster(Cluster):
         if extra is not None:
             self._command_template += extra
 
+    @property
+    def pending_jobs(self):
+        """ Jobs pending in the queue """
+        return self._scheduler_plugin.pending_jobs
+
+    @property
+    def running_jobs(self):
+        """ Jobs with currenly active workers """
+        return self._scheduler_plugin.running_jobs
+
+    @property
+    def finished_jobs(self):
+        """ Jobs that have finished """
+        return self._scheduler_plugin.finished_jobs
+
     def job_script(self):
         """ Construct a job submission script """
-        self._n += 1
         pieces = {'job_header': self.job_header,
                   'env_header': self._env_header,
                   'worker_command': self._command_template}
@@ -313,7 +320,7 @@ class JobQueueCluster(Cluster):
         workers = []
         for w in workers:
             try:
-                # Get the actual "Worker"
+                # Get the actual WorkerState
                 workers.append(self.scheduler.workers[w])
             except KeyError:
                 logger.debug('worker %s is already gone' % w)
