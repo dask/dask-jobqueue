@@ -317,14 +317,14 @@ class JobQueueCluster(Cluster):
 
     def scale_down(self, workers):
         ''' Close the workers with the given addresses '''
-        workers = []
+        worker_states = []
         for w in workers:
             try:
                 # Get the actual WorkerState
-                workers.append(self.scheduler.workers[w])
+                worker_states.append(self.scheduler.workers[w])
             except KeyError:
                 logger.debug('worker %s is already gone' % w)
-        self.stop_workers(workers)
+        self.stop_workers(worker_states)
 
     def __enter__(self):
         return self
