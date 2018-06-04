@@ -6,8 +6,6 @@ from distributed.utils_test import loop  # noqa: F401
 
 from dask_jobqueue import PBSCluster
 
-pytestmark = pytest.mark.env("pbs")
-
 
 def test_header():
     with PBSCluster(walltime='00:02:00', processes=4, threads=2, memory='7GB') as cluster:

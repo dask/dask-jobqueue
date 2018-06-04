@@ -6,9 +6,8 @@ from distributed.utils_test import loop  # noqa: F401
 
 from dask_jobqueue import SGECluster
 
-pytestmark = pytest.mark.env("sge")
 
-
+@pytest.mark.env("sge")  # noqa: F811
 def test_basic(loop):  # noqa: F811
     with SGECluster(walltime='00:02:00', threads=2, memory='7GB',
                     loop=loop) as cluster:

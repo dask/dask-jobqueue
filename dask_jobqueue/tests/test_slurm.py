@@ -6,8 +6,6 @@ from distributed.utils_test import loop  # noqa: F401
 
 from dask_jobqueue import SLURMCluster
 
-pytestmark = pytest.mark.env("slurm")
-
 
 def test_header():
     with SLURMCluster(walltime='00:02:00', processes=4, threads=2,
