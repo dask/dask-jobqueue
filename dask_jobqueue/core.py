@@ -21,6 +21,7 @@ from sortedcontainers import SortedDict
 dirname = os.path.dirname(sys.executable)
 
 logger = logging.getLogger(__name__)
+logger.setLevel(10)
 docstrings = docrep.DocstringProcessor()
 
 
