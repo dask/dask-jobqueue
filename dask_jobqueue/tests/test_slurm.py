@@ -6,6 +6,8 @@ from distributed.utils_test import loop  # noqa: F401
 
 from dask_jobqueue import SLURMCluster
 
+from . import QUEUE_WAIT
+
 
 def test_header():
     with SLURMCluster(walltime='00:02:00', processes=4, threads=2,
@@ -113,7 +115,7 @@ def test_basic(loop):
             start = time()
             while len(client.scheduler_info()['workers']) > 0:
                 sleep(0.100)
-                assert time() < start + 10
+                assert time() < start + QUEUE_WAIT
 
             assert not cluster.running_jobs
 
@@ -130,27 +132,27 @@ def test_adaptive(loop):
             start = time()
             while not len(cluster.pending_jobs):
                 sleep(0.100)
-                assert time() < start + 10
+                assert time() < start + QUEUE_WAIT
 
             start = time()
             while not len(cluster.running_jobs):
                 sleep(0.100)
-                assert time() < start + 10
+                assert time() < start + QUEUE_WAIT
 
             start = time()
             processes = cluster.worker_processes
             while len(client.scheduler_info()['workers']) != processes:
                 sleep(0.1)
-                assert time() < start + 10
+                assert time() < start + QUEUE_WAIT
 
             del future
 
             start = time()
             while len(client.scheduler_info()['workers']) > 0:
                 sleep(0.100)
-                assert time() < start + 10
+                assert time() < start + QUEUE_WAIT
 
             start = time()
             while cluster.pending_jobs or cluster.running_jobs:
                 sleep(0.100)
-                assert time() < start + 10
+                assert time() < start + QUEUE_WAIT

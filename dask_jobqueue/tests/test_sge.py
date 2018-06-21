@@ -6,6 +6,8 @@ from distributed.utils_test import loop  # noqa: F401
 
 from dask_jobqueue import SGECluster
 
+from . import QUEUE_WAIT
+
 
 @pytest.mark.env("sge")  # noqa: F811
 def test_basic(loop):  # noqa: F811
@@ -28,6 +30,6 @@ def test_basic(loop):  # noqa: F811
             start = time()
             while len(client.scheduler_info()['workers']) > 0:
                 sleep(0.100)
-                assert time() < start + 10
+                assert time() < start + QUEUE_WAIT
 
             assert not cluster.running_jobs
