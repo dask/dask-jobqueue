@@ -89,10 +89,10 @@ SLURM Deployment: Low-priority node usage
 
 
     from dask_jobqueue import SLURMCluster
-    cluster = SLURMCluster(processes=6, 
-                           threads=4, 
-                           memory="16GB", 
-                           project="co_laika", 
+    cluster = SLURMCluster(processes=6,
+                           threads=4,
+                           memory="16GB",
+                           project="co_laika",
                            queue='savio2_bigmem',
                            env_extra=['export LANG="en_US.utf8"',
                                       'export LANGUAGE="en_US.utf8"',
@@ -130,3 +130,5 @@ SSH tunneling.
     $ ssh -fN your-login@scheduler-ip-address -L port-number:localhost:port-number
     # As applied to this example:
     $ ssh -fN username@172.16.23.102 -L 8787:localhost:8787
+
+Now, you can go to ``http://localhost:8787`` on your browser to view the dashboard.
