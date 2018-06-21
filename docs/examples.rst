@@ -48,11 +48,23 @@ can be used, called ``MoabCluster``:
                          resource_spec='pmem=96G',
                          job_extra=['-d /home/First.Last', '-M none'],
                          local_directory=os.getenv('TMPDIR', '/tmp'))
-                        
+
 SGE Deployments
 ---------------
 
 Examples welcome `here <https://github.com/dask/dask-jobqueue/issues/40>`_
+
+On systems which use SGE as the scheduler, ```SGECluster`` can be used:
+
+.. code-block:: python
+
+    from dask_jobqueue import SGECluster
+
+
+    cluster = SGECluster(queue='default.q',
+                         walltime="1500000",
+                         processes=10,
+                         memory='20GB')
 
 SLURM Deployments
 -----------------
