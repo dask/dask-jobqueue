@@ -11,6 +11,8 @@ def test_header():
     with SLURMCluster(walltime='00:02:00', processes=4, threads=2,
                       memory='7GB') as cluster:
 
+        print(cluster.job_header)
+
         assert '#SBATCH' in cluster.job_header
         assert '#SBATCH -J dask-worker' in cluster.job_header
         assert '#SBATCH -n 1' in cluster.job_header
@@ -20,18 +22,22 @@ def test_header():
         assert '#SBATCH -p' not in cluster.job_header
         assert '#SBATCH -A' not in cluster.job_header
 
-    with SLURMCluster(queue='regular', project='DaskOnPBS', processes=4,
+    with SLURMCluster(queue='regular', project='DaskOnSlurm', processes=4,
                       threads=2, memory='7GB',
                       job_cpu=16, job_mem='100G') as cluster:
+
+        print(cluster.job_header)
 
         assert '#SBATCH --cpus-per-task=16' in cluster.job_header
         assert '#SBATCH --cpus-per-task=8' not in cluster.job_header
         assert '#SBATCH --mem=100G' in cluster.job_header
         assert '#SBATCH -t ' in cluster.job_header
-        assert '#SBATCH -A DaskOnPBS' in cluster.job_header
+        assert '#SBATCH -A DaskOnSlurm' in cluster.job_header
         assert '#SBATCH -p regular' in cluster.job_header
 
     with SLURMCluster() as cluster:
+
+        print(cluster.job_header)
 
         assert '#SBATCH' in cluster.job_header
         assert '#SBATCH -J ' in cluster.job_header
