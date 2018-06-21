@@ -59,6 +59,7 @@ class JobQueuePlugin(SchedulerPlugin):
         job_id = _job_id_from_worker_name(w.name)
 
         # if this is the first worker for this job, move job to running
+        print(self.running_jobs)
         if job_id not in self.running_jobs:
             self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
             self.running_jobs[job_id].update(status='running')
@@ -74,14 +75,13 @@ class JobQueuePlugin(SchedulerPlugin):
             if worker in job.workers:
                 # remove worker from dict of workers on this job id
                 del self.running_jobs[job_id].workers[worker]
-                break
-        else:
-            raise ValueError('did not find a job that owned this worker')
 
-        # if there are no more workers, move job to finished status
-        if not self.running_jobs[job_id].workers:
-            self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
-            self.finished_jobs[job_id].update(status='finished')
+                # if there are no more workers, move job to finished status
+                if not self.running_jobs[job_id].workers:
+                    self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
+                    self.finished_jobs[job_id].update(status='finished')
+
+                break
 
 
 @docstrings.get_sectionsf('JobQueueCluster')
