@@ -26,6 +26,7 @@ docstrings = docrep.DocstringProcessor()
 
 def _job_id_from_worker_name(name):
     ''' utility to parse the job ID from the worker name'''
+    print('_job_id_from_worker_name: ', name)
     return name.split('-')[-2]
 
 
