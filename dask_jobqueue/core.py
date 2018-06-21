@@ -306,7 +306,8 @@ class JobQueueCluster(Cluster):
 
     def stop_jobs(self, jobs):
         """ Stop a list of jobs"""
-        self._call([self.cancel_command] + list(jobs))
+        if jobs:
+            self._call([self.cancel_command] + list(jobs))
 
     def scale_up(self, n, **kwargs):
         """ Brings total worker count up to ``n`` """
