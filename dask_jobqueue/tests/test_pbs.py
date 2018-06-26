@@ -71,7 +71,7 @@ def test_job_script():
         assert '#PBS -l walltime=' in job_script
         assert '#PBS -A DaskOnPBS' in job_script
 
-        assert '/dask-worker tcp://' in job_script
+        assert 'dask-worker tcp://' in job_script
         assert '--nthreads 2 --nprocs 4 --memory-limit 7GB' in job_script
 
 
