@@ -83,13 +83,13 @@ def test_basic(loop):
                     local_directory='/tmp', job_extra=['-V'],
                     loop=loop) as cluster:
         with Client(cluster) as client:
-            workers = cluster.start_workers(2)
+            cluster.start_workers(2)
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
             assert cluster.running_jobs
 
-            info = client.scheduler_info()
-            w = list(info['workers'].values())[0]
+            workers = list(client.scheduler_info()['workers'].values())
+            w = workers[0]
             assert w['memory_limit'] == 2e9
             assert w['ncores'] == 2
 
