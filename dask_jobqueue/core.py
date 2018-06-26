@@ -12,7 +12,10 @@ from distributed import LocalCluster
 from distributed.deploy import Cluster
 from distributed.utils import get_ip_interface, ignoring, parse_bytes, tmpfile
 
-dirname = os.path.dirname(sys.executable)
+worker_bin_path = (
+    '%(python)s -m distributed.cli.dask_worker'
+    % dict(python=sys.executable)
+)
 
 logger = logging.getLogger(__name__)
 docstrings = docrep.DocstringProcessor()
@@ -124,8 +127,8 @@ class JobQueueCluster(Cluster):
         self._env_header = '\n'.join(env_extra)
 
         # dask-worker command line build
-        self._command_template = os.path.join(
-            dirname, 'dask-worker %s' % self.scheduler.address)
+        self._command_template = ' '.join([
+            worker_bin_path, '%s' % self.scheduler.address])
         if threads is not None:
             self._command_template += " --nthreads %d" % threads
         if processes is not None:

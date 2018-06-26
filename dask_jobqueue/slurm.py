@@ -11,8 +11,6 @@ from .core import JobQueueCluster, docstrings
 
 logger = logging.getLogger(__name__)
 
-dirname = os.path.dirname(sys.executable)
-
 
 class SLURMCluster(JobQueueCluster):
     __doc__ = docstrings.with_indents(""" Launch Dask on a SLURM cluster
