@@ -15,13 +15,13 @@ def test_basic(loop):  # noqa: F811
                     loop=loop) as cluster:
         print(cluster.job_script())
         with Client(cluster, loop=loop) as client:
-            workers = cluster.start_workers(2)
+            cluster.start_workers(2)
             future = client.submit(lambda x: x + 1, 10)
-            assert future.result(60) == 11
+            assert future.result(QUEUE_WAIT) == 11
             assert cluster.running_jobs
 
-            info = client.scheduler_info()
-            w = list(info['workers'].values())[0]
+            workers = list(client.scheduler_info()['workers'].values())
+            w = workers[0]
             assert w['memory_limit'] == 7e9
             assert w['ncores'] == 2
 

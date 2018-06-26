@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import logging
 import math
-import os
 import shlex
 import socket
 import subprocess
@@ -18,17 +17,21 @@ from distributed.utils import get_ip_interface, parse_bytes, tmpfile
 from distributed.diagnostics.plugin import SchedulerPlugin
 from sortedcontainers import SortedDict
 
-dirname = os.path.dirname(sys.executable)
-
 logger = logging.getLogger(__name__)
 logger.setLevel(10)
 docstrings = docrep.DocstringProcessor()
 
 
 def _job_id_from_worker_name(name):
-    ''' utility to parse the job ID from the worker name'''
-    print('_job_id_from_worker_name: ', name)
-    return name.split('-')[-2]
+    ''' utility to parse the job ID from the worker name
+
+    template: 'prefix-jobid[-proc]'
+    '''
+    pieces = name.split('-')
+    if len(pieces) == 2:
+        return pieces[-1]
+    else:
+        return pieces[-2]
 
 
 class Job(object):
@@ -61,8 +64,10 @@ class JobQueuePlugin(SchedulerPlugin):
         job_id = _job_id_from_worker_name(w.name)
 
         # if this is the first worker for this job, move job to running
-        print(self.running_jobs)
         if job_id not in self.running_jobs:
+            if job_id not in self.pending_jobs:
+                raise KeyError(
+                    '%s not in pending jobs: %s' % (job_id, self.pending_jobs))
             self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
             self.running_jobs[job_id].update(status='running')
 
@@ -169,6 +174,9 @@ class JobQueueCluster(Cluster):
             raise NotImplementedError('JobQueueCluster is an abstract class '
                                       'that should not be instanciated.')
 
+        if '-' in name:
+            raise ValueError('name (%s) can not include the `-` character')
+
         # This attribute should be overriden
         self.job_header = None
 
@@ -186,7 +194,7 @@ class JobQueueCluster(Cluster):
 
         # Keep information on process, threads and memory, for use in
         # subclasses
-        self.worker_memory = parse_bytes(memory)
+        self.worker_memory = parse_bytes(memory) if memory is not None else None
         self.worker_processes = processes
         self.worker_threads = threads
         self.name = name
@@ -196,8 +204,9 @@ class JobQueueCluster(Cluster):
         self._env_header = '\n'.join(env_extra)
 
         # dask-worker command line build
-        self._command_template = os.path.join(
-            dirname, 'dask-worker %s' % self.scheduler.address)
+        dask_worker_command = (
+            '%(python)s -m distributed.cli.dask_worker' % dict(python=sys.executable))
+        self._command_template = ' '.join([dask_worker_command, self.scheduler.address])
         if threads is not None:
             self._command_template += " --nthreads %d" % threads
         if processes is not None:
@@ -251,7 +260,8 @@ class JobQueueCluster(Cluster):
             with self.job_file() as fn:
                 out = self._call(shlex.split(self.submit_command) + [fn])
                 job = self._job_id_from_submit_output(out.decode())
-                self.pending_jobs[job] = Job(job, status='pending')
+                self._scheduler_plugin.pending_jobs[job] = Job(
+                    job, status='pending')
 
     @property
     def scheduler(self):
@@ -303,7 +313,12 @@ class JobQueueCluster(Cluster):
         """ Stop a list of workers"""
         if not workers:
             return
-        jobs = {_job_id_from_worker_name(w.name) for w in workers}
+        jobs = []
+        for w in workers:
+            if isinstance(w, dict):
+                jobs.append(_job_id_from_worker_name(w['name']))
+            else:
+                jobs.append(_job_id_from_worker_name(w.name))
         self.stop_jobs(jobs)
 
     def stop_jobs(self, jobs):
@@ -316,7 +331,7 @@ class JobQueueCluster(Cluster):
         active_and_pending = sum([len(j.workers) for j in
                                   self.running_jobs.values()])
         active_and_pending += self.worker_processes * len(self.pending_jobs)
-        return self.start_workers(n - active_and_pending)
+        self.start_workers(n - active_and_pending)
 
     def scale_down(self, workers):
         ''' Close the workers with the given addresses '''

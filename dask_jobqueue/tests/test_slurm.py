@@ -1,6 +1,7 @@
 from time import sleep, time
 
 import pytest
+import sys
 from distributed import Client
 from distributed.utils_test import loop  # noqa: F401
 
@@ -12,11 +13,8 @@ from . import QUEUE_WAIT
 def test_header():
     with SLURMCluster(walltime='00:02:00', processes=4, threads=2,
                       memory='7GB') as cluster:
-
-        print(cluster.job_header)
-
         assert '#SBATCH' in cluster.job_header
-        assert '#SBATCH -J dask-worker' in cluster.job_header
+        assert '#SBATCH -J dask_worker' in cluster.job_header
         assert '#SBATCH -n 1' in cluster.job_header
         assert '#SBATCH --cpus-per-task=8' in cluster.job_header
         assert '#SBATCH --mem=27G' in cluster.job_header
@@ -27,9 +25,6 @@ def test_header():
     with SLURMCluster(queue='regular', project='DaskOnSlurm', processes=4,
                       threads=2, memory='7GB',
                       job_cpu=16, job_mem='100G') as cluster:
-
-        print(cluster.job_header)
-
         assert '#SBATCH --cpus-per-task=16' in cluster.job_header
         assert '#SBATCH --cpus-per-task=8' not in cluster.job_header
         assert '#SBATCH --mem=100G' in cluster.job_header
@@ -38,9 +33,6 @@ def test_header():
         assert '#SBATCH -p regular' in cluster.job_header
 
     with SLURMCluster() as cluster:
-
-        print(cluster.job_header)
-
         assert '#SBATCH' in cluster.job_header
         assert '#SBATCH -J ' in cluster.job_header
         assert '#SBATCH -n 1' in cluster.job_header
@@ -58,7 +50,7 @@ def test_job_script():
         job_script = cluster.job_script()
         print(job_script)
         assert '#SBATCH' in job_script
-        assert '#SBATCH -J dask-worker' in job_script
+        assert '#SBATCH -J dask_worker' in job_script
         assert '#SBATCH -n 1' in job_script
         assert '#SBATCH --cpus-per-task=8' in job_script
         assert '#SBATCH --mem=27G' in job_script
@@ -68,7 +60,7 @@ def test_job_script():
 
         assert 'export ' not in job_script
 
-        assert '/dask-worker tcp://' in job_script
+        assert '{} -m distributed.cli.dask_worker tcp://'.format(sys.executable) in job_script
         assert '--nthreads 2 --nprocs 4 --memory-limit 7GB' in job_script
 
     with SLURMCluster(walltime='00:02:00', processes=4, threads=2,
@@ -79,7 +71,7 @@ def test_job_script():
                       ) as cluster:
         job_script = cluster.job_script()
         assert '#SBATCH' in job_script
-        assert '#SBATCH -J dask-worker' in job_script
+        assert '#SBATCH -J dask_worker' in job_script
         assert '#SBATCH -n 1' in job_script
         assert '#SBATCH --cpus-per-task=8' in job_script
         assert '#SBATCH --mem=27G' in job_script
@@ -91,7 +83,7 @@ def test_job_script():
         assert 'export LANGUAGE="en_US.utf8"' in job_script
         assert 'export LC_ALL="en_US.utf8"' in job_script
 
-        assert '/dask-worker tcp://' in job_script
+        assert '{} -m distributed.cli.dask_worker tcp://'.format(sys.executable) in job_script
         assert '--nthreads 2 --nprocs 4 --memory-limit 7GB' in job_script
 
 
@@ -100,13 +92,13 @@ def test_basic(loop):
     with SLURMCluster(walltime='00:02:00', threads=2, processes=1,
                       memory='4GB', job_extra=['-D /'], loop=loop) as cluster:
         with Client(cluster) as client:
-            workers = cluster.start_workers(2)
+            cluster.start_workers(2)
             future = client.submit(lambda x: x + 1, 10)
-            assert future.result(60) == 11
+            assert future.result(QUEUE_WAIT) == 11
             assert cluster.running_jobs
 
-            info = client.scheduler_info()
-            w = list(info['workers'].values())[0]
+            workers = list(client.scheduler_info()['workers'].values())
+            w = workers[0]
             assert w['memory_limit'] == 4e9
             assert w['ncores'] == 2
 
@@ -127,7 +119,7 @@ def test_adaptive(loop):
         cluster.adapt()
         with Client(cluster) as client:
             future = client.submit(lambda x: x + 1, 10)
-            assert future.result(60) == 11
+            assert future.result(QUEUE_WAIT) == 11
 
             start = time()
             while not len(cluster.pending_jobs):
