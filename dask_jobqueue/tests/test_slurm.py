@@ -77,7 +77,7 @@ def test_job_script():
         assert 'export LANGUAGE="en_US.utf8"' in job_script
         assert 'export LC_ALL="en_US.utf8"' in job_script
 
-        assert '/dask-worker tcp://' in job_script
+        assert 'dask-worker tcp://' in job_script
         assert '--nthreads 2 --nprocs 4 --memory-limit 7GB' in job_script
 
 
