@@ -312,7 +312,12 @@ class JobQueueCluster(Cluster):
         """ Stop a list of workers"""
         if not workers:
             return
-        jobs = {_job_id_from_worker_name(w.name) for w in workers}
+        jobs = []
+        for w in workers:
+            if isinstance(w, dict):
+                jobs.append(_job_id_from_worker_name(w['name']))
+            else:
+                jobs.append(_job_id_from_worker_name(w.name))
         self.stop_jobs(jobs)
 
     def stop_jobs(self, jobs):
