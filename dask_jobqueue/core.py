@@ -312,11 +312,9 @@ class JobQueueCluster(Cluster):
 
     def stop_workers(self, workers):
         """ Stop a list of workers"""
-        print('stop_workers', workers)
         if not workers:
             return
         jobs = {_job_id_from_worker_name(w.name) for w in workers}
-        print('jobs to stop', jobs)
         self.stop_jobs(jobs)
 
     def stop_jobs(self, jobs):
@@ -329,7 +327,7 @@ class JobQueueCluster(Cluster):
         active_and_pending = sum([len(j.workers) for j in
                                   self.running_jobs.values()])
         active_and_pending += self.worker_processes * len(self.pending_jobs)
-        return self.start_workers(n - active_and_pending)
+        self.start_workers(n - active_and_pending)
 
     def scale_down(self, workers):
         ''' Close the workers with the given addresses '''
