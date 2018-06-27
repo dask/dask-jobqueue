@@ -15,7 +15,6 @@ from distributed import LocalCluster
 from distributed.deploy import Cluster
 from distributed.utils import get_ip_interface, parse_bytes, tmpfile
 from distributed.diagnostics.plugin import SchedulerPlugin
-from sortedcontainers import SortedDict
 
 logger = logging.getLogger(__name__)
 logger.setLevel(10)
@@ -28,28 +27,11 @@ def _job_id_from_worker_name(name):
     template: 'prefix-jobid[-proc]'
     '''
     pieces = name.split('-')
+    print(name, pieces)
     if len(pieces) == 2:
         return pieces[-1]
     else:
         return pieces[-2]
-
-
-class Job(object):
-    def __init__(self, job_id, status=None):
-        self.job_id = job_id
-        self.status = status
-        self.workers = SortedDict()
-
-    def update(self, worker=None, status=None):
-        ''' update the status this job'''
-        if worker is not None:
-            self.workers[worker.address] = worker
-        if status is not None:
-            self.status = status
-
-    def __repr__(self):
-        return "<%s: %r, status: %r, workers: %r>" % (
-            self.__class__.__name__, self.job_id, self.status, self.workers)
 
 
 class JobQueuePlugin(SchedulerPlugin):
@@ -57,38 +39,31 @@ class JobQueuePlugin(SchedulerPlugin):
         self.pending_jobs = OrderedDict()
         self.running_jobs = OrderedDict()
         self.finished_jobs = OrderedDict()
+        self.all_workers = {}
 
     def add_worker(self, scheduler, worker=None, name=None, **kwargs):
         ''' Run when a new worker enters the cluster'''
         w = scheduler.workers[worker]
         job_id = _job_id_from_worker_name(w.name)
+        self.all_workers[worker] = (w.name, job_id)
 
         # if this is the first worker for this job, move job to running
         if job_id not in self.running_jobs:
-            if job_id not in self.pending_jobs:
-                raise KeyError(
-                    '%s not in pending jobs: %s' % (job_id, self.pending_jobs))
             self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
-            self.running_jobs[job_id].update(status='running')
 
         # add worker to dict of workers in this job
-        self.running_jobs[job_id].update(worker=w)
+        self.running_jobs[job_id][w.name] = w
 
     def remove_worker(self, scheduler=None, worker=None, **kwargs):
         ''' Run when a worker leaves the cluster'''
-        # the worker may have already been removed from the scheduler so we
-        # need to check in running_jobs for a job that has this worker
-        for job_id, job in self.running_jobs.items():
-            if worker in job.workers:
-                # remove worker from dict of workers on this job id
-                del self.running_jobs[job_id].workers[worker]
+        name, job_id = self.all_workers[worker]
 
-                # if there are no more workers, move job to finished status
-                if not self.running_jobs[job_id].workers:
-                    self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
-                    self.finished_jobs[job_id].update(status='finished')
+        # remove worker from this job
+        del self.running_jobs[job_id][name]
 
-                break
+        # once there are no more workers, move this job to finished_jobs
+        if not self.running_jobs[job_id]:
+            self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
 
 
 @docstrings.get_sectionsf('JobQueueCluster')
@@ -150,19 +125,21 @@ class JobQueueCluster(Cluster):
     # Following class attributes should be overriden by extending classes.
     submit_command = None
     cancel_command = None
+    scheduler_name = ''
     _adaptive_options = {
         'worker_key': lambda ws: _job_id_from_worker_name(ws.name)}
 
     def __init__(self,
-                 name=dask.config.get('jobqueue.name'),
-                 threads=dask.config.get('jobqueue.threads'),
-                 processes=dask.config.get('jobqueue.processes'),
-                 memory=dask.config.get('jobqueue.memory'),
-                 interface=dask.config.get('jobqueue.interface'),
-                 death_timeout=dask.config.get('jobqueue.death-timeout'),
-                 local_directory=dask.config.get('jobqueue.local-directory'),
-                 extra=dask.config.get('jobqueue.extra'),
-                 env_extra=dask.config.get('jobqueue.env-extra'),
+                 name=None,
+                 threads=None,
+                 processes=None,
+                 memory=None,
+                 interface=None,
+                 death_timeout=None,
+                 local_directory=None,
+                 extra=None,
+                 env_extra=None,
+                 walltime=None,
                  **kwargs
                  ):
         """ """
@@ -170,14 +147,34 @@ class JobQueueCluster(Cluster):
         # This initializer should be considered as Abstract, and never used
         # directly.
         # """
-        if not self.cancel_command or not self.submit_command:
+        if not self.scheduler_name:
             raise NotImplementedError('JobQueueCluster is an abstract class '
                                       'that should not be instanciated.')
 
-        if '-' in name:
-            raise ValueError('name (%s) can not include the `-` character')
+        if name is None:
+            name = dask.config.get('jobqueue.%s.name' % self.scheduler_name)
+        if threads is None:
+            threads = dask.config.get('jobqueue.%s.threads' % self.scheduler_name)
+        if processes is None:
+            processes = dask.config.get('jobqueue.%s.processes' % self.scheduler_name)
+        if memory is None:
+            memory = dask.config.get('jobqueue.%s.memory' % self.scheduler_name)
+        if interface is None:
+            interface = dask.config.get('jobqueue.%s.interface' % self.scheduler_name)
+        if death_timeout is None:
+            death_timeout = dask.config.get('jobqueue.%s.death-timeout' % self.scheduler_name)
+        if local_directory is None:
+            local_directory = dask.config.get('jobqueue.%s.local-directory' % self.scheduler_name)
+        if extra is None:
+            extra = dask.config.get('jobqueue.%s.extra' % self.scheduler_name)
+        if env_extra is None:
+            env_extra = dask.config.get('jobqueue.%s.env-extra' % self.scheduler_name)
 
-        # This attribute should be overriden
+        if '-' in name:
+            raise ValueError(
+                'name (%s) can not include the `-` character' % name)
+
+        #This attribute should be overriden
         self.job_header = None
 
         if interface:
@@ -260,8 +257,7 @@ class JobQueueCluster(Cluster):
             with self.job_file() as fn:
                 out = self._call(shlex.split(self.submit_command) + [fn])
                 job = self._job_id_from_submit_output(out.decode())
-                self._scheduler_plugin.pending_jobs[job] = Job(
-                    job, status='pending')
+                self._scheduler_plugin.pending_jobs[job] = {}
 
     @property
     def scheduler(self):

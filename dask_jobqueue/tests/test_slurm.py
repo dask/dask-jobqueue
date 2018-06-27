@@ -93,6 +93,7 @@ def test_basic(loop):
                       memory='4GB', job_extra=['-D /'], loop=loop) as cluster:
         with Client(cluster) as client:
             cluster.start_workers(2)
+            assert cluster.pending_jobs or cluster.running_jobs
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
             assert cluster.running_jobs
