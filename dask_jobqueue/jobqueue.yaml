@@ -20,7 +20,7 @@ jobqueue:
     job-extra: []
 
   sge:
-    name: dask-worker
+    name: dask_worker
 
     # Dask worker options
     threads: 2
@@ -40,7 +40,7 @@ jobqueue:
     resource-spec: null
 
   slurm:
-    name: dask-worker
+    name: dask_worker
 
     # Dask worker options
     threads: 2
@@ -61,7 +61,7 @@ jobqueue:
     job-extra: {}
 
   moab:
-    name: dask-worker
+    name: dask_worker
 
     # Dask worker options
     threads: 2

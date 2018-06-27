@@ -167,7 +167,8 @@ class JobQueueCluster(Cluster):
             env_extra = dask.config.get('jobqueue.%s.env-extra' % self.scheduler_name)
 
         if '-' in name:
-            raise ValueError('name (%s) can not include the `-` character')
+            raise ValueError(
+                'name (%s) can not include the `-` character' % name)
 
         #This attribute should be overriden
         self.job_header = None
