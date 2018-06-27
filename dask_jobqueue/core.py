@@ -38,11 +38,13 @@ class JobQueuePlugin(SchedulerPlugin):
         self.pending_jobs = OrderedDict()
         self.running_jobs = OrderedDict()
         self.finished_jobs = OrderedDict()
+        self.all_workers = {}
 
     def add_worker(self, scheduler, worker=None, name=None, **kwargs):
         ''' Run when a new worker enters the cluster'''
         w = scheduler.workers[worker]
         job_id = _job_id_from_worker_name(w.name)
+        self.all_workers[worker] = (w.name, job_id)
 
         # if this is the first worker for this job, move job to running
         if job_id not in self.running_jobs:
@@ -53,10 +55,10 @@ class JobQueuePlugin(SchedulerPlugin):
 
     def remove_worker(self, scheduler=None, worker=None, **kwargs):
         ''' Run when a worker leaves the cluster'''
-        job_id = _job_id_from_worker_name(worker)
+        name, job_id = self.all_workers[worker]
 
         # remove worker from this job
-        del self.running_jobs[job_id][worker]
+        del self.running_jobs[job_id][name]
 
         # once there are no more workers, move this job to finished_jobs
         if not self.running_jobs[job_id]:
