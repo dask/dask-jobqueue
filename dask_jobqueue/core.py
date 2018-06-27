@@ -26,6 +26,7 @@ def _job_id_from_worker_name(name):
     template: 'prefix-jobid[-proc]'
     '''
     pieces = name.split('-')
+    print(name, pieces)
     if len(pieces) == 2:
         return pieces[-1]
     else:
