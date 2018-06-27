@@ -15,7 +15,6 @@ from distributed import LocalCluster
 from distributed.deploy import Cluster
 from distributed.utils import get_ip_interface, parse_bytes, tmpfile
 from distributed.diagnostics.plugin import SchedulerPlugin
-from sortedcontainers import SortedDict
 
 logger = logging.getLogger(__name__)
 docstrings = docrep.DocstringProcessor()
@@ -33,24 +32,6 @@ def _job_id_from_worker_name(name):
         return pieces[-2]
 
 
-class Job(object):
-    def __init__(self, job_id, status=None):
-        self.job_id = job_id
-        self.status = status
-        self.workers = SortedDict()
-
-    def update(self, worker=None, status=None):
-        ''' update the status this job'''
-        if worker is not None:
-            self.workers[worker.address] = worker
-        if status is not None:
-            self.status = status
-
-    def __repr__(self):
-        return "<%s: %r, status: %r, workers: %r>" % (
-            self.__class__.__name__, self.job_id, self.status, self.workers)
-
-
 class JobQueuePlugin(SchedulerPlugin):
     def __init__(self):
         self.pending_jobs = OrderedDict()
@@ -64,30 +45,21 @@ class JobQueuePlugin(SchedulerPlugin):
 
         # if this is the first worker for this job, move job to running
         if job_id not in self.running_jobs:
-            if job_id not in self.pending_jobs:
-                raise KeyError(
-                    '%s not in pending jobs: %s' % (job_id, self.pending_jobs))
             self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
-            self.running_jobs[job_id].update(status='running')
 
         # add worker to dict of workers in this job
-        self.running_jobs[job_id].update(worker=w)
+        self.running_jobs[job_id][w.name] = w
 
     def remove_worker(self, scheduler=None, worker=None, **kwargs):
         ''' Run when a worker leaves the cluster'''
-        # the worker may have already been removed from the scheduler so we
-        # need to check in running_jobs for a job that has this worker
-        for job_id, job in self.running_jobs.items():
-            if worker in job.workers:
-                # remove worker from dict of workers on this job id
-                del self.running_jobs[job_id].workers[worker]
+        job_id = _job_id_from_worker_name(worker)
 
-                # if there are no more workers, move job to finished status
-                if not self.running_jobs[job_id].workers:
-                    self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
-                    self.finished_jobs[job_id].update(status='finished')
+        # remove worker from this job
+        del self.running_jobs[job_id][worker]
 
-                break
+        # once there are no more workers, move this job to finished_jobs
+        if not self.running_jobs[job_id]:
+            self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
 
 
 @docstrings.get_sectionsf('JobQueueCluster')
@@ -259,8 +231,7 @@ class JobQueueCluster(Cluster):
             with self.job_file() as fn:
                 out = self._call(shlex.split(self.submit_command) + [fn])
                 job = self._job_id_from_submit_output(out.decode())
-                self._scheduler_plugin.pending_jobs[job] = Job(
-                    job, status='pending')
+                self._scheduler_plugin.pending_jobs[job] = {}
 
     @property
     def scheduler(self):

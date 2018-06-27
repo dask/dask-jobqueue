@@ -15,6 +15,7 @@ def test_basic(loop):  # noqa: F811
                     loop=loop) as cluster:
         with Client(cluster, loop=loop) as client:
             cluster.start_workers(2)
+            assert cluster.pending_jobs or cluster.running_jobs
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
             assert cluster.running_jobs
