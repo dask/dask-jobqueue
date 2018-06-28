@@ -89,9 +89,10 @@ class SLURMCluster(JobQueueCluster):
         # and then number of cpu is processes * threads if not set
         header_lines.append('#SBATCH -n 1')
         ncpus = job_cpu
-        if ncpus is None:
+        if ncpus is None and self.worker_processes and self.worker_threads:
             ncpus = self.worker_processes * self.worker_threads
-        header_lines.append('#SBATCH --cpus-per-task=%d' % ncpus)
+        if ncpus is not None:
+            header_lines.append('#SBATCH --cpus-per-task=%d' % ncpus)
         # Memory
         total_memory = job_mem
         if job_mem is None and self.worker_memory is not None:

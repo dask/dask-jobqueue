@@ -3,12 +3,13 @@ jobqueue:
     name: dask-worker
 
     # Dask worker options
-    threads: 2
-    processes: 4
-    memory: 8GB
-    interface: null
-    death-timeout: 60
-    local-directory: null
+    cores: null                 # Total number of cores on a worker node
+    processes: 1                # Number of Python processes to cut up a worker node
+    total_memory: null          # Total amount of memory per worker node
+
+    interface: null             # Network interface to use like eth0 or ib0
+    death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
+    local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
 
     # PBS resource manager options
     queue: null
@@ -19,16 +20,20 @@ jobqueue:
     resource-spec: null
     job-extra: []
 
+    threads: null  # deprecated
+    memory: null  # deprecated
+
   sge:
     name: dask-worker
 
     # Dask worker options
-    threads: 2
-    processes: 4
-    memory: 8GB
-    interface: null
-    death-timeout: 60
-    local-directory: null
+    cores: null                 # Total number of cores on a worker node
+    processes: 1                # Number of Python processes to cut up a worker node
+    total_memory: null          # Total amount of memory per worker node
+
+    interface: null             # Network interface to use like eth0 or ib0
+    death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
+    local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
 
     # SGE resource manager options
     queue: null
@@ -39,16 +44,20 @@ jobqueue:
 
     resource-spec: null
 
+    threads: null  # deprecated
+    memory: null  # deprecated
+
   slurm:
     name: dask-worker
 
     # Dask worker options
-    threads: 2
-    processes: 4
-    memory: 8GB
-    interface: null
-    death-timeout: 60
-    local-directory: null
+    cores: null                 # Total number of cores on a worker node
+    processes: 1                # Number of Python processes to cut up a worker node
+    total_memory: null          # Total amount of memory per worker node
+
+    interface: null             # Network interface to use like eth0 or ib0
+    death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
+    local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
 
     # SLURM resource manager options
     queue: null
@@ -60,16 +69,20 @@ jobqueue:
     job-mem: null
     job-extra: {}
 
+    threads: null  # deprecated
+    memory: null  # deprecated
+
   moab:
     name: dask-worker
 
     # Dask worker options
-    threads: 2
-    processes: 4
-    memory: 8GB
-    interface: null
-    death-timeout: 60
-    local-directory: null
+    cores: null                 # Total number of cores on a worker node
+    processes: 1                # Number of Python processes to cut up a worker node
+    total_memory: null          # Total amount of memory per worker node
+
+    interface: null             # Network interface to use like eth0 or ib0
+    death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
+    local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
 
     # PBS resource manager options
     queue: null
@@ -79,3 +92,6 @@ jobqueue:
     env-extra: []
     resource-spec: null
     job-extra: []
+
+    threads: null  # deprecated
+    memory: null  # deprecated

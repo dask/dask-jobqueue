@@ -9,7 +9,7 @@ from dask_jobqueue import SLURMCluster
 
 
 def test_header():
-    with SLURMCluster(walltime='00:02:00', processes=4, threads=2, memory='7GB') as cluster:
+    with SLURMCluster(walltime='00:02:00', processes=4, cores=8, total_memory='28GB') as cluster:
 
         assert '#SBATCH' in cluster.job_header
         assert '#SBATCH -J dask-worker' in cluster.job_header
@@ -35,19 +35,22 @@ def test_header():
         assert '#SBATCH' in cluster.job_header
         assert '#SBATCH -J ' in cluster.job_header
         assert '#SBATCH -n 1' in cluster.job_header
-        assert '#SBATCH --cpus-per-task=' in cluster.job_header
-        assert '#SBATCH --mem=' in cluster.job_header
+        # assert '#SBATCH --cpus-per-task=' in cluster.job_header
+        # assert '#SBATCH --mem=' in cluster.job_header
         assert '#SBATCH -t ' in cluster.job_header
         assert '#SBATCH -p' not in cluster.job_header
         assert '#SBATCH -A' not in cluster.job_header
 
 
 def test_job_script():
-    with SLURMCluster(walltime='00:02:00', processes=4, threads=2, memory='7GB') as cluster:
+    with SLURMCluster(walltime='00:02:00', processes=4, cores=8,
+                      total_memory='28GB') as cluster:
 
         job_script = cluster.job_script()
         assert '#SBATCH' in job_script
         assert '#SBATCH -J dask-worker' in job_script
+        assert '--nthreads 2 ' in job_script
+        assert '--memory-limit 7.00GB ' in job_script
         assert '#SBATCH -n 1' in job_script
         assert '#SBATCH --cpus-per-task=8' in job_script
         assert '#SBATCH --mem=27G' in job_script
@@ -58,7 +61,7 @@ def test_job_script():
         assert 'export ' not in job_script
 
         assert '{} -m distributed.cli.dask_worker tcp://'.format(sys.executable) in job_script
-        assert '--nthreads 2 --nprocs 4 --memory-limit 7GB' in job_script
+        assert '--nthreads 2 --nprocs 4 --memory-limit 7.00GB' in job_script
 
     with SLURMCluster(walltime='00:02:00', processes=4, threads=2, memory='7GB',
                       env_extra=['export LANG="en_US.utf8"', 'export LANGUAGE="en_US.utf8"',
@@ -79,7 +82,7 @@ def test_job_script():
         assert 'export LC_ALL="en_US.utf8"' in job_script
 
         assert '{} -m distributed.cli.dask_worker tcp://'.format(sys.executable) in job_script
-        assert '--nthreads 2 --nprocs 4 --memory-limit 7GB' in job_script
+        assert '--nthreads 2 --nprocs 4 --memory-limit 7.00GB' in job_script
 
 
 @pytest.mark.env("slurm")  # noqa: F811
