@@ -48,7 +48,26 @@ def test_job_script():
         job_script = cluster.job_script()
         assert '#SBATCH' in job_script
         assert '#SBATCH -J dask-worker' in job_script
-        assert '#SBATCH -n 1' in cluster.job_header
+        assert '#SBATCH -n 1' in job_script
+        assert '#SBATCH --cpus-per-task=8' in job_script
+        assert '#SBATCH --mem=27G' in job_script
+        assert '#SBATCH -t 00:02:00' in job_script
+        assert '#SBATCH -p' not in job_script
+        assert '#SBATCH -A' not in job_script
+
+        assert 'export ' not in job_script
+
+        assert '{} -m distributed.cli.dask_worker tcp://'.format(sys.executable) in job_script
+        assert '--nthreads 2 --nprocs 4 --memory-limit 7GB' in job_script
+
+    with SLURMCluster(walltime='00:02:00', processes=4, threads=2, memory='7GB',
+                      job_nodes=1) as cluster:
+
+        job_script = cluster.job_script()
+        assert '#SBATCH' in job_script
+        assert '#SBATCH -J dask-worker' in job_script
+        assert '#SBATCH -N 1' in job_script
+        assert '#SBATCH --tasks-per-node=1' in job_script
         assert '#SBATCH --cpus-per-task=8' in job_script
         assert '#SBATCH --mem=27G' in job_script
         assert '#SBATCH -t 00:02:00' in job_script
@@ -67,7 +86,7 @@ def test_job_script():
         job_script = cluster.job_script()
         assert '#SBATCH' in job_script
         assert '#SBATCH -J dask-worker' in job_script
-        assert '#SBATCH -n 1' in cluster.job_header
+        assert '#SBATCH -n 1' in job_script
         assert '#SBATCH --cpus-per-task=8' in job_script
         assert '#SBATCH --mem=27G' in job_script
         assert '#SBATCH -t 00:02:00' in job_script
