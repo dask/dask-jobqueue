@@ -27,8 +27,6 @@ Example
    import dask.array as da
    x = ...                   # Dask commands now use these distributed resources
 
-See :doc:`Examples <examples>` for more real-world examples.
-
 
 Adaptivity
 ----------
@@ -68,6 +66,7 @@ cut up a *single* worker node:
         resource_spec='select=1:ncpus=24:mem=100GB',
         queue='regular',
         project='my-project',
+        walltime='02:00:00',
    )
 
 Note that the cores and total_memory keywords above correspond not to your
@@ -77,7 +76,7 @@ method.
 
 .. code-block:: python
 
-   cluster.scale(20)  # ask for twenty nodes
+   cluster.scale(20)  # ask for twenty nodes of the specification provided above
 
 Configuration Files
 ~~~~~~~~~~~~~~~~~~~
@@ -99,16 +98,19 @@ recommend using a configuration file like the following:
        resource-spec: "select=1:ncpus=24:mem=100GB"
        queue: regular
        project: my-project
+       walltime: 02:00:00
+
+See :doc:`Configuration Examples <configurations>` for real-world examples.
 
 If you place this in your ``~/.config/dask/`` directory then Dask-jobqueue will
-use these values by default.  You can then construct a cluster object more
-simply.
+use these values by default.  You can then construct a cluster object without
+keyword arguments and these parameters will be used by default.
 
 .. code-block:: python
 
    cluster = PBSCluster()
 
-If you want you can still override configuration values with keyword arguments
+You can still override configuration values with keyword arguments
 
 .. code-block:: python
 
@@ -120,7 +122,7 @@ section of that configuation file that corresponds to your job scheduler.
 Above we used PBS, but other job schedulers operate the same way.  You should
 be able to share these with colleagues.  If you can convince your IT staff
 you can also place such a file in ``/etc/dask/`` and it will affect all people
-on the cluster.
+on the cluster automatically.
 
 For more information about configuring Dask, see the `Dask configuration
 documentation <http://dask.pydata.org/en/latest/configuration.html>`_
@@ -130,8 +132,9 @@ documentation <http://dask.pydata.org/en/latest/configuration.html>`_
    :maxdepth: 1
    :hidden:
 
+   index.rst
    install.rst
-   examples.rst
+   configurations.rst
    history.rst
    api.rst
 
@@ -144,13 +147,14 @@ object is instantiated:
 .. code-block:: python
 
    cluster = PBSCluster(  # <-- scheduler started here
-        processes=18,
-        threads=4,
-        memory="6GB",
-        project='P48500028',
-        queue='premium',
-        resource_spec='select=1:ncpus=36:mem=109G',
-        walltime='02:00:00'
+        cores=24,
+        total_memory='100GB',
+        processes=6,
+        local_directory='$TMPDIR',
+        resource_spec='select=1:ncpus=24:mem=100GB',
+        queue='regular',
+        project='my-project',
+        walltime='02:00:00',
    )
 
 You then ask for more workers using the ``scale`` command:
@@ -172,13 +176,13 @@ generate as follows:
    #!/bin/bash
 
    #PBS -N dask-worker
-   #PBS -q premium
+   #PBS -q regular
    #PBS -A P48500028
-   #PBS -l select=1:ncpus=36:mem=109G
+   #PBS -l select=1:ncpus=24:mem=100G
    #PBS -l walltime=02:00:00
 
    /home/mrocklin/Software/anaconda/bin/dask-worker tcp://127.0.1.1:43745
-   --nthreads 4 --nprocs 18 --memory-limit 6GB --name dask-worker-3
+   --nthreads 4 --nprocs 6 --memory-limit 18.66GB --name dask-worker-3
    --death-timeout 60
 
 Each of these jobs are sent to the job queue independently and, once that job
