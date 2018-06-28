@@ -85,9 +85,12 @@ class SLURMCluster(JobQueueCluster):
         if project is not None:
             header_lines.append('#SBATCH -A %s' % project)
 
-        # Init resources, always 1 task,
+        # Init resources, always 1 task on 1 node (doing it this
+        # way rather than with the equivalent '-n 1' gives the user
+        # the flexibility to override these settings with job_extra)
+        header_lines.append('#SBATCH -N 1')
+        header_lines.append('#SBATCH --tasks-per-node=1')
         # and then number of cpu is processes * threads if not set
-        header_lines.append('#SBATCH -n 1')
         ncpus = job_cpu
         if ncpus is None:
             ncpus = self.worker_processes * self.worker_threads
