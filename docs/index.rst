@@ -2,20 +2,13 @@
 Dask-Jobqueue
 =============
 
-*Easy deployment of Dask Distributed on job queuing systems like
-PBS, Slurm, and SGE.*
+*Easily deploy Dask on job queuing systems like PBS, Slurm, MOAB, and SGE.*
 
-Motivation
-----------
 
-1. While ``dask.distributed`` offers a flexible library for distributed computing
-   in Python, it is not always easy to deploy on systems that use job queuing
-   systems. Dask-jobqueue provides a Pythonic interface for deploying and
-   managing Dask clusters.
-2. In practice, deploying distributed requires customization, both for the
-   machine(s) that it will deployed on and for the specific application it will
-   be deployed for. Dask-jobqueue provides users with an intuitive interface for
-   customizing dask clusters.
+The Dask-jobqueue project makes it easy to deploy Dask on common job queuing
+systems typically found in high performance supercomputers, academic research
+institutions, and other clusters.  It provides a convenient interface that is
+accessible from interactive systems like Jupyter notebooks, or batch jobs.
 
 Example
 -------
@@ -23,12 +16,16 @@ Example
 .. code-block:: python
 
    from dask_jobqueue import PBSCluster
+   cluster = PBSCluster()
+   cluster.scale(10)         # Ask for ten worker nodes
 
-   cluster = PBSCluster(processes=6, threads=4, memory="16GB")
-   cluster.start_workers(10)
+   # wait for jobs to arrive, depending on the queue, this may take some time
 
    from dask.distributed import Client
-   client = Client(cluster)
+   client = Client(cluster)  # Connect Dask to the worker nodes
+
+   import dask.array as da
+   x = ...                   # Dask commands now use these distributed resources
 
 See :doc:`Examples <examples>` for more real-world examples.
 
@@ -36,13 +33,98 @@ See :doc:`Examples <examples>` for more real-world examples.
 Adaptivity
 ----------
 
-This can also adapt the cluster size dynamically based on current load.
-This helps to scale up the cluster when necessary but scale it down and save
-resources when not actively computing.
+Dask jobqueue can also adapt the cluster size dynamically based on current
+load.  This helps to scale up the cluster when necessary but scale it down and
+save resources when not actively computing.
 
 .. code-block:: python
 
    cluster.adapt(minimum=1, maximum=100)
+
+
+Configuration
+-------------
+
+Dask-jobqueue should be configured to your cluster so that it knows how many
+resources to request of each node and how to break up those resources.  You can
+specify configuration either with keyword arguments when creating a ``Cluster``
+object, or with a configuration file.
+
+Keyword Arguments
+~~~~~~~~~~~~~~~~~
+
+You can pass keywords to the Cluster objects to define how Dask-jobqueue should
+cut up a *single* worker node:
+
+.. code-block:: python
+
+   cluster = PBSCluster(
+        # Dask-worker specific keywords
+        cores=24,             # Number of cores per worker-node
+        total_memory='100GB', # Amount of memory per worker-node
+        processes=6,          # Number of Python processes by which to cut up each worker node
+        local_directory='$TMPDIR',  # Location to put temporary data if necessary
+        # Job scheduler specific keywords
+        resource_spec='select=1:ncpus=24:mem=100GB',
+        queue='regular',
+        project='my-project',
+   )
+
+Note that the cores and total_memory keywords above correspond not to your
+full desired deployment, but rather to the size of a *single worker node*.
+Separately you will specify how many worker nodes you want using the scale
+method.
+
+.. code-block:: python
+
+   cluster.scale(20)  # ask for twenty nodes
+
+Configuration Files
+~~~~~~~~~~~~~~~~~~~
+
+Specifying all parameters to the Cluster constructor every time can be error
+prone, especially when sharing this workflow with new users.  Instead, we
+recommend using a configuration file like the following:
+
+.. code-block:: yaml
+
+   # jobqueue.yaml file
+   jobqueue:
+     pbs:
+       cores: 24
+       total-memory: 100GB
+       local-directory: $TMPDIR
+       processes: 6
+
+       resource-spec: "select=1:ncpus=24:mem=100GB"
+       queue: regular
+       project: my-project
+
+If you place this in your ``~/.config/dask/`` directory then Dask-jobqueue will
+use these values by default.  You can then construct a cluster object more
+simply.
+
+.. code-block:: python
+
+   cluster = PBSCluster()
+
+If you want you can still override configuration values with keyword arguments
+
+.. code-block:: python
+
+   cluster = PBSCluster(processes=12)
+
+If you have imported ``dask_jobqueue`` then a blank ``jobqueue.yaml`` will be
+added automatically to ``~/.config/dask/jobqueue.yaml``.  You should use the
+section of that configuation file that corresponds to your job scheduler.
+Above we used PBS, but other job schedulers operate the same way.  You should
+be able to share these with colleagues.  If you can convince your IT staff
+you can also place such a file in ``/etc/dask/`` and it will affect all people
+on the cluster.
+
+For more information about configuring Dask, see the `Dask configuration
+documentation <http://dask.pydata.org/en/latest/configuration.html>`_
+
 
 .. toctree::
    :maxdepth: 1
@@ -56,20 +138,22 @@ resources when not actively computing.
 How this works
 --------------
 
-This creates a Dask Scheduler in the Python process where the cluster object
-is instantiated:
+Dask-jobqueue creates a Dask Scheduler in the Python process where the cluster
+object is instantiated:
 
 .. code-block:: python
 
-   cluster = PBSCluster(processes=18,
-                        threads=4,
-                        memory="6GB",
-                        project='P48500028',
-                        queue='premium',
-                        resource_spec='select=1:ncpus=36:mem=109G',
-                        walltime='02:00:00')  # <-- scheduler started here
+   cluster = PBSCluster(  # <-- scheduler started here
+        processes=18,
+        threads=4,
+        memory="6GB",
+        project='P48500028',
+        queue='premium',
+        resource_spec='select=1:ncpus=36:mem=109G',
+        walltime='02:00:00'
+   )
 
-When you ask for more workers, such as with the ``scale`` command
+You then ask for more workers using the ``scale`` command:
 
 .. code-block:: python
 
@@ -106,3 +190,8 @@ to get through or that not all of them arrive.  In practice we find that
 because dask-jobqueue submits many small jobs rather than a single large one
 workers are often able to start relatively quickly.  This will depend on the
 state of your cluster's job queue though.
+
+When the cluster object goes away, either because you delete it or because you
+close your Python program, it will send a signal to the workers to shut down.
+If for some reason this signal does not get through then workers will kill
+themselves after 60 seconds of waiting for a non-existent scheduler.
