@@ -4,7 +4,6 @@ import socket
 import subprocess
 import sys
 from contextlib import contextmanager
-import multiprocessing
 
 import dask
 import docrep
@@ -29,11 +28,11 @@ class JobQueueCluster(Cluster):
     name : str
         Name of Dask workers.
     cores : int
-        Total number of cores on a node / job
+        Total number of cores per job
     total_memory: str
-        Total amount of memory on a node / job
+        Total amount of memory per job
     processes : int
-        Number of processes per node.
+        Number of processes per job
     interface : str
         Network interface like 'eth0' or 'ib0'.
     death_timeout : float

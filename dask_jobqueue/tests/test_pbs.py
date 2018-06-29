@@ -56,7 +56,6 @@ def test_job_script(Cluster):
         job_script = cluster.job_script()
         assert '#PBS' in job_script
         assert '#PBS -N dask-worker' in job_script
-        assert '--nthreads 2' in job_script
         assert '#PBS -l select=1:ncpus=8:mem=27GB' in job_script
         assert '#PBS -l walltime=00:02:00' in job_script
         assert '#PBS -q' not in job_script

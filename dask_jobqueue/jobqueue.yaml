@@ -3,9 +3,9 @@ jobqueue:
     name: dask-worker
 
     # Dask worker options
-    cores: null                 # Total number of cores on a worker node
-    processes: 1                # Number of Python processes to cut up a worker node
-    total_memory: null          # Total amount of memory per worker node
+    cores: null                 # Total number of cores per job
+    processes: 1                # Number of Python processes per job
+    total_memory: null          # Total amount of memory per job
 
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
@@ -27,9 +27,9 @@ jobqueue:
     name: dask-worker
 
     # Dask worker options
-    cores: null                 # Total number of cores on a worker node
-    processes: 1                # Number of Python processes to cut up a worker node
-    total_memory: null          # Total amount of memory per worker node
+    cores: null                 # Total number of cores per job
+    processes: 1                # Number of Python processes per job
+    total_memory: null          # Total amount of memory per job
 
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
@@ -51,9 +51,9 @@ jobqueue:
     name: dask-worker
 
     # Dask worker options
-    cores: null                 # Total number of cores on a worker node
-    processes: 1                # Number of Python processes to cut up a worker node
-    total_memory: null          # Total amount of memory per worker node
+    cores: null                 # Total number of cores per job
+    processes: 1                # Number of Python processes per job
+    total_memory: null          # Total amount of memory per job
 
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
@@ -76,9 +76,9 @@ jobqueue:
     name: dask-worker
 
     # Dask worker options
-    cores: null                 # Total number of cores on a worker node
-    processes: 1                # Number of Python processes to cut up a worker node
-    total_memory: null          # Total amount of memory per worker node
+    cores: null                 # Total number of cores per job
+    processes: 1                # Number of Python processes per job
+    total_memory: null          # Total amount of memory per job
 
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler

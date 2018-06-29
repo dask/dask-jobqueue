@@ -17,12 +17,12 @@ Example
 
    from dask_jobqueue import PBSCluster
    cluster = PBSCluster()
-   cluster.scale(10)         # Ask for ten worker nodes
-
-   # wait for jobs to arrive, depending on the queue, this may take some time
+   cluster.scale(10)         # Ask for ten jobs
 
    from dask.distributed import Client
-   client = Client(cluster)  # Connect Dask to the worker nodes
+   client = Client(cluster)  # Connect this local process to remote workers
+
+   # wait for jobs to arrive, depending on the queue, this may take some time
 
    import dask.array as da
    x = ...                   # Dask commands now use these distributed resources
@@ -44,7 +44,7 @@ Configuration
 -------------
 
 Dask-jobqueue should be configured to your cluster so that it knows how many
-resources to request of each node and how to break up those resources.  You can
+resources to request of each job and how to break up those resources.  You can
 specify configuration either with keyword arguments when creating a ``Cluster``
 object, or with a configuration file.
 
@@ -52,15 +52,15 @@ Keyword Arguments
 ~~~~~~~~~~~~~~~~~
 
 You can pass keywords to the Cluster objects to define how Dask-jobqueue should
-cut up a *single* worker node:
+define a single job:
 
 .. code-block:: python
 
    cluster = PBSCluster(
         # Dask-worker specific keywords
-        cores=24,             # Number of cores per worker-node
-        total_memory='100GB', # Amount of memory per worker-node
-        processes=6,          # Number of Python processes by which to cut up each worker node
+        cores=24,             # Number of cores per job
+        total_memory='100GB', # Amount of memory per job
+        processes=6,          # Number of Python processes to cut up each job
         local_directory='$TMPDIR',  # Location to put temporary data if necessary
         # Job scheduler specific keywords
         resource_spec='select=1:ncpus=24:mem=100GB',
@@ -70,13 +70,13 @@ cut up a *single* worker node:
    )
 
 Note that the cores and total_memory keywords above correspond not to your
-full desired deployment, but rather to the size of a *single worker node*.
-Separately you will specify how many worker nodes you want using the scale
-method.
+full desired deployment, but rather to the size of a *single job* which should
+be no larger than the size of a single machine in your cluster.  Separately you
+will specify how many jobs to deploy using the scale method.
 
 .. code-block:: python
 
-   cluster.scale(20)  # ask for twenty nodes of the specification provided above
+   cluster.scale(20)  # launch twenty jobs of the specification provided above
 
 Configuration Files
 ~~~~~~~~~~~~~~~~~~~

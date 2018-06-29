@@ -7,8 +7,8 @@ want to see examples for similar clusters.
 
 Additional examples from other cluster welcome `here <https://github.com/dask/dask-jobqueue/issues/40>`_.
 
-Cheynne
--------
+Cheyenne
+--------
 
 `Cheyenne Supercomputer <https://www2.cisl.ucar.edu/resources/computational-systems/cheyenne>`_
 
