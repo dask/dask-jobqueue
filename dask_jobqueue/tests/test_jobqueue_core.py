@@ -10,6 +10,6 @@ def test_jq_core_placeholder():
 
 def test_errors():
     with pytest.raises(NotImplementedError) as info:
-        JobQueueCluster()
+        JobQueueCluster(cores=4)
 
     assert 'abstract class' in str(info.value)

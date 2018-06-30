@@ -4,8 +4,8 @@ jobqueue:
 
     # Dask worker options
     cores: null                 # Total number of cores per job
+    memory: null                # Total amount of memory per job
     processes: 1                # Number of Python processes per job
-    total_memory: null          # Total amount of memory per job
 
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
@@ -20,16 +20,13 @@ jobqueue:
     resource-spec: null
     job-extra: []
 
-    threads: null  # deprecated
-    memory: null  # deprecated
-
   sge:
     name: dask-worker
 
     # Dask worker options
     cores: null                 # Total number of cores per job
+    memory: null                # Total amount of memory per job
     processes: 1                # Number of Python processes per job
-    total_memory: null          # Total amount of memory per job
 
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
@@ -44,16 +41,13 @@ jobqueue:
 
     resource-spec: null
 
-    threads: null  # deprecated
-    memory: null  # deprecated
-
   slurm:
     name: dask-worker
 
     # Dask worker options
     cores: null                 # Total number of cores per job
+    memory: null                # Total amount of memory per job
     processes: 1                # Number of Python processes per job
-    total_memory: null          # Total amount of memory per job
 
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
@@ -69,16 +63,13 @@ jobqueue:
     job-mem: null
     job-extra: {}
 
-    threads: null  # deprecated
-    memory: null  # deprecated
-
   moab:
     name: dask-worker
 
     # Dask worker options
     cores: null                 # Total number of cores per job
+    memory: null                # Total amount of memory per job
     processes: 1                # Number of Python processes per job
-    total_memory: null          # Total amount of memory per job
 
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
@@ -92,6 +83,3 @@ jobqueue:
     env-extra: []
     resource-spec: null
     job-extra: []
-
-    threads: null  # deprecated
-    memory: null  # deprecated

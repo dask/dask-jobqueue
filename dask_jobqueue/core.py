@@ -10,7 +10,7 @@ import docrep
 from distributed import LocalCluster
 from distributed.deploy import Cluster
 from distributed.utils import (get_ip_interface, ignoring, parse_bytes, tmpfile,
-        format_bytes)
+                               format_bytes)
 
 logger = logging.getLogger(__name__)
 docstrings = docrep.DocstringProcessor()
@@ -29,7 +29,7 @@ class JobQueueCluster(Cluster):
         Name of Dask workers.
     cores : int
         Total number of cores per job
-    total_memory: str
+    memory: str
         Total amount of memory per job
     processes : int
         Number of processes per job
@@ -45,19 +45,6 @@ class JobQueueCluster(Cluster):
         Other commands to add to script before launching worker.
     kwargs : dict
         Additional keyword arguments to pass to `LocalCluster`
-    memory : str
-        Bytes of memory that the worker can use. This should be a string
-        like "7GB" that can be interpretted both by PBS and Dask.
-
-        This is redundant with total_memory and processes.  If specifying
-        total_memory you should not specify memory, which should interpretted
-        as memory per process.
-    threads : int
-        Number of threads per process.
-
-        This is redundant with cores and proceses.  If specifying cores you
-        should not specify threads, which should be interpretted as threads per
-        process.
 
     Attributes
     ----------
@@ -92,7 +79,7 @@ class JobQueueCluster(Cluster):
     def __init__(self,
                  name=None,
                  cores=None,
-                 total_memory=None,
+                 memory=None,
                  processes=None,
                  interface=None,
                  death_timeout=None,
@@ -100,8 +87,6 @@ class JobQueueCluster(Cluster):
                  extra=None,
                  env_extra=None,
                  walltime=None,
-                 threads=None,
-                 memory=None,
                  **kwargs
                  ):
         """ """
@@ -117,14 +102,10 @@ class JobQueueCluster(Cluster):
             name = dask.config.get('jobqueue.%s.name' % self.scheduler_name)
         if cores is None:
             cores = dask.config.get('jobqueue.%s.cores' % self.scheduler_name)
-        if total_memory is None:
-            total_memory = dask.config.get('jobqueue.%s.total_memory' % self.scheduler_name)
-        if threads is None:
-            threads = dask.config.get('jobqueue.%s.threads' % self.scheduler_name)
-        if processes is None:
-            processes = dask.config.get('jobqueue.%s.processes' % self.scheduler_name)
         if memory is None:
             memory = dask.config.get('jobqueue.%s.memory' % self.scheduler_name)
+        if processes is None:
+            processes = dask.config.get('jobqueue.%s.processes' % self.scheduler_name)
         if interface is None:
             interface = dask.config.get('jobqueue.%s.interface' % self.scheduler_name)
         if death_timeout is None:
@@ -136,11 +117,9 @@ class JobQueueCluster(Cluster):
         if env_extra is None:
             env_extra = dask.config.get('jobqueue.%s.env-extra' % self.scheduler_name)
 
-        if cores is not None and threads is not None and processes is not None:
-            raise ValueError("You can only specify two of cores, threads, and processes")
-
-        if total_memory is not None and memory is not None:
-            raise ValueError("You can only specify one of total_memory and memory")
+        if cores is None:
+            raise ValueError("You must specify how many cores to use per job "
+                             "with the cores= parameter")
 
         #This attribute should be overriden
         self.job_header = None
@@ -153,17 +132,14 @@ class JobQueueCluster(Cluster):
 
         self.cluster = LocalCluster(n_workers=0, ip=host, **kwargs)
 
-        # Keep information on process, threads and memory, for use in
-        # subclasses
-        if total_memory is not None:
-            self.worker_memory = parse_bytes(total_memory) / processes
-        elif memory is not None:
-            self.worker_memory = parse_bytes(memory)
+        # Keep information on process, cores, and memory, for use in subclasses
+        if memory is not None:
+            self.worker_memory = parse_bytes(memory) / processes
         else:
             self.worker_memory = None
 
         self.worker_processes = processes
-        self.worker_threads = cores / processes if cores and processes else threads
+        self.worker_threads = cores / processes
         self.name = name
 
         self.jobs = dict()

@@ -10,7 +10,7 @@ pytestmark = pytest.mark.env("sge")
 
 
 def test_basic(loop):  # noqa: F811
-    with SGECluster(walltime='00:02:00', cores=8, processes=4, total_memory='28GB',
+    with SGECluster(walltime='00:02:00', cores=8, processes=4, memory='28GB',
                     loop=loop) as cluster:
         with Client(cluster, loop=loop) as client:
             workers = cluster.start_workers(2)
