@@ -1,9 +1,10 @@
+from contextlib import contextmanager
 import logging
 import shlex
 import socket
 import subprocess
 import sys
-from contextlib import contextmanager
+import warnings
 
 import dask
 import docrep
@@ -14,6 +15,17 @@ from distributed.utils import (get_ip_interface, ignoring, parse_bytes, tmpfile,
 
 logger = logging.getLogger(__name__)
 docstrings = docrep.DocstringProcessor()
+
+
+threads_deprecation_message = """
+The threads keyword has been removed and the memory keyword has changed.
+
+Please specify job size with the following keywords:
+
+-  cores: total cores per job, across all processes
+-  memory: total memory per job, across all processes
+-  processes: number of processes to launch, splitting the quantities above
+""".strip()
 
 
 @docstrings.get_sectionsf('JobQueueCluster')
@@ -87,6 +99,7 @@ class JobQueueCluster(Cluster):
                  extra=None,
                  env_extra=None,
                  walltime=None,
+                 threads=None,
                  **kwargs
                  ):
         """ """
@@ -94,6 +107,9 @@ class JobQueueCluster(Cluster):
         # This initializer should be considered as Abstract, and never used
         # directly.
         # """
+        if threads is not None:
+            raise ValueError(threads_deprecation_message)
+
         if not self.scheduler_name:
             raise NotImplementedError('JobQueueCluster is an abstract class '
                                       'that should not be instanciated.')
@@ -116,6 +132,9 @@ class JobQueueCluster(Cluster):
             extra = dask.config.get('jobqueue.%s.extra' % self.scheduler_name)
         if env_extra is None:
             env_extra = dask.config.get('jobqueue.%s.env-extra' % self.scheduler_name)
+
+        if dask.config.get('jobqueue.%s.threads', None):
+            warnings.warn(threads_deprecation_message)
 
         if cores is None:
             raise ValueError("You must specify how many cores to use per job "
