@@ -43,7 +43,7 @@ save resources when not actively computing.
 Configuration
 -------------
 
-Dask-jobqueue should be configured to your cluster so that it knows how many
+Dask-jobqueue should be configured for your cluster so that it knows how many
 resources to request of each job and how to break up those resources.  You can
 specify configuration either with keyword arguments when creating a ``Cluster``
 object, or with a configuration file.
@@ -59,7 +59,7 @@ define a single job:
    cluster = PBSCluster(
         # Dask-worker specific keywords
         cores=24,             # Number of cores per job
-        total_memory='100GB', # Amount of memory per job
+        memory='100GB',       # Amount of memory per job
         processes=6,          # Number of Python processes to cut up each job
         local_directory='$TMPDIR',  # Location to put temporary data if necessary
         # Job scheduler specific keywords
@@ -69,7 +69,7 @@ define a single job:
         walltime='02:00:00',
    )
 
-Note that the cores and total_memory keywords above correspond not to your
+Note that the ``cores`` and ``memory`` keywords above correspond not to your
 full desired deployment, but rather to the size of a *single job* which should
 be no larger than the size of a single machine in your cluster.  Separately you
 will specify how many jobs to deploy using the scale method.
@@ -148,7 +148,7 @@ object is instantiated:
 
    cluster = PBSCluster(  # <-- scheduler started here
         cores=24,
-        total_memory='100GB',
+        memory='100GB',
         processes=6,
         local_directory='$TMPDIR',
         resource_spec='select=1:ncpus=24:mem=100GB',
