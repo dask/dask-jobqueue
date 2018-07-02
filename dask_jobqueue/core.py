@@ -162,7 +162,7 @@ class JobQueueCluster(Cluster):
             self.worker_memory = None
 
         self.worker_processes = processes
-        self.worker_threads = cores / processes
+        self.worker_cores = cores
         self.name = name
 
         self.jobs = dict()
@@ -175,12 +175,10 @@ class JobQueueCluster(Cluster):
         dask_worker_command = (
             '%(python)s -m distributed.cli.dask_worker' % dict(python=sys.executable))
         self._command_template = ' '.join([dask_worker_command, self.scheduler.address])
-        if self.worker_threads is not None:
-            self._command_template += " --nthreads %d" % self.worker_threads
-        if processes is not None:
+        self._command_template += " --nthreads %d" % self.worker_threads
+        if processes is not None and processes > 1:
             self._command_template += " --nprocs %d" % processes
-        if self.worker_memory is not None:
-            self._command_template += " --memory-limit %s" % format_bytes(self.worker_memory).replace(' ', '')
+        self._command_template += " --memory-limit %s" % format_bytes(self.worker_memory).replace(' ', '')
         if name is not None:
             self._command_template += " --name %s" % name
             self._command_template += "-%(n)d" # Keep %(n) to be replaced later
@@ -190,6 +188,10 @@ class JobQueueCluster(Cluster):
             self._command_template += " --local-directory %s" % local_directory
         if extra is not None:
             self._command_template += extra
+
+    @property
+    def worker_threads(self):
+        return int(self.worker_cores / self.worker_processes)
 
     def job_script(self):
         """ Construct a job submission script """
