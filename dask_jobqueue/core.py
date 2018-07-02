@@ -156,10 +156,7 @@ class JobQueueCluster(Cluster):
         self.cluster = LocalCluster(n_workers=0, ip=host, **kwargs)
 
         # Keep information on process, cores, and memory, for use in subclasses
-        if memory is not None:
-            self.worker_memory = parse_bytes(memory) / processes
-        else:
-            self.worker_memory = None
+        self.worker_memory = parse_bytes(memory)
 
         self.worker_processes = processes
         self.worker_cores = cores
@@ -178,7 +175,11 @@ class JobQueueCluster(Cluster):
         self._command_template += " --nthreads %d" % self.worker_threads
         if processes is not None and processes > 1:
             self._command_template += " --nprocs %d" % processes
-        self._command_template += " --memory-limit %s" % format_bytes(self.worker_memory).replace(' ', '')
+
+        mem = format_bytes(self.worker_memory / self.worker_processes)
+        mem = mem.replace(' ', '')
+        self._command_template += " --memory-limit %s" % mem
+
         if name is not None:
             self._command_template += " --name %s" % name
             self._command_template += "-%(n)d" # Keep %(n) to be replaced later

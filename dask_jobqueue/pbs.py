@@ -86,10 +86,8 @@ class PBSCluster(JobQueueCluster):
         if resource_spec is None:
             # Compute default resources specifications
             resource_spec = "select=1:ncpus=%d" % self.worker_cores
-            if self.worker_memory:
-                memory = self.worker_memory * self.worker_processes
-                memory_string = pbs_format_bytes_ceil(memory)
-                resource_spec += ':mem=' + memory_string
+            memory_string = pbs_format_bytes_ceil(self.worker_memory)
+            resource_spec += ':mem=' + memory_string
             logger.info("Resource specification for PBS not set, "
                         "initializing it to %s" % resource_spec)
         if resource_spec is not None:
