@@ -30,7 +30,7 @@ def test_header():
         assert '#SBATCH -A DaskOnPBS' in cluster.job_header
         assert '#SBATCH -p regular' in cluster.job_header
 
-    with SLURMCluster(cores=4) as cluster:
+    with SLURMCluster(cores=4, memory='8GB') as cluster:
 
         assert '#SBATCH' in cluster.job_header
         assert '#SBATCH -J ' in cluster.job_header

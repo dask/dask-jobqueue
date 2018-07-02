@@ -138,7 +138,11 @@ class JobQueueCluster(Cluster):
 
         if cores is None:
             raise ValueError("You must specify how many cores to use per job "
-                             "with the cores= parameter")
+                             "like ``cores=8``")
+
+        if memory is None:
+            raise ValueError("You must specify how much memory to use per job "
+                             "like ``memory='24 GB'``")
 
         #This attribute should be overriden
         self.job_header = None

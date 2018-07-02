@@ -30,7 +30,7 @@ def test_header(Cluster):
         assert '#PBS -l walltime=' in cluster.job_header
         assert '#PBS -A DaskOnPBS' in cluster.job_header
 
-    with Cluster(cores=4) as cluster:
+    with Cluster(cores=4, memory='8GB') as cluster:
 
         assert '#PBS -j oe' not in cluster.job_header
         assert '#PBS -N' in cluster.job_header
@@ -39,7 +39,7 @@ def test_header(Cluster):
         assert '#PBS -A' not in cluster.job_header
         assert '#PBS -q' not in cluster.job_header
 
-    with Cluster(cores=4, job_extra=['-j oe']) as cluster:
+    with Cluster(cores=4, memory='8GB', job_extra=['-j oe']) as cluster:
 
         assert '#PBS -j oe' in cluster.job_header
         assert '#PBS -N' in cluster.job_header
@@ -139,6 +139,16 @@ def test_adaptive(loop):
 def test_config(loop):  # noqa: F811
     with dask.config.set({'jobqueue.pbs.walltime': '00:02:00',
                           'jobqueue.pbs.local-directory': '/foo'}):
-        with PBSCluster(loop=loop, cores=1) as cluster:
+        with PBSCluster(loop=loop, cores=1, memory='2GB') as cluster:
             assert '00:02:00' in cluster.job_script()
             assert '--local-directory /foo' in cluster.job_script()
+
+
+def test_informative_errors():
+    with pytest.raises(ValueError) as info:
+        PBSCluster(memory=None, cores=4)
+    assert 'memory' in str(info.value)
+
+    with pytest.raises(ValueError) as info:
+        PBSCluster(memory='1GB', cores=None)
+    assert 'cores' in str(info.value)
