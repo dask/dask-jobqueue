@@ -56,6 +56,7 @@ jobqueue:
     walltime: '00:30:00'
     extra: ""
     env-extra: []
+    job-nodes: null
     job-cpu: null
     job-mem: null
     job-extra: {}

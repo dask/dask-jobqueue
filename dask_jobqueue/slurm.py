@@ -56,7 +56,7 @@ class SLURMCluster(JobQueueCluster):
     cancel_command = 'scancel'
     scheduler_name = 'slurm'
 
-    def __init__(self, queue=None, project=None, walltime=None,
+    def __init__(self, queue=None, project=None, walltime=None, job_nodes=None,
                  job_cpu=None, job_mem=None, job_extra=None, **kwargs):
         if queue is None:
             queue = dask.config.get('jobqueue.slurm.queue')
@@ -64,6 +64,8 @@ class SLURMCluster(JobQueueCluster):
             project = dask.config.get('jobqueue.slurm.project')
         if walltime is None:
             walltime = dask.config.get('jobqueue.slurm.walltime')
+        if job_nodes is None:
+            job_nodes = dask.config.get('jobqueue.slurm.job-nodes')
         if job_cpu is None:
             job_cpu = dask.config.get('jobqueue.slurm.job-cpu')
         if job_mem is None:
@@ -85,9 +87,13 @@ class SLURMCluster(JobQueueCluster):
         if project is not None:
             header_lines.append('#SBATCH -A %s' % project)
 
-        # Init resources, always 1 task,
+        # Init resources, always 1 task per node
+        if job_nodes is None:
+            header_lines.append('#SBATCH -n 1')
+        else:
+            header_lines.append('#SBATCH -N %s' % job_nodes)
+            header_lines.append('#SBATCH --tasks-per-node=1')
         # and then number of cpu is processes * threads if not set
-        header_lines.append('#SBATCH -n 1')
         ncpus = job_cpu
         if ncpus is None:
             ncpus = self.worker_processes * self.worker_threads
