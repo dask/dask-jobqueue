@@ -144,6 +144,7 @@ def test_adaptive(loop):
             while cluster.pending_jobs or cluster.running_jobs:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
+            assert cluster.finished_jobs
 
 
 @pytest.mark.env("pbs")  # noqa: F811
@@ -183,11 +184,7 @@ def test_adaptive_grouped(loop):
             while cluster.pending_jobs or cluster.running_jobs:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
-
-
-def test_valid_worker_name():
-    with pytest.raises(ValueError):
-        PBSCluster(name='dask-worker')
+            assert cluster.finished_jobs
 
 
 def test_config(loop):  # noqa: F811

@@ -1,6 +1,6 @@
 jobqueue:
   pbs:
-    name: dask_worker
+    name: dask-worker
 
     # Dask worker options
     cores: null                 # Total number of cores per job
@@ -21,7 +21,7 @@ jobqueue:
     job-extra: []
 
   sge:
-    name: dask_worker
+    name: dask-worker
 
     # Dask worker options
     cores: null                 # Total number of cores per job
@@ -42,7 +42,7 @@ jobqueue:
     resource-spec: null
 
   slurm:
-    name: dask_worker
+    name: dask-worker
 
     # Dask worker options
     cores: null                 # Total number of cores per job
@@ -64,7 +64,7 @@ jobqueue:
     job-extra: {}
 
   moab:
-    name: dask_worker
+    name: dask-worker
 
     # Dask worker options
     cores: null                 # Total number of cores per job

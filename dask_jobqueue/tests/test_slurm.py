@@ -148,3 +148,4 @@ def test_adaptive(loop):
             while cluster.pending_jobs or cluster.running_jobs:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
+            assert cluster.finished_jobs

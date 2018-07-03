@@ -34,14 +34,9 @@ Please specify job size with the following keywords:
 def _job_id_from_worker_name(name):
     ''' utility to parse the job ID from the worker name
 
-    template: 'prefix-jobid[-proc]'
+    template: 'prefix[jobid]'
     '''
-    pieces = name.split('-')
-    print(name, pieces)
-    if len(pieces) == 2:
-        return pieces[-1]
-    else:
-        return pieces[-2]
+    return name.split('[', 1)[1].split(']')[0]
 
 
 class JobQueuePlugin(SchedulerPlugin):
@@ -194,10 +189,6 @@ class JobQueueCluster(Cluster):
             raise ValueError("You must specify how much memory to use per job "
                              "like ``memory='24 GB'``")
 
-        if '-' in name:
-            raise ValueError(
-                'name (%s) can not include the `-` character' % name)
-
         #This attribute should be overriden
         self.job_header = None
 
@@ -234,7 +225,7 @@ class JobQueueCluster(Cluster):
 
         if name is not None:
             # worker names follow this template: {NAME}-{JOB_ID}
-            self._command_template += " --name %s-${JOB_ID}" % name
+            self._command_template += " --name %s[${JOB_ID}]" % name
         if death_timeout is not None:
             self._command_template += " --death-timeout %s" % death_timeout
         if local_directory is not None:

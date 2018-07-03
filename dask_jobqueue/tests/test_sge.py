@@ -25,7 +25,7 @@ def test_basic(loop):  # noqa: F811
                 assert w['memory_limit'] == 7e9
                 assert w['ncores'] == 2
 
-            cluster.stop_workers(workers)
+            cluster.stop_workers(info['workers'].values())
 
             start = time()
             while len(client.scheduler_info()['workers']) > 0:
@@ -33,3 +33,4 @@ def test_basic(loop):  # noqa: F811
                 assert time() < start + QUEUE_WAIT
 
             assert not cluster.running_jobs
+            assert cluster.finished_jobs
