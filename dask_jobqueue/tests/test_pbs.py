@@ -149,7 +149,7 @@ def test_adaptive(loop):
 
 @pytest.mark.env("pbs")  # noqa: F811
 def test_adaptive_grouped(loop):
-    with PBSCluster(walltime='00:02:00', processes=2, threads=1, memory='2GB',
+    with PBSCluster(walltime='00:02:00', processes=1, cores=2, memory='2GB',
                     local_directory='/tmp', job_extra=['-V'],
                     loop=loop) as cluster:
         cluster.adapt(minimum=1)  # at least 1 worker
