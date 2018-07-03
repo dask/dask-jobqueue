@@ -5,7 +5,6 @@ import socket
 import subprocess
 import sys
 import warnings
-
 from collections import OrderedDict
 from contextlib import contextmanager
 
@@ -13,9 +12,9 @@ import dask
 import docrep
 from distributed import LocalCluster
 from distributed.deploy import Cluster
-from distributed.utils import (get_ip_interface, ignoring, parse_bytes, tmpfile,
-                               format_bytes)
 from distributed.diagnostics.plugin import SchedulerPlugin
+from distributed.utils import (
+    format_bytes, get_ip_interface, ignoring, parse_bytes, tmpfile)
 
 logger = logging.getLogger(__name__)
 docstrings = docrep.DocstringProcessor()

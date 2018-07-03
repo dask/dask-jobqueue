@@ -1,7 +1,7 @@
+import sys
 from time import sleep, time
 
 import pytest
-import sys
 from distributed import Client
 from distributed.utils_test import loop  # noqa: F401
 

@@ -2,11 +2,11 @@ import sys
 from time import sleep, time
 
 import dask
+import pytest
 from dask.distributed import Client
 from distributed.utils_test import loop  # noqa: F401
-import pytest
 
-from dask_jobqueue import PBSCluster, MoabCluster
+from dask_jobqueue import MoabCluster, PBSCluster
 
 from . import QUEUE_WAIT
 
