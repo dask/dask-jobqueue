@@ -83,7 +83,7 @@ language = None
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'default'
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -189,4 +189,4 @@ intersphinx_mapping = {
 }
 
 def setup(app):
-    app.add_stylesheet("http://dask.pydata.org/en/latest/_static/style.css")
+    app.add_stylesheet("https://dask.pydata.org/en/latest/_static/style.css")

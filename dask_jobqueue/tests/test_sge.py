@@ -11,7 +11,7 @@ from . import QUEUE_WAIT
 
 @pytest.mark.env("sge")  # noqa: F811
 def test_basic(loop):  # noqa: F811
-    with SGECluster(walltime='00:02:00', threads=2, memory='7GB',
+    with SGECluster(walltime='00:02:00', cores=8, processes=4, memory='28GB',
                     loop=loop) as cluster:
         with Client(cluster, loop=loop) as client:
             cluster.start_workers(2)
@@ -20,10 +20,10 @@ def test_basic(loop):  # noqa: F811
             assert future.result(QUEUE_WAIT) == 11
             assert cluster.running_jobs
 
-            workers = list(client.scheduler_info()['workers'].values())
-            w = workers[0]
-            assert w['memory_limit'] == 7e9
-            assert w['ncores'] == 2
+            info = client.scheduler_info()
+            for w in info['workers'].values():
+                assert w['memory_limit'] == 7e9
+                assert w['ncores'] == 2
 
             cluster.stop_workers(workers)
 
