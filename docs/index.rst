@@ -37,7 +37,7 @@ save resources when not actively computing.
 
 .. code-block:: python
 
-   cluster.adapt(minimum=6, maximum=90)
+   cluster.adapt(minimum=6, maximum=90)  # auto-scale between 6 and 90 workers
 
 
 Configuration

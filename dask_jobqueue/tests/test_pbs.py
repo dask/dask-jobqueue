@@ -16,7 +16,7 @@ def test_header(Cluster):
     with Cluster(walltime='00:02:00', processes=4, cores=8, memory='28GB') as cluster:
 
         assert '#PBS' in cluster.job_header
-        assert '#PBS -N dask_worker' in cluster.job_header
+        assert '#PBS -N dask-worker' in cluster.job_header
         assert '#PBS -l select=1:ncpus=8:mem=27GB' in cluster.job_header
         assert '#PBS -l walltime=00:02:00' in cluster.job_header
         assert '#PBS -q' not in cluster.job_header
@@ -26,7 +26,7 @@ def test_header(Cluster):
                  memory='28GB', resource_spec='select=1:ncpus=24:mem=100GB') as cluster:
 
         assert '#PBS -q regular' in cluster.job_header
-        assert '#PBS -N dask_worker' in cluster.job_header
+        assert '#PBS -N dask-worker' in cluster.job_header
         assert '#PBS -l select=1:ncpus=24:mem=100GB' in cluster.job_header
         assert '#PBS -l select=1:ncpus=8:mem=27GB' not in cluster.job_header
         assert '#PBS -l walltime=' in cluster.job_header
@@ -57,7 +57,7 @@ def test_job_script(Cluster):
 
         job_script = cluster.job_script()
         assert '#PBS' in job_script
-        assert '#PBS -N dask_worker' in job_script
+        assert '#PBS -N dask-worker' in job_script
         assert '#PBS -l select=1:ncpus=8:mem=27GB' in job_script
         assert '#PBS -l walltime=00:02:00' in job_script
         assert '#PBS -q' not in job_script
@@ -71,7 +71,7 @@ def test_job_script(Cluster):
 
         job_script = cluster.job_script()
         assert '#PBS -q regular' in job_script
-        assert '#PBS -N dask_worker' in job_script
+        assert '#PBS -N dask-worker' in job_script
         assert '#PBS -l select=1:ncpus=24:mem=100GB' in job_script
         assert '#PBS -l select=1:ncpus=8:mem=27GB' not in job_script
         assert '#PBS -l walltime=' in job_script
@@ -152,7 +152,7 @@ def test_adaptive_grouped(loop):
     with PBSCluster(walltime='00:02:00', processes=2, threads=1, memory='2GB',
                     local_directory='/tmp', job_extra=['-V'],
                     loop=loop) as cluster:
-        cluster.adapt(minimum=1)
+        cluster.adapt(minimum=1)  # at least 1 worker
         with Client(cluster) as client:
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
