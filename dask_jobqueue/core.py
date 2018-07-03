@@ -34,7 +34,7 @@ Please specify job size with the following keywords:
 def _job_id_from_worker_name(name):
     ''' utility to parse the job ID from the worker name
 
-    template: 'prefix[jobid]'
+    template: 'prefix[jobid]suffix'
     '''
     return name.split('[', 1)[1].split(']')[0]
 
@@ -224,7 +224,9 @@ class JobQueueCluster(Cluster):
         self._command_template += " --memory-limit %s" % mem
 
         if name is not None:
-            # worker names follow this template: {NAME}-{JOB_ID}
+            # worker names follow this template: {NAME}[{JOB_ID}]
+            # {JOB_ID} is an environment variable defined by the individual
+            # job scrips/schedulers
             self._command_template += " --name %s[${JOB_ID}]" % name
         if death_timeout is not None:
             self._command_template += " --death-timeout %s" % death_timeout
