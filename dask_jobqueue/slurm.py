@@ -40,7 +40,7 @@ class SLURMCluster(JobQueueCluster):
                                env_extra=['export LANG="en_US.utf8"',
                                           'export LANGUAGE="en_US.utf8"',
                                           'export LC_ALL="en_US.utf8"'])
-    >>> cluster.start_workers(10)  # this may take a few seconds to launch
+    >>> cluster.start_workers(10)  # submit enough jobs (2 in this case) to deploy 10 workers
 
     >>> from dask.distributed import Client
     >>> client = Client(cluster)

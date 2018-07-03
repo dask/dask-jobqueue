@@ -14,7 +14,7 @@ from distributed import LocalCluster
 from distributed.deploy import Cluster
 from distributed.diagnostics.plugin import SchedulerPlugin
 from distributed.utils import (
-    format_bytes, get_ip_interface, ignoring, parse_bytes, tmpfile)
+    format_bytes, get_ip_interface, parse_bytes, tmpfile)
 
 logger = logging.getLogger(__name__)
 docstrings = docrep.DocstringProcessor()
