@@ -207,6 +207,10 @@ class JobQueueCluster(Cluster):
         self.worker_cores = cores
         self.name = name
 
+        # plugin for tracking job status
+        self._scheduler_plugin = JobQueuePlugin()
+        self.local_cluster.scheduler.add_plugin(self._scheduler_plugin)
+
         self._adaptive = None
 
         self._env_header = '\n'.join(env_extra)

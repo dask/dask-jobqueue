@@ -22,7 +22,7 @@ def test_header():
         assert '#SBATCH -p' not in cluster.job_header
         assert '#SBATCH -A' not in cluster.job_header
 
-    with SLURMCluster(queue='regular', project='DaskOnPBS', processes=4,
+    with SLURMCluster(queue='regular', project='DaskOnSlurm', processes=4,
                       cores=8, memory='28GB', job_cpu=16, job_mem='100G') as cluster:
 
         assert '#SBATCH --cpus-per-task=16' in cluster.job_header
