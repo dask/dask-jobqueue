@@ -37,7 +37,7 @@ def test_basic(loop):  # noqa: F811
             cluster.stop_workers(info['workers'].values())
 
             start = time()
-            while len(client.scheduler_info()['workers']) > 0:
+            while client.scheduler_info()['workers']:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 

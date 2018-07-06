@@ -105,7 +105,7 @@ def test_basic(loop):
             cluster.stop_workers(workers)
 
             start = time()
-            while len(client.scheduler_info()['workers']) > 0:
+            while client.scheduler_info()['workers']:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 
@@ -120,16 +120,8 @@ def test_adaptive(loop):
         with Client(cluster) as client:
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
-
-            start = time()
-            while not len(cluster.pending_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            start = time()
-            while not len(cluster.running_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+            assert (cluster.pending_jobs or cluster.running_jobs or
+                    cluster.finished_jobs)
 
             start = time()
             processes = cluster.worker_processes
@@ -140,7 +132,7 @@ def test_adaptive(loop):
             del future
 
             start = time()
-            while len(client.scheduler_info()['workers']) > 0:
+            while client.scheduler_info()['workers']:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 

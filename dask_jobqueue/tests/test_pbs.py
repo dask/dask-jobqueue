@@ -118,12 +118,7 @@ def test_adaptive(loop):
             assert future.result(QUEUE_WAIT) == 11
 
             start = time()
-            while not len(cluster.pending_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            start = time()
-            while not len(cluster.running_jobs):
+            while not cluster.running_jobs:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 
@@ -158,12 +153,7 @@ def test_adaptive_grouped(loop):
             assert future.result(QUEUE_WAIT) == 11
 
             start = time()
-            while not len(cluster.pending_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            start = time()
-            while not len(cluster.running_jobs):
+            while not cluster.running_jobs:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 
