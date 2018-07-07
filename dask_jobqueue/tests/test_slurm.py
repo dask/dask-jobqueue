@@ -114,14 +114,18 @@ def test_basic(loop):
 
 @pytest.mark.env("slurm")  # noqa: F811
 def test_adaptive(loop):
-    with SLURMCluster(walltime='00:02:00', cores=2, processes=1, memory='4GB',
+    with SLURMCluster(walltime='00:02:00', cores=2, processes=1, memory='2GB',
                       job_extra=['-D /'], loop=loop) as cluster:
         cluster.adapt()
         with Client(cluster) as client:
             future = client.submit(lambda x: x + 1, 10)
+
+            start = time()
+            while not (cluster.pending_jobs or cluster.running_jobs):
+                sleep(0.100)
+                assert time() < start + QUEUE_WAIT
+
             assert future.result(QUEUE_WAIT) == 11
-            assert (cluster.pending_jobs or cluster.running_jobs or
-                    cluster.finished_jobs)
 
             start = time()
             processes = cluster.worker_processes
@@ -132,7 +136,7 @@ def test_adaptive(loop):
             del future
 
             start = time()
-            while client.scheduler_info()['workers']:
+            while len(client.scheduler_info()['workers']) > 0:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 
