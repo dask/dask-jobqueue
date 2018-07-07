@@ -17,14 +17,6 @@ def test_basic(loop):  # noqa: F811
             cluster.start_workers(2)
             assert cluster.pending_jobs or cluster.running_jobs
 
-            start = time()
-            while not cluster.running_jobs:
-                sleep(0.100)
-                if time() > start + QUEUE_WAIT:
-                    print('never got a job into the running catagory')
-                    print('cluster.pending_jobs', cluster.pending_jobs)
-                    print('cluster.running_jobs', cluster.running_jobs)
-
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
             assert cluster.running_jobs

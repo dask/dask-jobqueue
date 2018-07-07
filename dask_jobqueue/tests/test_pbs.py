@@ -114,13 +114,13 @@ def test_adaptive(loop):
         cluster.adapt()
         with Client(cluster) as client:
             future = client.submit(lambda x: x + 1, 10)
-            assert cluster.pending_jobs or cluster.running_jobs
-            assert future.result(QUEUE_WAIT) == 11
 
             start = time()
-            while not cluster.running_jobs:
+            while not (cluster.pending_jobs or cluster.running_jobs):
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
+
+            assert future.result(QUEUE_WAIT) == 11
 
             start = time()
             processes = cluster.worker_processes
@@ -149,6 +149,11 @@ def test_adaptive_grouped(loop):
                     loop=loop) as cluster:
         cluster.adapt(minimum=1)  # at least 1 worker
         with Client(cluster) as client:
+            start = time()
+            while not (cluster.pending_jobs or cluster.running_jobs):
+                sleep(0.100)
+                assert time() < start + QUEUE_WAIT
+
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
 
@@ -162,19 +167,6 @@ def test_adaptive_grouped(loop):
             while len(client.scheduler_info()['workers']) != processes:
                 sleep(0.1)
                 assert time() < start + QUEUE_WAIT
-
-            del future
-
-            start = time()
-            while len(client.scheduler_info()['workers']) > 0:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            start = time()
-            while cluster.pending_jobs or cluster.running_jobs:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-            assert cluster.finished_jobs
 
 
 def test_config(loop):  # noqa: F811
