@@ -100,7 +100,7 @@ def test_basic(loop):
             cluster.stop_workers(workers)
 
             start = time()
-            while len(client.scheduler_info()['workers']) > 0:
+            while client.scheduler_info()['workers']:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 

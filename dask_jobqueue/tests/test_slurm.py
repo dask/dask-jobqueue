@@ -88,7 +88,7 @@ def test_job_script():
 
 @pytest.mark.env("slurm")  # noqa: F811
 def test_basic(loop):
-    with SLURMCluster(walltime='00:02:00', cores=2, processes=1, memory='4GB',
+    with SLURMCluster(walltime='00:02:00', cores=2, processes=1, memory='2GB',
                       job_extra=['-D /'], loop=loop) as cluster:
         with Client(cluster) as client:
             cluster.start_workers(2)
@@ -99,7 +99,7 @@ def test_basic(loop):
 
             workers = list(client.scheduler_info()['workers'].values())
             w = workers[0]
-            assert w['memory_limit'] == 4e9
+            assert w['memory_limit'] == 2e9
             assert w['ncores'] == 2
 
             cluster.stop_workers(workers)
