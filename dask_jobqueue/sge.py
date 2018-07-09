@@ -30,7 +30,7 @@ class SGECluster(JobQueueCluster):
     --------
     >>> from dask_jobqueue import SGECluster
     >>> cluster = SGECluster(queue='regular')
-    >>> cluster.start_workers(10)  # this may take a few seconds to launch
+    >>> cluster.start_workers(10)  # submit enough jobs to deploy 10 workers
 
     >>> from dask.distributed import Client
     >>> client = Client(cluster)

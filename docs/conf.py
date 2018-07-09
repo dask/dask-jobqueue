@@ -24,9 +24,8 @@ project = u'Dask-jobqueue'
 copyright = u'2018, Anaconda, Inc. and contributors'
 
 
-# The short X.Y version.
-# version = '0.1.0'
 from dask_jobqueue import __version__ as version
+
 # The full version, including alpha/beta/rc tags.
 # release = '0.1.0'
 release = version
@@ -83,7 +82,7 @@ language = None
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'default'
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -189,4 +188,4 @@ intersphinx_mapping = {
 }
 
 def setup(app):
-    app.add_stylesheet("http://dask.pydata.org/en/latest/_static/style.css")
+    app.add_stylesheet("https://dask.pydata.org/en/latest/_static/style.css")
