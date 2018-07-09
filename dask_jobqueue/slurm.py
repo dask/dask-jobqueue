@@ -51,7 +51,7 @@ class SLURMCluster(JobQueueCluster):
     >>> cluster.adapt()
     """, 4)
 
-    #Override class variables
+    # Override class variables
     submit_command = 'sbatch --parsable'
     cancel_command = 'scancel'
     scheduler_name = 'slurm'
@@ -98,8 +98,9 @@ class SLURMCluster(JobQueueCluster):
 
         if walltime is not None:
             header_lines.append('#SBATCH -t %s' % walltime)
-        header_lines.append('JOB_ID=${SLURM_JOB_ID%;*}')
         header_lines.extend(['#SBATCH %s' % arg for arg in job_extra])
+
+        header_lines.append('JOB_ID=${SLURM_JOB_ID%;*}')
 
         # Declare class attribute that shall be overriden
         self.job_header = '\n'.join(header_lines)

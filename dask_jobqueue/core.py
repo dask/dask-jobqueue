@@ -17,7 +17,7 @@ from distributed.utils import (
     format_bytes, get_ip_interface, parse_bytes, tmpfile)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(10)
+logger.setLevel(logging.INFO)
 docstrings = docrep.DocstringProcessor()
 
 
@@ -331,6 +331,7 @@ class JobQueueCluster(Cluster):
 
     def stop_workers(self, workers):
         """ Stop a list of workers"""
+        logger.debug("Stopping workers: %s" % workers)
         if not workers:
             return
         jobs = []
@@ -339,22 +340,25 @@ class JobQueueCluster(Cluster):
                 jobs.append(_job_id_from_worker_name(w['name']))
             else:
                 jobs.append(_job_id_from_worker_name(w.name))
-        self.stop_jobs(jobs)
+        self.stop_jobs(set(jobs))
 
     def stop_jobs(self, jobs):
         """ Stop a list of jobs"""
+        logger.debug("Stopping jobs: %s" % jobs)
         if jobs:
-            self._call([self.cancel_command] + list(jobs))
+            self._call([self.cancel_command] + list(set(jobs)))
 
     def scale_up(self, n, **kwargs):
         """ Brings total worker count up to ``n`` """
-        active_and_pending = sum([len(j.workers) for j in
-                                  self.running_jobs.values()])
+        logger.debug("Scaling up to %d workers." % n)
+        active_and_pending = sum([len(j) for j in self.running_jobs.values()])
         active_and_pending += self.worker_processes * len(self.pending_jobs)
+        logger.debug("Found %d active/pending workers." % active_and_pending)
         self.start_workers(n - active_and_pending)
 
     def scale_down(self, workers):
         ''' Close the workers with the given addresses '''
+        logger.debug("Scaling down. Workers: %s" % workers)
         worker_states = []
         for w in workers:
             try:
@@ -369,7 +373,7 @@ class JobQueueCluster(Cluster):
 
     def __exit__(self, type, value, traceback):
         jobs = list(self.pending_jobs.keys()) + list(self.running_jobs.keys())
-        self.stop_jobs(jobs)
+        self.stop_jobs(set(jobs))
         self.local_cluster.__exit__(type, value, traceback)
 
     def _job_id_from_submit_output(self, out):
