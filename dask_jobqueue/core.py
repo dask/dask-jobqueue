@@ -66,6 +66,9 @@ class JobQueueCluster(Cluster):
     cancel_command: str
         Abstract attribute for job scheduler cancel command,
         should be overriden
+    scheduler_name: str
+        Abstract attribute for job scheduler name,
+        should be overriden
 
     See Also
     --------
@@ -100,6 +103,7 @@ class JobQueueCluster(Cluster):
                  env_extra=None,
                  walltime=None,
                  threads=None,
+                 shell=False,
                  **kwargs
                  ):
         """ """
@@ -153,9 +157,9 @@ class JobQueueCluster(Cluster):
         else:
             host = socket.gethostname()
 
-        self.local_cluster = LocalCluster(n_workers=0, ip=host, **kwargs)
+        self.cluster = LocalCluster(n_workers=0, ip=host, **kwargs)
 
-        # Keep information on process, cores, and memory, for use in subclasses
+        # Keep information on process, threads and memory, for use in subclasses
         self.worker_memory = parse_bytes(memory)
 
         self.worker_processes = processes
@@ -210,12 +214,21 @@ class JobQueueCluster(Cluster):
                 f.write(self.job_script())
             yield fn
 
+    def submit_job(self, script_filename):
+        """ Sumbits job and handles lsf exception """
+        if self.scheduler_name == 'lsf':
+            piped_cmd = [self.submit_command + '<\"' + script_filename + '\"']
+            self.shell = True
+            return self._call(piped_cmd)
+        else:
+            return self._call(shlex.split(self.submit_command) + [script_filename])
+
     def start_workers(self, n=1):
         """ Start workers and point them to our local scheduler """
         workers = []
         for _ in range(n):
             with self.job_file() as fn:
-                out = self._call(shlex.split(self.submit_command) + [fn])
+                out = self.submit_job(fn)
                 job = self._job_id_from_submit_output(out.decode())
                 self.jobs[self.n] = job
                 workers.append(self.n)
@@ -224,7 +237,7 @@ class JobQueueCluster(Cluster):
     @property
     def scheduler(self):
         """ The scheduler of this cluster """
-        return self.local_cluster.scheduler
+        return self.cluster.scheduler
 
     def _calls(self, cmds):
         """ Call a command using subprocess.communicate
@@ -251,6 +264,7 @@ class JobQueueCluster(Cluster):
         for cmd in cmds:
             logger.debug(' '.join(cmd))
         procs = [subprocess.Popen(cmd,
+                                  shell=self.shell,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE)
                  for cmd in cmds]
@@ -273,6 +287,7 @@ class JobQueueCluster(Cluster):
             return
         workers = list(map(int, workers))
         jobs = [self.jobs[w] for w in workers]
+        self.shell = False
         self._call([self.cancel_command] + list(jobs))
         for w in workers:
             with ignoring(KeyError):
@@ -294,7 +309,7 @@ class JobQueueCluster(Cluster):
 
     def __exit__(self, type, value, traceback):
         self.stop_workers(self.jobs)
-        self.local_cluster.__exit__(type, value, traceback)
+        self.cluster.__exit__(type, value, traceback)
 
     def _job_id_from_submit_output(self, out):
         raise NotImplementedError('_job_id_from_submit_output must be '
