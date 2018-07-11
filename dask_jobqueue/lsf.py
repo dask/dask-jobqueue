@@ -59,7 +59,7 @@ class LSFCluster(JobQueueCluster):
         if project is None:
             project = dask.config.get('jobqueue.%s.project' % self.scheduler_name)
         if ncpus is None:
-            queue = dask.config.get('jobqueue.%s.ncpus' % self.scheduler_name)
+            ncpus = dask.config.get('jobqueue.%s.ncpus' % self.scheduler_name)
         if mem is None:
             memory = dask.config.get('jobqueue.%s.mem' % self.scheduler_name)
         if walltime is None:

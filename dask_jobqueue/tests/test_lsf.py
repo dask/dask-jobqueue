@@ -59,7 +59,7 @@ def test_job_script():
         assert '#BSUB' in job_script
         assert '#BSUB -J dask-worker' in job_script
         assert '#BSUB -n 8' in job_script
-        assert '#BSUB -M 26703' in job_script
+        assert '#BSUB -M 7630' in job_script
         assert '#BSUB -W 00:02' in job_script
         assert '#BSUB -q' not in cluster.job_header
         assert '#BSUB -P' not in cluster.job_header
