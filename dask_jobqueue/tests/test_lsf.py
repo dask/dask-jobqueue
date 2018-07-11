@@ -138,7 +138,7 @@ def test_adaptive(loop):
 def test_config(loop):  # noqa: F811
     with dask.config.set({'jobqueue.lsf.walltime': '00:02',
                           'jobqueue.lsf.local-directory': '/foo'}):
-        with LSFCluster(loop=loop) as cluster:
+        with LSFCluster(loop=loop, cores=1, memory='2GB') as cluster:
             assert '00:02' in cluster.job_script()
             assert '--local-directory /foo' in cluster.job_script()
 
