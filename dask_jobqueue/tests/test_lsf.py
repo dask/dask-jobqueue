@@ -68,7 +68,7 @@ def test_job_script():
         assert '--nthreads 2 --nprocs 4 --memory-limit 2.00GB' in job_script
 
     with LSFCluster(queue='general', project='DaskOnLSF', processes=4, cores=8,
-                    memory='28GB', ncpu=24, mem=100000000000) as cluster:
+                    memory='28GB', ncpus=24, mem=100000000000) as cluster:
 
         job_script = cluster.job_script()
         assert '#BSUB -q general' in cluster.job_header
