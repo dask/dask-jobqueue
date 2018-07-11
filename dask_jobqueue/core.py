@@ -159,7 +159,7 @@ class JobQueueCluster(Cluster):
 
         self.local_cluster = LocalCluster(n_workers=0, ip=host, **kwargs)
 
-        # Keep information on process, cores and memory, for use in subclasses
+        # Keep information on process, cores, and memory, for use in subclasses
         self.worker_memory = parse_bytes(memory)
 
         self.worker_processes = processes
