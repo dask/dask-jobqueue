@@ -70,6 +70,9 @@ class LSFCluster(JobQueueCluster):
         # Instantiate args and parameters from parent abstract class
         super(LSFCluster, self).__init__(**kwargs)
 
+        # Required for submitting jobs with LSF
+        self.shell = True
+
         header_lines = []
         # LSF header build
         if self.name is not None:
@@ -110,7 +113,6 @@ class LSFCluster(JobQueueCluster):
     def submit_job(self, script_filename):
         """ Sumbits job and handles lsf exception """
         piped_cmd = [self.submit_command + '<\"' + script_filename + '\"']
-        self.shell = True
         return self._call(piped_cmd)
 
 

@@ -73,6 +73,9 @@ class SLURMCluster(JobQueueCluster):
 
         super(SLURMCluster, self).__init__(**kwargs)
 
+        # Required for submitting jobs with LSF
+        self.shell = False
+
         # Always ask for only one task
         header_lines = []
         # SLURM header build

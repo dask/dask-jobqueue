@@ -56,8 +56,11 @@ class SGECluster(JobQueueCluster):
 
         super(SGECluster, self).__init__(**kwargs)
 
-        header_lines = ['#!/bin/bash']
+        # Required for submitting jobs with LSF
+        self.shell = False
 
+        header_lines = ['#!/bin/bash']
+        # SGE header build
         if self.name is not None:
             header_lines.append('#$ -N %(name)s')
         if queue is not None:

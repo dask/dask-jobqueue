@@ -103,7 +103,6 @@ class JobQueueCluster(Cluster):
                  env_extra=None,
                  walltime=None,
                  threads=None,
-                 shell=False,
                  **kwargs
                  ):
         """ """
