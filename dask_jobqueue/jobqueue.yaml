@@ -104,4 +104,4 @@ jobqueue:
     env-extra: []
     ncpus: null
     mem: null
-    job-extra: {}
+    job-extra: []

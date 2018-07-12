@@ -215,13 +215,8 @@ class JobQueueCluster(Cluster):
             yield fn
 
     def submit_job(self, script_filename):
-        """ Sumbits job and handles lsf exception """
-        if self.scheduler_name == 'lsf':
-            piped_cmd = [self.submit_command + '<\"' + script_filename + '\"']
-            self.shell = True
-            return self._call(piped_cmd)
-        else:
-            return self._call(shlex.split(self.submit_command) + [script_filename])
+        """ Sumbits job """
+        return self._call(shlex.split(self.submit_command) + [script_filename])
 
     def start_workers(self, n=1):
         """ Start workers and point them to our local scheduler """

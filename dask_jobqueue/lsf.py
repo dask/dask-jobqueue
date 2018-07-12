@@ -65,7 +65,7 @@ class LSFCluster(JobQueueCluster):
         if walltime is None:
             walltime = dask.config.get('jobqueue.%s.walltime' % self.scheduler_name)
         if job_extra is None:
-            job_extra = dask.config.get('jobqueue.lsf.job-extra')
+            job_extra = dask.config.get('jobqueue.%s.job-extra' % self.scheduler_name)
 
         # Instantiate args and parameters from parent abstract class
         super(LSFCluster, self).__init__(**kwargs)
@@ -106,6 +106,12 @@ class LSFCluster(JobQueueCluster):
 
     def _job_id_from_submit_output(self, out):
         return out.split('<')[1].split('>')[0].strip()
+
+    def submit_job(self, script_filename):
+        """ Sumbits job and handles lsf exception """
+        piped_cmd = [self.submit_command + '<\"' + script_filename + '\"']
+        self.shell = True
+        return self._call(piped_cmd)
 
 
 def lsf_format_bytes_ceil(n):
