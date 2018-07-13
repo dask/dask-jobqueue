@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function
+
 import logging
 import math
 import shlex
@@ -17,7 +19,6 @@ from distributed.utils import (
     format_bytes, get_ip_interface, parse_bytes, tmpfile)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 docstrings = docrep.DocstringProcessor()
 
 
