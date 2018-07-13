@@ -24,7 +24,7 @@ def test_basic(loop):  # noqa: F811
 
             workers = list(client.scheduler_info()['workers'].values())
             w = workers[0]
-            assert w['memory_limit'] == 2e9
+            assert w['memory_limit'] == 2e9 / 4
             assert w['ncores'] == 2
 
             cluster.stop_workers(workers)
