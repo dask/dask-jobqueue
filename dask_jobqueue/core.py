@@ -90,6 +90,8 @@ class JobQueueCluster(Cluster):
     submit_command = None
     cancel_command = None
     scheduler_name = ''
+    
+    shell = False # Required for submitting jobs with LSF
 
     def __init__(self,
                  name=None,

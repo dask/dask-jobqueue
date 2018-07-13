@@ -75,9 +75,6 @@ class PBSCluster(JobQueueCluster):
         # Instantiate args and parameters from parent abstract class
         super(PBSCluster, self).__init__(**kwargs)
 
-        # Required for submitting jobs with LSF
-        self.shell = False
-
         header_lines = []
         # PBS header build
         if self.name is not None:

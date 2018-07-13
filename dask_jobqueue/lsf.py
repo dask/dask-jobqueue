@@ -51,6 +51,8 @@ class LSFCluster(JobQueueCluster):
     submit_command = 'bsub'
     cancel_command = 'bkill'
     scheduler_name = 'lsf'
+    
+    shell = True # Required for submitting jobs with LSF
 
     def __init__(self, queue=None, project=None, ncpus=None, mem=None,
                  walltime=None, job_extra=None, **kwargs):
@@ -69,9 +71,6 @@ class LSFCluster(JobQueueCluster):
 
         # Instantiate args and parameters from parent abstract class
         super(LSFCluster, self).__init__(**kwargs)
-
-        # Required for submitting jobs with LSF
-        self.shell = True
 
         header_lines = []
         # LSF header build
