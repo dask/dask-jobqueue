@@ -19,6 +19,7 @@ from distributed.utils import (
     format_bytes, get_ip_interface, parse_bytes, tmpfile)
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 docstrings = docrep.DocstringProcessor()
 
 
@@ -50,12 +51,15 @@ class JobQueuePlugin(SchedulerPlugin):
 
     def add_worker(self, scheduler, worker=None, name=None, **kwargs):
         ''' Run when a new worker enters the cluster'''
+        logger.debug("adding worker %s" % worker)
         w = scheduler.workers[worker]
         job_id = _job_id_from_worker_name(w.name)
+        logger.debug("job id for new worker: %s" % job_id)
         self.all_workers[worker] = (w.name, job_id)
 
         # if this is the first worker for this job, move job to running
         if job_id not in self.running_jobs:
+            logger.debug("this is a new job")
             self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
 
         # add worker to dict of workers in this job
@@ -63,13 +67,16 @@ class JobQueuePlugin(SchedulerPlugin):
 
     def remove_worker(self, scheduler=None, worker=None, **kwargs):
         ''' Run when a worker leaves the cluster'''
+        logger.debug("removing worker %s" % worker)
         name, job_id = self.all_workers[worker]
+        logger.debug("removing worker name (%s) and job_id (%s)" % (name, job_id))
 
         # remove worker from this job
         del self.running_jobs[job_id][name]
 
         # once there are no more workers, move this job to finished_jobs
         if not self.running_jobs[job_id]:
+            logger.debug("that was the last worker for job %s" % job_id)
             self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
 
 
