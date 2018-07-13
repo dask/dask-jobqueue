@@ -13,7 +13,8 @@ from . import QUEUE_WAIT
 
 @pytest.mark.parametrize('Cluster', [PBSCluster, MoabCluster])
 def test_header(Cluster):
-    with Cluster(walltime='00:02:00', processes=4, cores=8, memory='28GB') as cluster:
+    with Cluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
+                 name='dask-worker') as cluster:
 
         assert '#PBS' in cluster.job_header
         assert '#PBS -N dask-worker' in cluster.job_header
@@ -21,6 +22,7 @@ def test_header(Cluster):
         assert '#PBS -l walltime=00:02:00' in cluster.job_header
         assert '#PBS -q' not in cluster.job_header
         assert '#PBS -A' not in cluster.job_header
+        assert '--name dask-worker--${JOB_ID}--' in cluster.job_script()
 
     with Cluster(queue='regular', project='DaskOnPBS', processes=4, cores=8,
                  memory='28GB', resource_spec='select=1:ncpus=24:mem=100GB') as cluster:

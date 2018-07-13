@@ -39,7 +39,8 @@ def _job_id_from_worker_name(name):
 
     template: 'prefix[jobid]suffix'
     '''
-    return name.split('[', 1)[1].split(']')[0]
+    _, job_id, _ = name.split('--')
+    return job_id
 
 
 class JobQueuePlugin(SchedulerPlugin):
@@ -235,12 +236,8 @@ class JobQueueCluster(Cluster):
         mem = format_bytes(self.worker_memory / self.worker_processes)
         mem = mem.replace(' ', '')
         self._command_template += " --memory-limit %s" % mem
+        self._command_template += " --name %s--${JOB_ID}--" % name
 
-        if name is not None:
-            # worker names follow this template: {NAME}[{JOB_ID}]
-            # {JOB_ID} is an environment variable defined by the individual
-            # job scrips/schedulers
-            self._command_template += " --name %s[${JOB_ID}]" % name
         if death_timeout is not None:
             self._command_template += " --death-timeout %s" % death_timeout
         if local_directory is not None:
