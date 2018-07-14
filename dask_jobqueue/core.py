@@ -90,8 +90,11 @@ class JobQueueCluster(Cluster):
     submit_command = None
     cancel_command = None
     scheduler_name = ''
-    
-    shell = False # Required for submitting jobs with LSF
+
+    # Required for excuting commands through the shell in the subprocess module.
+    # It handles the shell input redirection e.g. bsub < script_filename.sh
+    # and does not consider it a less than operator.    
+    shell = False
 
     def __init__(self,
                  name=None,
