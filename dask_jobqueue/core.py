@@ -70,7 +70,8 @@ class JobQueuePlugin(SchedulerPlugin):
         ''' Run when a worker leaves the cluster'''
         logger.debug("removing worker %s" % worker)
         name, job_id = self.all_workers[worker]
-        logger.debug("removing worker name (%s) and job_id (%s)" % (name, job_id))
+        logger.debug("removing worker name (%s) and"
+                     "job_id (%s)" % (name, job_id))
 
         # remove worker from this job
         del self.running_jobs[job_id][name]
@@ -341,10 +342,8 @@ class JobQueueCluster(Cluster):
         logger.debug("Stopping workers: %s" % workers)
         if not workers:
             return
-        jobs = []
-        if self.pending_jobs:
-            import pdb
-            pdb.set_trace()
+        jobs = list(self.pending_jobs.keys())  # stop pending jobs too
+        logger.debug("Stopping pending jobs %s" % jobs)
         for w in workers:
             if isinstance(w, dict):
                 jobs.append(_job_id_from_worker_name(w['name']))
@@ -358,13 +357,7 @@ class JobQueueCluster(Cluster):
         # why set with empty string in jobs[0]
         if jobs:
             jobs = list(jobs)
-            if len(jobs) == 1 and not jobs[0]:
-                import pdb
-                pdb.set_trace()
             self._call([self.cancel_command] + list(set(jobs)))
-        else:
-            import pdb
-            pdb.set_trace()
 
     def scale_up(self, n, **kwargs):
         """ Brings total worker count up to ``n`` """

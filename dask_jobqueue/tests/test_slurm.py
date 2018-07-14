@@ -49,7 +49,6 @@ def test_job_script():
                       memory='28GB') as cluster:
 
         job_script = cluster.job_script()
-        print(job_script)
         assert '#SBATCH' in job_script
         assert '#SBATCH -J dask-worker' in job_script
         assert '--memory-limit 7.00GB ' in job_script
