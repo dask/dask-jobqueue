@@ -44,7 +44,7 @@ Cheyenne
 ARM Stratus
 -----------
 
-`Department of Energy Atmospheric Radiation Measurement (DOE-ARM) Stratus <https://adc.arm.gov/tutorials/cluster/stratusclusterquickstart.html>`_.
+`Department of Energy Atmospheric Radiation Measurement (DOE-ARM) Stratus Supercomputer <https://adc.arm.gov/tutorials/cluster/stratusclusterquickstart.html>`_.
 
 .. code-block:: yaml
 
