@@ -276,11 +276,13 @@ class JobQueueCluster(Cluster):
         """ Write job submission script to temporary file """
         with tmpfile(extension='sh') as fn:
             with open(fn, 'w') as f:
+                logger.debug(self.job_script())
                 f.write(self.job_script())
             yield fn
 
     def start_workers(self, n=1):
         """ Start workers and point them to our local scheduler """
+        logger.debug('starting %s workers' % n)
         num_jobs = math.ceil(n / self.worker_processes)
         for _ in range(num_jobs):
             with self.job_file() as fn:
@@ -340,18 +342,29 @@ class JobQueueCluster(Cluster):
         if not workers:
             return
         jobs = []
+        if self.pending_jobs:
+            import pdb
+            pdb.set_trace()
         for w in workers:
             if isinstance(w, dict):
                 jobs.append(_job_id_from_worker_name(w['name']))
             else:
                 jobs.append(_job_id_from_worker_name(w.name))
-        self.stop_jobs(set(jobs))
+        self.stop_jobs(set(jobs + list(self.pending_jobs.keys())))
 
     def stop_jobs(self, jobs):
         """ Stop a list of jobs"""
         logger.debug("Stopping jobs: %s" % jobs)
+        # why set with empty string in jobs[0]
         if jobs:
+            jobs = list(jobs)
+            if len(jobs) == 1 and not jobs[0]:
+                import pdb
+                pdb.set_trace()
             self._call([self.cancel_command] + list(set(jobs)))
+        else:
+            import pdb
+            pdb.set_trace()
 
     def scale_up(self, n, **kwargs):
         """ Brings total worker count up to ``n`` """
