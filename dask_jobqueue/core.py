@@ -93,7 +93,7 @@ class JobQueueCluster(Cluster):
 
     # Required for excuting commands through the shell in the subprocess module.
     # It handles the shell input redirection e.g. bsub < script_filename.sh
-    # and does not consider '<' as a 'less than' operator.
+    # and does not consider '<' as a command, file or directory.
     shell = False
 
     def __init__(self,
