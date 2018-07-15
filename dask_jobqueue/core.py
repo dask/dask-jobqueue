@@ -19,7 +19,6 @@ from distributed.utils import (
     format_bytes, get_ip_interface, parse_bytes, tmpfile)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 docstrings = docrep.DocstringProcessor()
 
 
@@ -37,7 +36,7 @@ Please specify job size with the following keywords:
 def _job_id_from_worker_name(name):
     ''' utility to parse the job ID from the worker name
 
-    template: 'prefix[jobid]suffix'
+    template: 'prefix--jobid--suffix'
     '''
     _, job_id, _ = name.split('--')
     return job_id
@@ -277,7 +276,7 @@ class JobQueueCluster(Cluster):
         """ Write job submission script to temporary file """
         with tmpfile(extension='sh') as fn:
             with open(fn, 'w') as f:
-                logger.debug(self.job_script())
+                logger.debug("writing job script: \n%s" % self.job_script())
                 f.write(self.job_script())
             yield fn
 
@@ -289,7 +288,8 @@ class JobQueueCluster(Cluster):
             with self.job_file() as fn:
                 out = self._call(shlex.split(self.submit_command) + [fn])
                 job = self._job_id_from_submit_output(out.decode())
-                self._scheduler_plugin.pending_jobs[job] = {}
+                logger.debug("started job: %s" % job)
+                self.pending_jobs[job] = {}
 
     @property
     def scheduler(self):
@@ -342,19 +342,17 @@ class JobQueueCluster(Cluster):
         logger.debug("Stopping workers: %s" % workers)
         if not workers:
             return
-        jobs = list(self.pending_jobs.keys())  # stop pending jobs too
-        logger.debug("Stopping pending jobs %s" % jobs)
+        jobs = self._stop_pending_jobs()  # stop pending jobs too
         for w in workers:
             if isinstance(w, dict):
                 jobs.append(_job_id_from_worker_name(w['name']))
             else:
                 jobs.append(_job_id_from_worker_name(w.name))
-        self.stop_jobs(set(jobs + list(self.pending_jobs.keys())))
+        self.stop_jobs(set(jobs))
 
     def stop_jobs(self, jobs):
         """ Stop a list of jobs"""
         logger.debug("Stopping jobs: %s" % jobs)
-        # why set with empty string in jobs[0]
         if jobs:
             jobs = list(jobs)
             self._call([self.cancel_command] + list(set(jobs)))
@@ -383,9 +381,17 @@ class JobQueueCluster(Cluster):
         return self
 
     def __exit__(self, type, value, traceback):
-        jobs = list(self.pending_jobs.keys()) + list(self.running_jobs.keys())
+        jobs = self._stop_pending_jobs()
+        jobs += list(self.running_jobs.keys())
         self.stop_jobs(set(jobs))
         self.local_cluster.__exit__(type, value, traceback)
+
+    def _stop_pending_jobs(self):
+        jobs = list(self.pending_jobs.keys())
+        logger.debug("Stopping pending jobs %s" % jobs)
+        for job_id in jobs:
+            del self.pending_jobs[job_id]
+        return jobs
 
     def _job_id_from_submit_output(self, out):
         raise NotImplementedError('_job_id_from_submit_output must be '
