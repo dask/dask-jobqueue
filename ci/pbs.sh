@@ -19,7 +19,7 @@ function jobqueue_install {
 }
 
 function jobqueue_script {
-    docker exec -it -u pbsuser pbs_master /bin/bash -c "cd /dask-jobqueue; py.test dask_jobqueue --verbose -E pbs -s"
+    docker exec -it -u pbsuser pbs_master /bin/bash -c "cd /dask-jobqueue; py.test dask_jobqueue --verbose -E pbs"
 }
 
 function jobqueue_after_script {

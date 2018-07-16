@@ -14,11 +14,11 @@ function jobqueue_before_install {
 }
 
 function jobqueue_install {
-    docker exec -it sge_master /bin/bash -c "cd /dask-jobqueue; python setup.py install"
+    docker exec -it sge_master /bin/bash -c "cd /dask-jobqueue; pip install -e ."
 }
 
 function jobqueue_script {
-    docker exec -it sge_master /bin/bash -c "cd /dask-jobqueue; py.test dask_jobqueue --verbose -E sge -s"
+    docker exec -it sge_master /bin/bash -c "cd /dask-jobqueue; py.test dask_jobqueue --verbose -E sge"
 }
 
 function jobqueue_after_script {
