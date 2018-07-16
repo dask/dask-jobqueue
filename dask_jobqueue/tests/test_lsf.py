@@ -15,7 +15,7 @@ def test_header():
         assert '#BSUB' in cluster.job_header
         assert '#BSUB -J dask-worker' in cluster.job_header
         assert '#BSUB -n 8' in cluster.job_header
-        assert '#BSUB -M 7630' in cluster.job_header
+        assert '#BSUB -M 8000' in cluster.job_header
         assert '#BSUB -W 00:02' in cluster.job_header
         assert '#BSUB -q' not in cluster.job_header
         assert '#BSUB -P' not in cluster.job_header
@@ -27,8 +27,8 @@ def test_header():
         assert '#BSUB -J dask-worker' in cluster.job_header
         assert '#BSUB -n 24' in cluster.job_header
         assert '#BSUB -n 8' not in cluster.job_header
-        assert '#BSUB -M 95368' in cluster.job_header
-        assert '#BSUB -M 26703' not in cluster.job_header
+        assert '#BSUB -M 100000' in cluster.job_header
+        assert '#BSUB -M 28000' not in cluster.job_header
         assert '#BSUB -W' in cluster.job_header
         assert '#BSUB -P DaskOnLSF' in cluster.job_header
 
@@ -59,7 +59,7 @@ def test_job_script():
         assert '#BSUB' in job_script
         assert '#BSUB -J dask-worker' in job_script
         assert '#BSUB -n 8' in job_script
-        assert '#BSUB -M 7630' in job_script
+        assert '#BSUB -M 8000' in job_script
         assert '#BSUB -W 00:02' in job_script
         assert '#BSUB -q' not in cluster.job_header
         assert '#BSUB -P' not in cluster.job_header
@@ -75,8 +75,8 @@ def test_job_script():
         assert '#BSUB -J dask-worker' in cluster.job_header
         assert '#BSUB -n 24' in cluster.job_header
         assert '#BSUB -n 8' not in cluster.job_header
-        assert '#BSUB -M 95368' in cluster.job_header
-        assert '#BSUB -M 26703' not in cluster.job_header
+        assert '#BSUB -M 100000' in cluster.job_header
+        assert '#BSUB -M 28000' not in cluster.job_header
         assert '#BSUB -W' in cluster.job_header
         assert '#BSUB -P DaskOnLSF' in cluster.job_header
 

@@ -91,10 +91,7 @@ class JobQueueCluster(Cluster):
     cancel_command = None
     scheduler_name = ''
 
-    # Required for excuting commands through the shell in the subprocess module.
-    # It handles the shell input redirection e.g. bsub < script_filename.sh
-    # and does not consider '<' as a command, file or directory.
-    shell = False
+    popen_shell = False
 
     def __init__(self,
                  name=None,
@@ -219,7 +216,6 @@ class JobQueueCluster(Cluster):
             yield fn
 
     def submit_job(self, script_filename):
-        """ Sumbits job """
         return self._call(shlex.split(self.submit_command) + [script_filename])
 
     def start_workers(self, n=1):
@@ -263,7 +259,7 @@ class JobQueueCluster(Cluster):
         for cmd in cmds:
             logger.debug(' '.join(cmd))
         procs = [subprocess.Popen(cmd,
-                                  shell=self.shell,
+                                  shell=self.popen_shell,
                                   stdout=subprocess.PIPE,
                                   stderr=subprocess.PIPE)
                  for cmd in cmds]
@@ -280,14 +276,16 @@ class JobQueueCluster(Cluster):
         """ Singular version of _calls """
         return self._calls([cmd])[0]
 
+    def kill_jobs(self, jobs):
+        return self._call([self.cancel_command] + list(jobs))
+
     def stop_workers(self, workers):
         """ Stop a list of workers"""
         if not workers:
             return
         workers = list(map(int, workers))
         jobs = [self.jobs[w] for w in workers]
-        self.shell = False
-        self._call([self.cancel_command] + list(jobs))
+        self.kill_jobs(jobs)
         for w in workers:
             with ignoring(KeyError):
                 del self.jobs[w]

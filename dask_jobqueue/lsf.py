@@ -55,7 +55,7 @@ class LSFCluster(JobQueueCluster):
     # Required for excuting commands through the shell in the subprocess module.
     # It handles the shell input redirection e.g. bsub < script_filename.sh
     # and does not consider '<' as a command, file or directory.
-    shell = True
+    popen_shell = True
 
     def __init__(self, queue=None, project=None, ncpus=None, mem=None,
                  walltime=None, job_extra=None, **kwargs):
@@ -113,15 +113,19 @@ class LSFCluster(JobQueueCluster):
         return out.split('<')[1].split('>')[0].strip()
 
     def submit_job(self, script_filename):
-        """ Sumbits job and handles lsf exception """
+        self.popen_shell = True
         piped_cmd = [self.submit_command + '<\"' + script_filename + '\"']
         return self._call(piped_cmd)
+
+    def kill_jobs(self, jobs):
+        self.popen_shell = False
+        return self._call([self.cancel_command] + list(jobs))
 
 
 def lsf_format_bytes_ceil(n):
     """ Format bytes as text
     LSF expects megabytes
     >>> lsf_format_bytes_ceil(1234567890)
-    '1178'
+    '1235'
     """
-    return '%d' % math.ceil(n / (1024**2))
+    return '%d' % math.ceil(n / (1000**2))
