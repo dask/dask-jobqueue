@@ -54,7 +54,6 @@ class JobQueuePlugin(SchedulerPlugin):
         logger.debug("adding worker %s" % worker)
         w = scheduler.workers[worker]
         job_id = _job_id_from_worker_name(w.name)
-
         logger.debug("job id for new worker: %s" % job_id)
         self.all_workers[worker] = (w.name, job_id)
 
@@ -119,9 +118,6 @@ class JobQueueCluster(Cluster):
         should be overriden
     cancel_command: str
         Abstract attribute for job scheduler cancel command,
-        should be overriden
-    scheduler_name: str
-        Abstract attribute for job scheduler name,
         should be overriden
 
     See Also
