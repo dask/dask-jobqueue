@@ -15,7 +15,7 @@ def test_basic(loop):  # noqa: F811
                     loop=loop) as cluster:
         print(cluster.job_script())
         with Client(cluster, loop=loop) as client:
-            cluster.start_workers(2)
+            cluster.scale(2)
             assert cluster.pending_jobs or cluster.running_jobs
 
             future = client.submit(lambda x: x + 1, 10)
@@ -27,7 +27,7 @@ def test_basic(loop):  # noqa: F811
             assert w['memory_limit'] == 2e9 / 4
             assert w['ncores'] == 2
 
-            cluster.stop_workers(workers)
+            cluster.scale(0)
 
             start = time()
             while client.scheduler_info()['workers']:

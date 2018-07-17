@@ -88,7 +88,7 @@ def test_basic(loop):
     with PBSCluster(walltime='00:02:00', processes=1, cores=2, memory='2GB', local_directory='/tmp',
                     job_extra=['-V'], loop=loop) as cluster:
         with Client(cluster) as client:
-            cluster.start_workers(2)
+            cluster.scale(2)
             assert cluster.pending_jobs or cluster.running_jobs
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
@@ -99,7 +99,7 @@ def test_basic(loop):
             assert w['memory_limit'] == 2e9
             assert w['ncores'] == 2
 
-            cluster.stop_workers(workers)
+            cluster.scale(0)
 
             start = time()
             while client.scheduler_info()['workers']:
