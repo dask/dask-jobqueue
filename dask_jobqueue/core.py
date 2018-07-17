@@ -54,6 +54,7 @@ class JobQueuePlugin(SchedulerPlugin):
         logger.debug("adding worker %s" % worker)
         w = scheduler.workers[worker]
         job_id = _job_id_from_worker_name(w.name)
+
         logger.debug("job id for new worker: %s" % job_id)
         self.all_workers[worker] = (w.name, job_id)
 
@@ -345,9 +346,6 @@ class JobQueueCluster(Cluster):
     def _call(self, cmd):
         """ Singular version of _calls """
         return self._calls([cmd])[0]
-
-    def kill_jobs(self, jobs):
-        return self._call([self.cancel_command] + list(jobs))
 
     def stop_workers(self, workers):
         """ Stop a list of workers"""
