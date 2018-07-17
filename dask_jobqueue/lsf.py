@@ -103,7 +103,7 @@ class LSFCluster(JobQueueCluster):
         if walltime is not None:
             header_lines.append('#BSUB -W %s' % walltime)
         header_lines.extend(['#BSUB %s' % arg for arg in job_extra])
-        header_lines.append('JOB_ID=${LSF_JOBID%.*}')
+        header_lines.append('JOB_ID=${LSB_JOBID%.*}')
 
         # Declare class attribute that shall be overriden
         self.job_header = '\n'.join(header_lines)
