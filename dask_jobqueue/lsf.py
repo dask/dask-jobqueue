@@ -114,17 +114,25 @@ class LSFCluster(JobQueueCluster):
         return out.split('<')[1].split('>')[0].strip()
 
     def submit_job(self, script_filename):
+        """ set `self.popen_shell = True` and redirect the `script_filename` to bsub """
         self.popen_shell = True
         piped_cmd = [self.submit_command + '<\"' + script_filename + '\"']
         return self._call(piped_cmd)
 
     def stop_jobs(self, jobs):
-        """ Stop a list of jobs"""
+        """ set `self.popen_shell = False` """
         self.popen_shell = False
         logger.debug("Stopping jobs: %s" % jobs)
         if jobs:
             jobs = list(jobs)
             self._call([self.cancel_command] + list(set(jobs)))
+
+    def _error_capture(self, err):
+        """ supress `Job is submitted to <PROJECT> project.` """
+        if err.decode("utf-8").split()[0:4] == ['Job', 'is', 'submitted', 'to']:
+            err = False
+        if err:
+            logger.error(err.decode())
 
 
 def lsf_format_bytes_ceil(n):
