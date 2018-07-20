@@ -114,9 +114,14 @@ class LSFCluster(JobQueueCluster):
         return out.split('<')[1].split('>')[0].strip()
 
     def submit_job(self, script_filename):
-        """ set `self.popen_shell = True` and redirect the `script_filename` to bsub """
+        """ set `self.popen_shell = True` and redirect the `script_filename` to bsub.
+        Output of bsub normally looks like:
+        `Job is submitted to <PROJECT> project.` which is the stderr and
+        `Job <JOBID> is submitted to (default) queue <QUEUE>.` which is the stdout.
+        Supress the stderr by redirecting it to nowhere.
+        The `piped_cmd` looks like ['bsub < tmp.sh 2> /dev/null'] """
         self.popen_shell = True
-        piped_cmd = [self.submit_command + '<\"' + script_filename + '\"']
+        piped_cmd = [self.submit_command+' < '+script_filename+' 2> /dev/null']
         return self._call(piped_cmd)
 
     def stop_jobs(self, jobs):
@@ -126,13 +131,6 @@ class LSFCluster(JobQueueCluster):
         if jobs:
             jobs = list(jobs)
             self._call([self.cancel_command] + list(set(jobs)))
-
-    def _error_capture(self, err):
-        """ supress `Job is submitted to <PROJECT> project.` """
-        if err.decode("utf-8").split()[0:4] == ['Job', 'is', 'submitted', 'to']:
-            err = False
-        if err:
-            logger.error(err.decode())
 
 
 def lsf_format_bytes_ceil(n):

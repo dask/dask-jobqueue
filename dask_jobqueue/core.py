@@ -301,10 +301,6 @@ class JobQueueCluster(Cluster):
         """ The scheduler of this cluster """
         return self.local_cluster.scheduler
 
-    def _error_capture(self, err):
-        if err:
-            logger.error(err.decode())
-
     def _calls(self, cmds):
         """ Call a command using subprocess.communicate
 
@@ -338,7 +334,8 @@ class JobQueueCluster(Cluster):
         result = []
         for proc in procs:
             out, err = proc.communicate()
-            self._error_capture(err)
+            if err:
+                logger.error(err.decode())
             result.append(out)
         return result
 
