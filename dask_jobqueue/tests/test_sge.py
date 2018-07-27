@@ -15,7 +15,8 @@ def test_basic(loop):  # noqa: F811
                     loop=loop) as cluster:
         print(cluster.job_script())
         with Client(cluster, loop=loop) as client:
-            cluster.scale(2)
+            # use scale_up instead of scale to avoid race condition here
+            cluster.scale_up(2)
             assert cluster.pending_jobs or cluster.running_jobs
 
             future = client.submit(lambda x: x + 1, 10)
