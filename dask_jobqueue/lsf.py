@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function
 
 import logging
 import math
-import os
 
 import dask
 
@@ -48,14 +47,9 @@ class LSFCluster(JobQueueCluster):
     """, 4)
 
     # Override class variables
-    submit_command = 'bsub'
+    submit_command = 'bsub <'
     cancel_command = 'bkill'
     scheduler_name = 'lsf'
-
-    # Required for excuting commands through the shell in the subprocess module.
-    # It handles the shell input redirection e.g. bsub < script_filename.sh
-    # and does not consider '<' as a command, file or directory.
-    popen_shell = True
 
     def __init__(self, queue=None, project=None, ncpus=None, mem=None,
                  walltime=None, job_extra=None, **kwargs):
@@ -66,7 +60,7 @@ class LSFCluster(JobQueueCluster):
         if ncpus is None:
             ncpus = dask.config.get('jobqueue.%s.ncpus' % self.scheduler_name)
         if mem is None:
-            memory = dask.config.get('jobqueue.%s.mem' % self.scheduler_name)
+            mem = dask.config.get('jobqueue.%s.mem' % self.scheduler_name)
         if walltime is None:
             walltime = dask.config.get('jobqueue.%s.walltime' % self.scheduler_name)
         if job_extra is None:
@@ -113,29 +107,30 @@ class LSFCluster(JobQueueCluster):
     def _job_id_from_submit_output(self, out):
         return out.split('<')[1].split('>')[0].strip()
 
-    def submit_job(self, script_filename):
-        """ set `self.popen_shell = True` and redirect the `script_filename` to bsub.
-        Output of bsub normally looks like:
-        `Job is submitted to <PROJECT> project.` which is the stderr and
-        `Job <JOBID> is submitted to (default) queue <QUEUE>.` which is the stdout.
-        Supress the stderr by redirecting it to nowhere.
-        The `piped_cmd` looks like ['bsub < tmp.sh 2> /dev/null'] """
-        self.popen_shell = True
-        piped_cmd = [self.submit_command+' < '+script_filename+' 2> /dev/null']
-        return self._call(piped_cmd)
+    def _submit_job(self, script_filename):
+        piped_cmd = [self.submit_command + ' ' + script_filename + ' 2> /dev/null']
+        return self._call(piped_cmd, shell=True)
 
     def stop_jobs(self, jobs):
-        """ set `self.popen_shell = False` """
-        self.popen_shell = False
+        """ Stop a list of jobs"""
         logger.debug("Stopping jobs: %s" % jobs)
         if jobs:
             jobs = list(jobs)
-            self._call([self.cancel_command] + list(set(jobs)))
+            self._call([self.cancel_command] + list(set(jobs)), shell=False)
 
 
 def lsf_format_bytes_ceil(n):
     """ Format bytes as text
-    LSF expects megabytes
+
+    Convert bytes to megabytes which LSF requires.
+
+    Parameters
+    ----------
+    n: int
+        Bytes
+
+    Examples
+    --------
     >>> lsf_format_bytes_ceil(1234567890)
     '1235'
     """

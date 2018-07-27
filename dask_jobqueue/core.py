@@ -143,8 +143,6 @@ class JobQueueCluster(Cluster):
     _adaptive_options = {
         'worker_key': lambda ws: _job_id_from_worker_name(ws.name)}
 
-    popen_shell = False
-
     def __init__(self,
                  name=None,
                  cores=None,
@@ -282,7 +280,7 @@ class JobQueueCluster(Cluster):
                 f.write(self.job_script())
             yield fn
 
-    def submit_job(self, script_filename):
+    def _submit_job(self, script_filename):
         return self._call(shlex.split(self.submit_command) + [script_filename])
 
     def start_workers(self, n=1):
@@ -291,7 +289,7 @@ class JobQueueCluster(Cluster):
         num_jobs = math.ceil(n / self.worker_processes)
         for _ in range(num_jobs):
             with self.job_file() as fn:
-                out = self.submit_job(fn)
+                out = self._submit_job(fn)
                 job = self._job_id_from_submit_output(out.decode())
                 logger.debug("started job: %s" % job)
                 self.pending_jobs[job] = {}
@@ -301,7 +299,7 @@ class JobQueueCluster(Cluster):
         """ The scheduler of this cluster """
         return self.local_cluster.scheduler
 
-    def _calls(self, cmds):
+    def _calls(self, cmds, **kwargs):
         """ Call a command using subprocess.communicate
 
         This centralzies calls out to the command line, providing consistent
@@ -327,9 +325,9 @@ class JobQueueCluster(Cluster):
         for cmd in cmds:
             logger.debug(' '.join(cmd))
             procs.append(subprocess.Popen(cmd,
-                                          shell=self.popen_shell,
                                           stdout=subprocess.PIPE,
-                                          stderr=subprocess.PIPE))
+                                          stderr=subprocess.PIPE,
+                                          **kwargs))
 
         result = []
         for proc in procs:
@@ -339,9 +337,9 @@ class JobQueueCluster(Cluster):
             result.append(out)
         return result
 
-    def _call(self, cmd):
+    def _call(self, cmd, **kwargs):
         """ Singular version of _calls """
-        return self._calls([cmd])[0]
+        return self._calls([cmd], **kwargs)[0]
 
     def stop_workers(self, workers):
         """ Stop a list of workers"""
