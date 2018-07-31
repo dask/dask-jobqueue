@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 docker-compose up -d
 while [ `docker exec -it sge_master qhost | grep lx26-amd64 | wc -l` -ne 2 ]
   do

@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 export MASTER_HOSTNAME=sge_master
 echo "gridengine-common       shared/gridenginemaster string  $MASTER_HOSTNAME" | sudo debconf-set-selections
 echo "gridengine-common       shared/gridenginecell   string  default" | sudo debconf-set-selections

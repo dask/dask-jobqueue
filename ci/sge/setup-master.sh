@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 # Configure the master hostname for Grid Engine
 echo "gridengine-master       shared/gridenginemaster string  $HOSTNAME" | sudo debconf-set-selections
 echo "gridengine-master       shared/gridenginecell   string  default" | sudo debconf-set-selections

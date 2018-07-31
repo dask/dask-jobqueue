@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 # start sge
 sudo service gridengine-exec restart
 

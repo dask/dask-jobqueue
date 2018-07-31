@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 function jobqueue_before_install {
     docker version
     docker-compose version
