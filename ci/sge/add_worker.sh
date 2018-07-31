@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 QUEUE=$1
 HOSTNAME=$2
 SLOTS=$3

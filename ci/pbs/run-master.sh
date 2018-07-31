@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 # Reduce time between PBS scheduling and add history
 qmgr -c "set server scheduler_iteration = 20"
 qmgr -c "set server job_history_enable = True"
