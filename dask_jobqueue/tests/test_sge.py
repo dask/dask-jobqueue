@@ -31,8 +31,6 @@ def test_basic(loop):  # noqa: F811
             cluster.scale(0)
 
             start = time()
-            while client.scheduler_info()['workers']:
+            while cluster.running_jobs:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
-
-            assert not cluster.running_jobs
