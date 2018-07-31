@@ -111,13 +111,6 @@ class LSFCluster(JobQueueCluster):
         piped_cmd = [self.submit_command + ' ' + script_filename + ' 2> /dev/null']
         return self._call(piped_cmd, shell=True)
 
-    def stop_jobs(self, jobs):
-        """ Stop a list of jobs"""
-        logger.debug("Stopping jobs: %s" % jobs)
-        if jobs:
-            jobs = list(jobs)
-            self._call([self.cancel_command] + list(set(jobs)), shell=False)
-
 
 def lsf_format_bytes_ceil(n):
     """ Format bytes as text
