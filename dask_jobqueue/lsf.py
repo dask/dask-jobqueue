@@ -34,8 +34,9 @@ class LSFCluster(JobQueueCluster):
     Examples
     --------
     >>> from dask_jobqueue import LSFCluster
-    >>> cluster = LSFcluster(queue='general', project='DaskonLSF')
-    >>> cluster.scale(10)  # this may take a few seconds to launch
+    >>> cluster = LSFcluster(queue='general', project='DaskonLSF',
+    ...                      cores=15, memory='25GB')
+    >>> cluster.start_workers(10)  # this may take a few seconds to launch
 
     >>> from dask.distributed import Client
     >>> client = Client(cluster)
