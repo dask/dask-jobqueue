@@ -1,5 +1,4 @@
 #!/bin/bash
-
 cd /src/pbspro
 ./autogen.sh
 ./configure -prefix=/opt/pbs

@@ -1,5 +1,4 @@
 #!/bin/sh
-
 pbs_conf_file=/etc/pbs.conf
 mom_conf_file=/var/spool/pbs/mom_priv/config
 hostname=$(hostname)
