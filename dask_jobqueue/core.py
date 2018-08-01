@@ -255,10 +255,10 @@ class JobQueueCluster(Cluster):
 
         return (self.__class__.__name__ +
                 '(%r, workers=%d, cores=%d/%d, memory=%s/%s, jobs=%d/%d, finished_jobs=%d)' %
-            (self.scheduler.address, running_workers, running_cores, total_cores,
-             format_bytes(running_memory), format_bytes(total_memory),
-             len(self.running_jobs), total_jobs, len(self.finished_jobs))
-            )
+                (self.scheduler.address, running_workers, running_cores, total_cores,
+                 format_bytes(running_memory), format_bytes(total_memory),
+                 len(self.running_jobs), total_jobs, len(self.finished_jobs))
+                )
 
     @property
     def pending_jobs(self):
