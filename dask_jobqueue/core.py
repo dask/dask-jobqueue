@@ -249,15 +249,13 @@ class JobQueueCluster(Cluster):
         running_workers = sum(len(value) for value in self.running_jobs.values())
         running_cores = running_workers * self.worker_threads
         total_jobs = len(self.pending_jobs) + len(self.running_jobs)
-        total_cores = total_jobs * self.worker_cores
+        total_workers = total_jobs * self.worker_processes
         running_memory = running_workers * self.worker_memory / self.worker_processes
-        total_memory = total_jobs * self.worker_memory
 
         return (self.__class__.__name__ +
-                '(%r, workers=%d, cores=%d/%d, memory=%s/%s, jobs=%d/%d, finished_jobs=%d)' %
-                (self.scheduler.address, running_workers, running_cores, total_cores,
-                 format_bytes(running_memory), format_bytes(total_memory),
-                 len(self.running_jobs), total_jobs, len(self.finished_jobs))
+                '(cores=%d, memory=%s, workers=%d/%d, jobs=%d/%d)' %
+                (running_cores, format_bytes(running_memory), running_workers,
+                 total_workers, len(self.running_jobs), total_jobs)
                 )
 
     @property
