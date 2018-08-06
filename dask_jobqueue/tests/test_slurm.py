@@ -135,7 +135,7 @@ def test_adaptive(loop):
             del future
 
             start = time()
-            while cluster.running_jobs > 0:
+            while cluster.running_jobs:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 
