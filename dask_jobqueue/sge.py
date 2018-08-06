@@ -83,4 +83,7 @@ class SGECluster(JobQueueCluster):
         logger.debug("Job script: \n %s" % self.job_script())
 
     def _job_id_from_submit_output(self, out):
-        return out.strip()
+        jid = out.strip()
+        if not jid:
+            raise ValueError('Unable to parse jobid from output of %s' % out)
+        return jid

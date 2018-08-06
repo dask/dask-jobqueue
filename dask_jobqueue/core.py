@@ -331,7 +331,7 @@ class JobQueueCluster(Cluster):
         for proc in procs:
             out, err = proc.communicate()
             if err:
-                logger.error(err.decode())
+                raise RuntimeError(err.decode())
             result.append(out)
         return result
 

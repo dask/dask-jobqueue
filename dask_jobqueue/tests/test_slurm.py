@@ -91,9 +91,14 @@ def test_basic(loop):
     with SLURMCluster(walltime='00:02:00', cores=2, processes=1, memory='2GB',
                       job_extra=['-D /'], loop=loop) as cluster:
         with Client(cluster) as client:
-            # use scale_up instead of scale to avoid race condition here
-            cluster.scale_up(2)
-            assert cluster.pending_jobs or cluster.running_jobs
+
+            cluster.scale(2)
+
+            start = time()
+            while not(cluster.pending_jobs or cluster.running_jobs):
+                sleep(0.100)
+                assert time() < start + QUEUE_WAIT
+
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
             assert cluster.running_jobs

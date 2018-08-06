@@ -108,7 +108,10 @@ class SLURMCluster(JobQueueCluster):
         logger.debug("Job script: \n %s" % self.job_script())
 
     def _job_id_from_submit_output(self, out):
-        return out.split(';')[0].strip()
+        jid = out.split(';')[0].strip()
+        if not jid:
+            raise ValueError('Unable to parse jobid from output of %s' % out)
+        return jid
 
 
 def slurm_format_bytes_ceil(n):
