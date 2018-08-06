@@ -141,6 +141,7 @@ documentation <http://dask.pydata.org/en/latest/configuration.html>`_
 
    index.rst
    install.rst
+   examples.rst
    configurations.rst
    history.rst
    api.rst

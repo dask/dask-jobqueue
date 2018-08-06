@@ -111,35 +111,53 @@ SLURM Deployment: Low-priority node usage
                            job_extra=['--qos="savio_lowprio"'])
 
 
-Viewing Dask Dashboard
-~~~~~~~~~~~~~~~~~~~~~~
+Viewing the Dask Dashboard
+--------------------------
 
-Sometimes, the Dask dashboard might not be directly accessible via the browser.
-To solve this, you can use SSH tunneling. Let's say we started with the
-following setup:
+Sometimes the Dask Dashboard might not be directly accessible via the browser.
+This may be due to the notebook being served at one IP address and the
+Dashboard being served to another.
+ 
+To solve this you can use SSH tunneling. 
+
+If you are using a notebook it is recommended to follow the configuration instructions
+given in the `Pangeo documentation <http://pangeo-data.org/setup_guides/hpc.html#configure-jupyter>`_.
+
+Firstly, you can inspect the ``client`` to see the IP address it is being served to:
 
 .. code-block:: python
 
-    from dask_jobqueue import SGECluster
+
+    from dask_jobqueue import LSFCluster
     from distributed import Client
 
-    cluster = SGECluster(queue='default.q',
-                         walltime="1500000",
-                         processes=10,
-                         memory='20GB')
+    cluster = LSFCluster(cores=2, memory='2GB')
 
     client = Client(cluster)
 
-Say for example, on inspection of the ``client`` object, you see that the
-Dashboard can be viewed at ``http://172.16.23.102:8787/status``. If the webpage
-is not directly accessible in your browser, then the next thing to try would be
-SSH tunneling.
+On inspection of the ``client`` object, you see that the client can be viewed at 
+``172.16.23.102``, for example. It is then recommended the notebook is served at 
+this IP address:
 
 .. code-block:: bash
 
-    # General syntax
-    $ ssh -fN your-login@scheduler-ip-address -L port-number:localhost:port-number
-    # As applied to this example:
-    $ ssh -fN username@172.16.23.102 -L 8787:localhost:8787
+    
+    $ jupyter notebook --no-browser --ip=172.16.23.102 --port=8888
 
-Now, you can go to ``http://localhost:8787`` on your browser to view the dashboard.
+This can be tunneled from a local machine as:
+
+.. code-block:: bash
+
+    
+    $ ssh -N -L 8888:172.16.23.102:8888 USER@DOMAIN &
+
+The notebook will now be accessible at ``http://localhost:8888`` on your browser.
+
+To tunel the Dask Dashboard inspect the ``client`` object in the notebook and make 
+note of the Dashboard port e.g. ``http://172.16.23.102:8787/status`` (it may not always 
+be 8787). Lastly, tunel the Dashboard from a local machine as:
+
+.. code-block:: bash
+
+     
+    $ ssh -N -L 8787:172.16.23.102:8787 USER@DOMAIN
