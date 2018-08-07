@@ -1,7 +1,7 @@
 Dask-Jobqueue
 =============
 
-*Easily deploy Dask on job queuing systems like PBS, Slurm, MOAB, and SGE.*
+*Easily deploy Dask on job queuing systems like PBS, Slurm, MOAB, SGE, and LSF.*
 
 
 The Dask-jobqueue project makes it easy to deploy Dask on common job queuing
@@ -142,6 +142,7 @@ documentation <http://dask.pydata.org/en/latest/configuration.html>`_
    index.rst
    install.rst
    configurations.rst
+   configuration-setup.rst
    history.rst
    api.rst
 
