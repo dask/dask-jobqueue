@@ -41,4 +41,3 @@ def test_forward_ip():
     with PBSCluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
                     name='dask-worker') as cluster:
         assert cluster.local_cluster.scheduler.ip == default_ip
-
