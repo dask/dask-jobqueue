@@ -14,7 +14,7 @@ import docrep
 from distributed import LocalCluster
 from distributed.deploy import Cluster
 from distributed.diagnostics.plugin import SchedulerPlugin
-from distributed.utils import (format_bytes, parse_bytes, tmpfile)
+from distributed.utils import (format_bytes, parse_bytes, tmpfile, log_errors)
 
 logger = logging.getLogger(__name__)
 docstrings = docrep.DocstringProcessor()
@@ -70,7 +70,7 @@ class JobQueuePlugin(SchedulerPlugin):
         logger.debug("removing worker name (%s) and job_id (%s)", name, job_id)
 
         # remove worker from this job
-        del self.running_jobs[job_id][name]
+        self.running_jobs[job_id].pop(name, None)
 
         # once there are no more workers, move this job to finished_jobs
         if not self.running_jobs[job_id]:
@@ -370,13 +370,58 @@ class JobQueueCluster(Cluster):
             jobs = list(jobs)
             self._call([self.cancel_command] + list(set(jobs)))
 
+    def scale(self, n):
+        """ Scale cluster to n workers
+        Parameters
+        ----------
+        n: int
+            Target number of workers
+        Example
+        -------
+        >>> cluster.scale(10)  # scale cluster to ten workers
+        See Also
+        --------
+        Cluster.scale_up
+        Cluster.scale_down
+        """
+        with log_errors():
+            active_and_pending = self._active_and_pending_workers()
+            if n >= active_and_pending:
+                self.scheduler.loop.add_callback(self.scale_up, n)
+            else:
+                n_to_close = active_and_pending - n
+
+                if n_to_close < self._pending_workers():
+                    # We only need to kill some pending jobs
+                    jobs = list(self.pending_jobs.keys())[int(n_to_close / self.worker_processes):]
+                    self.stop_jobs(jobs)
+                else:
+                    # we need to retire some workers (and maybe pending jobs)
+                    to_close = self.scheduler.workers_to_close(
+                        n=n_to_close)
+                logger.debug("Closing workers: %s", to_close)
+                self.scheduler.loop.add_callback(self.scheduler.retire_workers, workers=to_close)
+                self.scheduler.loop.add_callback(self.scale_down, to_close)
+
     def scale_up(self, n, **kwargs):
         """ Brings total worker count up to ``n`` """
         logger.debug("Scaling up to %d workers.", n)
-        active_and_pending = sum([len(j) for j in self.running_jobs.values()])
-        active_and_pending += self.worker_processes * len(self.pending_jobs)
-        logger.debug("Found %d active/pending workers.", active_and_pending)
+        active_and_pending = self._active_and_pending_workers()
         self.start_workers(n - active_and_pending)
+
+    def _active_and_pending_workers(self):
+        active_and_pending = self._active_workers() + self._pending_workers()
+        logger.debug("Found %d active/pending workers.", active_and_pending)
+        assert len(self.scheduler.workers) <= active_and_pending
+        return active_and_pending
+
+    def _active_workers(self):
+        active_workers = sum([len(j) for j in self.running_jobs.values()])
+        assert len(self.scheduler.workers) == active_workers
+        return active_workers
+
+    def _pending_workers(self):
+        return self.worker_processes * len(self.pending_jobs)
 
     def scale_down(self, workers):
         ''' Close the workers with the given addresses '''
