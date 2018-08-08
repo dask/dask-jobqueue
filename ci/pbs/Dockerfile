@@ -32,7 +32,7 @@ RUN curl -o miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-L
     rm -f miniconda.sh
 RUN conda install --yes -c conda-forge python=3.6 dask distributed flake8 pytest docrep
 RUN pip install --no-cache-dir git+https://github.com/dask/dask.git --upgrade --no-deps
-RUN pip install --no-cache-dir git+https://github.com/jhamman/distributed.git@fix/scale --upgrade --no-deps
+RUN pip install --no-cache-dir git+https://github.com/dask/distributed.git --upgrade --no-deps
 # Copy entrypoint and other needed scripts
 COPY ./*.sh /
 RUN chmod a+x ./*.sh
