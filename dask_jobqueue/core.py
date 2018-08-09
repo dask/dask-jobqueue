@@ -242,9 +242,9 @@ class JobQueueCluster(Cluster):
             self._command_template += extra
 
     def __repr__(self):
-        running_workers = sum(len(value) for value in self.running_jobs.values())
+        running_workers = self._count_active_workers()
         running_cores = running_workers * self.worker_threads
-        total_jobs = len(self.pending_jobs) + len(self.running_jobs)
+        total_jobs = self._count_active_and_pending_workers()
         total_workers = total_jobs * self.worker_processes
         running_memory = running_workers * self.worker_memory / self.worker_processes
 
@@ -361,7 +361,7 @@ class JobQueueCluster(Cluster):
                 jobs.append(_job_id_from_worker_name(w['name']))
             else:
                 jobs.append(_job_id_from_worker_name(w.name))
-        self.stop_jobs(set(jobs))
+        self.stop_jobs(jobs)
 
     def stop_jobs(self, jobs):
         """ Stop a list of jobs"""
@@ -369,6 +369,11 @@ class JobQueueCluster(Cluster):
         if jobs:
             jobs = list(jobs)
             self._call([self.cancel_command] + list(set(jobs)))
+
+        # if any of these jobs were pending, we should remove those now
+        for job_id in jobs:
+            if job_id in self.pending_jobs:
+                del self.pending_jobs[job_id]
 
     def scale(self, n):
         """ Scale cluster to n workers
@@ -385,42 +390,43 @@ class JobQueueCluster(Cluster):
         Cluster.scale_down
         """
         with log_errors():
-            active_and_pending = self._active_and_pending_workers()
+            active_and_pending = self._count_active_and_pending_workers()
             if n >= active_and_pending:
                 self.scheduler.loop.add_callback(self.scale_up, n)
             else:
                 n_to_close = active_and_pending - n
 
-                if n_to_close < self._pending_workers():
+                if n_to_close < self._count_pending_workers():
                     # We only need to kill some pending jobs
-                    jobs = list(self.pending_jobs.keys())[int(n_to_close / self.worker_processes):]
+                    to_kill = int(n_to_close / self.worker_processes)
+                    jobs = list(self.pending_jobs.keys())[to_kill:]
                     self.stop_jobs(jobs)
                 else:
                     # we need to retire some workers (and maybe pending jobs)
-                    to_close = self.scheduler.workers_to_close(
-                        n=n_to_close)
+                    to_close = self.scheduler.workers_to_close(n=n_to_close)
                 logger.debug("Closing workers: %s", to_close)
-                self.scheduler.loop.add_callback(self.scheduler.retire_workers, workers=to_close)
+                self.scheduler.loop.add_callback(
+                    self.scheduler.retire_workers, workers=to_close)
                 self.scheduler.loop.add_callback(self.scale_down, to_close)
 
     def scale_up(self, n, **kwargs):
         """ Brings total worker count up to ``n`` """
         logger.debug("Scaling up to %d workers.", n)
-        active_and_pending = self._active_and_pending_workers()
-        self.start_workers(n - active_and_pending)
+        self.start_workers(n - self._count_active_and_pending_workers())
 
-    def _active_and_pending_workers(self):
-        active_and_pending = self._active_workers() + self._pending_workers()
+    def _count_active_and_pending_workers(self):
+        active_and_pending = (self._count_active_workers() +
+                              self._count_pending_workers())
         logger.debug("Found %d active/pending workers.", active_and_pending)
         assert len(self.scheduler.workers) <= active_and_pending
         return active_and_pending
 
-    def _active_workers(self):
+    def _count_active_workers(self):
         active_workers = sum([len(j) for j in self.running_jobs.values()])
         assert len(self.scheduler.workers) == active_workers
         return active_workers
 
-    def _pending_workers(self):
+    def _count_pending_workers(self):
         return self.worker_processes * len(self.pending_jobs)
 
     def scale_down(self, workers):
@@ -441,7 +447,7 @@ class JobQueueCluster(Cluster):
     def __exit__(self, type, value, traceback):
         jobs = self._stop_pending_jobs()
         jobs += list(self.running_jobs.keys())
-        self.stop_jobs(set(jobs))
+        self.stop_jobs(jobs)
         self.local_cluster.__exit__(type, value, traceback)
 
     def _stop_pending_jobs(self):

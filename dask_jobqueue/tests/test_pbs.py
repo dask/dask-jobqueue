@@ -116,6 +116,18 @@ def test_basic(loop):
 
 
 @pytest.mark.env("pbs")  # noqa: F811
+def test_basic_scale_edge_cases(loop):
+    with PBSCluster(walltime='00:02:00', processes=1, cores=2, memory='2GB', local_directory='/tmp',
+                    job_extra=['-V'], loop=loop) as cluster:
+        with Client(cluster) as client:  # noqa: F841
+
+            cluster.scale(2)
+            cluster.scale(0)
+
+            assert not(cluster.pending_jobs or cluster.running_jobs)
+
+
+@pytest.mark.env("pbs")  # noqa: F811
 def test_adaptive(loop):
     with PBSCluster(walltime='00:02:00', processes=1, cores=2, memory='2GB', local_directory='/tmp',
                     job_extra=['-V'], loop=loop) as cluster:
