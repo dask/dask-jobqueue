@@ -300,6 +300,8 @@ class JobQueueCluster(Cluster):
             with self.job_file() as fn:
                 out = self._submit_job(fn)
                 job = self._job_id_from_submit_output(out.decode())
+                if not job:
+                    raise ValueError('Unable to parse jobid from output of %s' % out)
                 logger.debug("started job: %s", job)
                 self.pending_jobs[job] = {}
 

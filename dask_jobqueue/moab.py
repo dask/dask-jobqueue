@@ -45,7 +45,4 @@ class MoabCluster(PBSCluster):
     scheduler_name = 'moab'
 
     def _job_id_from_submit_output(self, out):
-        jid = out.strip()
-        if not jid:
-            raise ValueError('Unable to parse jobid from output of %s' % out)
-        return jid
+        return out.strip()
