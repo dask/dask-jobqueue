@@ -216,3 +216,72 @@ In dask-distributed, a ``Worker`` is a Python object and node in a dask
 computations. ``Jobs`` are resources submitted to, and managed by, the job
 queueing system (e.g. PBS, SGE, etc.). In dask-jobqueue, a single ``Job`` may
 include one or more ``Workers``.
+
+How to debug
+------------
+
+Dask jobqueue has been developed and tested by several contributors, each of
+us having a given HPC system setup to work on: a job scheduler in a given
+version running on a given OS. Thus, in some specific case, it might not work
+out of the box on your system. This section provides some hints to help you
+sort what may be going wrong.
+
+Checking job script
+~~~~~~~~~~~~~~~~~~~
+
+Often, the first thing to do is checking if the job script generated to submit
+jobs launching dask workers looks like your usual submission script, in
+particular the header containing ``#PBS``, ``#SBATCH`` or other directives.
+This can be done easily once you've created a cluster object:
+
+.. code-block:: python
+
+   print(cluster.job_script())
+
+Next move if you don't see any problem is to actually try to run this script,
+and see how it goes. So just copy and paste printed information to a real job
+script file, and submit it!
+
+To correct any problem detected at this point, you could try to use
+``job_extra`` or ``env_extra`` kwargs when initializing your cluster object.
+
+Activate debug mode
+~~~~~~~~~~~~~~~~~~~
+
+Dask-jobqueue uses python logging module. To understand better what is
+happening under the hood, you may want to activate logging display. This can be
+done by running this line of python code in your script or notebook:
+
+.. code-block:: python
+
+   import logging
+   logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+
+
+Interact with you job scheduling system
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Every worker is launched inside a batch job, as explained above. It can be very
+helpful to query your job queuing system. Some things you might want to check:
+
+- are there running jobs related to dask-jobqueue?
+- are there finished jobs, error jobs?
+- what is the stdout or stderr of dask-jobqueue jobs?
+
+Other things you might look at
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+From here it gets a little more complicated. A couple of other already seen
+problems are the following:
+
+- submit command used in dask-jobqueue (``qsub`` or equivalent) doesn't
+  correspond to the one you use. Check in the given ``JobQueueCluster``
+  implementation that job submission command and eventual arguments look
+  familliar to you, eventually try them.
+
+- submit command output is not the same as the one expected by dask-jobqueue.
+  We use submit command stdout to parse the job_id corresponding to the
+  launched group of worker. If the parsing fails, then dask-jobqueue won't work
+  as expected and may throw exceptions. You can have a look at the parsing
+  function in every ``JobQueueCluster`` implementation, see
+  ``_job_id_from_submit_output`` function.
