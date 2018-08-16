@@ -6,6 +6,7 @@ import shlex
 import subprocess
 import sys
 import warnings
+import socket
 from collections import OrderedDict
 from contextlib import contextmanager
 
@@ -14,7 +15,7 @@ import docrep
 from distributed import LocalCluster
 from distributed.deploy import Cluster
 from distributed.diagnostics.plugin import SchedulerPlugin
-from distributed.utils import (format_bytes, parse_bytes, tmpfile)
+from distributed.utils import (format_bytes, parse_bytes, tmpfile, get_ip_interface)
 
 logger = logging.getLogger(__name__)
 docstrings = docrep.DocstringProcessor()
@@ -179,8 +180,6 @@ class JobQueueCluster(Cluster):
             local_directory = dask.config.get('jobqueue.%s.local-directory' % self.scheduler_name)
         if extra is None:
             extra = dask.config.get('jobqueue.%s.extra' % self.scheduler_name)
-        if interface:
-            extra += ' --interface  %s ' % interface
         if env_extra is None:
             env_extra = dask.config.get('jobqueue.%s.env-extra' % self.scheduler_name)
 
@@ -196,9 +195,18 @@ class JobQueueCluster(Cluster):
         # This attribute should be overriden
         self.job_header = None
 
-        # Bind to all network addresses by default
+        scheduler_address = socket.gethostname()
         if 'ip' not in kwargs:
+            # Bind to all network addresses by default
             kwargs['ip'] = ''
+        else:
+            scheduler_address = kwargs['ip']
+        if interface:
+            extra += ' --interface  %s ' % interface
+            # For correct interface use with defaults binding to all network
+            # it is needed to choose the correct scheduler address, probably
+            # not default one.
+            scheduler_address = get_ip_interface(interface)
 
         self.local_cluster = LocalCluster(n_workers=0, **kwargs)
 
@@ -219,7 +227,8 @@ class JobQueueCluster(Cluster):
 
         # dask-worker command line build
         dask_worker_command = '%(python)s -m distributed.cli.dask_worker' % dict(python=sys.executable)
-        self._command_template = ' '.join([dask_worker_command, self.scheduler.address])
+        scheduler_address = 'tcp://%s:%d' % (scheduler_address, self.scheduler.port)
+        self._command_template = ' '.join([dask_worker_command, scheduler_address])
         self._command_template += " --nthreads %d" % self.worker_threads
         if processes is not None and processes > 1:
             self._command_template += " --nprocs %d" % processes
