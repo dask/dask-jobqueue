@@ -229,18 +229,20 @@ sort what may be going wrong.
 Checking job script
 ~~~~~~~~~~~~~~~~~~~
 
-Often, the first thing to do is checking if the job script generated to submit
-jobs launching dask workers looks like your usual submission script, in
-particular the header containing ``#PBS``, ``#SBATCH`` or other directives.
+Dask-jobqueue submits "job scripts" to your queueing system (see `How this
+works`_). Inspecting these scripts often reveals errors in the configuration
+of your Cluster object or maybe directives unexpected by your job scheduler,
+in particular the header containing ``#PBS``, ``#SBATCH`` or equivalent lines.
 This can be done easily once you've created a cluster object:
 
 .. code-block:: python
 
    print(cluster.job_script())
 
-Next move if you don't see any problem is to actually try to run this script,
-and see how it goes. So just copy and paste printed information to a real job
-script file, and submit it!
+If everything in job script appears correct, the next step is to try to submit
+a test job using the script. You can simply copy and paste printed content to
+a real job script file, and submit it using ``qsub``, ``sbatch``, ``bsub`` or
+what is appropriate for you job queuing system.
 
 To correct any problem detected at this point, you could try to use
 ``job_extra`` or ``env_extra`` kwargs when initializing your cluster object.
@@ -258,8 +260,8 @@ done by running this line of python code in your script or notebook:
    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 
-Interact with you job scheduling system
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Interact with you job queuing system
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Every worker is launched inside a batch job, as explained above. It can be very
 helpful to query your job queuing system. Some things you might want to check:
