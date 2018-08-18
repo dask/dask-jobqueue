@@ -275,7 +275,7 @@ This can be done easily once you've created a cluster object:
 
 .. code-block:: python
 
-    print(cluster.job_script())
+   print(cluster.job_script())
 
 If everything in job script appears correct, the next step is to try to submit
 a test job using the script. You can simply copy and paste printed content to
@@ -294,8 +294,8 @@ done by running this line of python code in your script or notebook:
 
 .. code-block:: python
 
-    import logging
-    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+   import logging
+   logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 
 Interact with you job queuing system
@@ -317,7 +317,7 @@ problems are the following:
 - submit command used in dask-jobqueue (``qsub`` or equivalent) doesn't
   correspond to the one you use. Check in the given ``JobQueueCluster``
   implementation that job submission command and eventual arguments look
-  familiar to you, eventually try them.
+  familliar to you, eventually try them.
 
 - submit command output is not the same as the one expected by dask-jobqueue.
   We use submit command stdout to parse the job_id corresponding to the
