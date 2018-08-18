@@ -54,8 +54,8 @@ notebooks. Batch processing with dask-jobqueue can be tricky in some cases
 depending on how your cluster is configured and which resources and queues you
 have access to: scheduler might hang on for a long time before having some
 connected workers, and you could end up with less computing power than you
-expected. A good solution for batch processing on HPC system using dask is the
-`dask-mpi >http://dask.pydata.org/en/latest/setup/hpc.html#using-mpi>`_
+expected. Another good solution for batch processing on HPC system using dask
+is the `dask-mpi <http://dask.pydata.org/en/latest/setup/hpc.html#using-mpi>`_
 command.
 
 The following paragraphs describe how to have access to Jupyter notebook and
@@ -73,17 +73,17 @@ starting your own notebook is available in the `Pangeo documentation
 Once Jupyter is installed and configured, using a Jupyter notebook is done by:
 
 - Starting a Jupyter notebook server on the HPC (it is often good practice to
-run/submit this as a job to an interactive queue, see Pangeo docs for more
-details).
+  run/submit this as a job to an interactive queue, see Pangeo docs for more
+  details).
 
 .. code-block:: bash
 
    $ jupyter notebook --no-browser --ip=`hostname` --port=8888
 
 - Reading the output of the command above to get the ip or hostname of your
-notebook, and use SSH tunneling on your local machine to access the notebook.
-This must only be done in the probable case where you don't have direct access
-to the notebook URL from your computer browser.
+  notebook, and use SSH tunneling on your local machine to access the notebook.
+  This must only be done in the probable case where you don't have direct
+  access to the notebook URL from your computer browser.
 
 .. code-block:: bash
 
@@ -101,6 +101,7 @@ accessible by clicking the link displayed, otherwise, you'll have to use SSH
 tunneling:
 
 .. code-block:: bash
+
     # General syntax
     $ ssh -fN your-login@scheduler-ip-address -L port-number:localhost:port-number
     # As applied to this example:
