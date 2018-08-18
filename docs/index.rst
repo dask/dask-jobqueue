@@ -220,27 +220,15 @@ include one or more ``Workers``.
 Viewing the Dask Dashboard
 --------------------------
 
-It is recommended to run a Jupyter notebook server on the HPC and specify the IP address
-and port number. Then connect to the server using a SSH tunnel from your local
+It is convenient to run a Jupyter notebook server on the HPC and specify the IP address
+and port number. If you are unsure about the IP address you can find this out by inspecting
+the ``client`` object. Then connect to the server using a SSH tunnel from your local
 machine e.g. your laptop or desktop.
 
 Firstly, configure the Jupyter notebook on the HPC as given in the
 `Pangeo documentation <http://pangeo-data.org/setup_guides/hpc.html#configure-jupyter>`_.
-This is repeated here for completeness:
 
-.. code-block:: bash
-
-
-    $ jupyter notebook --generate-config
-    $ ipython
-    In [1]: from notebook.auth import passwd; passwd()
-    Enter password:
-
-Copy the password hash to the file ``~/.jupyter/jupyter_notebook_config.py`` at the
-line ``c.NotebookApp.password = u''``. Make the configuration file read only by you:
-``chmod 400 ~/.jupyter/jupyter_notebook_config.py``.
-
-Start a Jupyter notebook server on the HPC (it is best practice to run/submit this as a
+Start a Jupyter notebook server on the HPC (it is often good practice to run/submit this as a
 job to an interactive queue).
 
 .. code-block:: bash
@@ -248,7 +236,7 @@ job to an interactive queue).
 
     $ jupyter notebook --no-browser --ip=x.x.x.x --port=8888
 
-Use SSH tunneling on your local machine to access the notebook
+Use SSH tunneling on your local machine to access the notebook.
 
 .. code-block:: bash
 
@@ -256,5 +244,13 @@ Use SSH tunneling on your local machine to access the notebook
     $ ssh -N -L 8888:x.x.x.x:8888 username@hpc_domain
 
 Open the Jupyter notebook in a browser on your local machine at http://localhost:8888.
-The Dask Dashboard should now be accessible by clicking the link displayed after
-inspecting the ``client`` object.
+The Dask Dashboard may now be accessible by clicking the link displayed after
+inspecting the ``client`` object as shown in the example below:
+
+.. raw:: html
+
+
+   <iframe width="560" height="315"
+           src="https://www.youtube.com/embed/nH_AQo8WdKw?rel=0"
+           frameborder="0" allow="autoplay; encrypted-media"
+           allowfullscreen></iframe>
