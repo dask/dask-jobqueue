@@ -103,7 +103,9 @@ class PBSCluster(JobQueueCluster):
         logger.debug("Job script: \n %s" % self.job_script())
 
     def _job_id_from_submit_output(self, out):
-        return re.findall('(\d+)\.', out)[0]
+        jobid_regex = dask.config.get(
+            'jobqueue.%s.jobid_regex' % self.scheduler_name)
+        return re.findall(jobid_regex, out)[0]
 
 
 def pbs_format_bytes_ceil(n):
