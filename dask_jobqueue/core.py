@@ -199,7 +199,7 @@ class JobQueueCluster(Cluster):
             extra += ' --interface  %s ' % interface
             kwargs.setdefault('ip', get_ip_interface(interface))
         else:
-            kwargs.setdefault('ip', socket.gethostname())
+            kwargs.setdefault('ip', '')
 
         # Bokeh diagnostics server should listen on all interfaces
         diagnostics_ip_and_port = ('', 8787)
