@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import logging
 import math
 import os
+import re
 
 import dask
 
@@ -102,7 +103,7 @@ class PBSCluster(JobQueueCluster):
         logger.debug("Job script: \n %s" % self.job_script())
 
     def _job_id_from_submit_output(self, out):
-        return out.split('.')[0].strip()
+        return re.findall('(\d+)\.', out)[0]
 
 
 def pbs_format_bytes_ceil(n):
