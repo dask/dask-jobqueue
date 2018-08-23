@@ -4,8 +4,9 @@ import pytest
 import socket
 
 from dask_jobqueue import (JobQueueCluster, PBSCluster, MoabCluster,
-                           SLURMCluster, SGECluster, LSFCluster,
-                           _job_id_from_submit_output)
+                           SLURMCluster, SGECluster, LSFCluster)
+
+from dask_jobqueue.core import _job_id_from_submit_output
 
 
 def test_errors():
