@@ -53,6 +53,6 @@ def test_forward_ip():
                           '{jobid}; asdf'])
 def test_jobid_from_qsub(qsub_return_string):
     jobid = '654321'
-    qsub_return_string = qsub_return_string.format(jobid)
+    qsub_return_string = qsub_return_string.format(jobid=jobid)
     assert (JobQueueCluster._job_id_from_submit_output(qsub_return_string) ==
             jobid)
