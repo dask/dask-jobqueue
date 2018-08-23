@@ -407,5 +407,6 @@ class JobQueueCluster(Cluster):
             del self.pending_jobs[job_id]
         return jobs
 
-    def _job_id_from_submit_output(self, out):
-        return re.findall(r'\d+', out)[0]
+
+def _job_id_from_submit_output(out):
+    return re.findall(r'\d+', out)[0]
