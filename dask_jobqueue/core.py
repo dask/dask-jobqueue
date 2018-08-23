@@ -295,7 +295,7 @@ class JobQueueCluster(Cluster):
         for _ in range(num_jobs):
             with self.job_file() as fn:
                 out = self._submit_job(fn)
-                job = self._job_id_from_submit_output(out.decode())
+                job = _job_id_from_submit_output(out.decode())
                 logger.debug("started job: %s" % job)
                 self.pending_jobs[job] = {}
 
