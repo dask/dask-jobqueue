@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import logging
 import math
+import re
 import shlex
 import subprocess
 import sys
@@ -407,5 +408,4 @@ class JobQueueCluster(Cluster):
         return jobs
 
     def _job_id_from_submit_output(self, out):
-        raise NotImplementedError('_job_id_from_submit_output must be implemented when JobQueueCluster is '
-                                  'inherited. It should convert the stdout from submit_command to the job id')
+        return re.findall(r'\d+', out)[0]

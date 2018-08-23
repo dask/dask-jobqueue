@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 import logging
 import math
 import os
-import re
 
 import dask
 
@@ -101,11 +100,6 @@ class PBSCluster(JobQueueCluster):
         self.job_header = '\n'.join(header_lines)
 
         logger.debug("Job script: \n %s" % self.job_script())
-
-    def _job_id_from_submit_output(self, out):
-        jobid_regex = dask.config.get(
-            'jobqueue.%s.jobid_regex' % self.scheduler_name)
-        return re.findall(jobid_regex, out)[0]
 
 
 def pbs_format_bytes_ceil(n):

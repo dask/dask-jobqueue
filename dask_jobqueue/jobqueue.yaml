@@ -19,7 +19,6 @@ jobqueue:
     env-extra: []
     resource-spec: null
     job-extra: []
-    jobid_regex: '(\d+)\.'
 
   sge:
     name: dask-worker

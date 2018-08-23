@@ -44,3 +44,15 @@ def test_forward_ip():
     with PBSCluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
                     name='dask-worker') as cluster:
         assert cluster.local_cluster.scheduler.ip == default_ip
+
+
+@pytest.mark.parametrize('qsub_return_string',
+                         ['Request {jobid}.asdf was sumbitted to queue 12.',
+                          '{jobid}',
+                          '  <{jobid}>  ',
+                          '{jobid}; asdf'])
+def test_jobid_from_qsub(qsub_return_string):
+    jobid = '654321'
+    qsub_return_string = qsub_return_string.format(jobid)
+    assert (JobQueueCluster._job_id_from_submit_output(qsub_return_string) ==
+            jobid)
