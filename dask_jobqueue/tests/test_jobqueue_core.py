@@ -6,8 +6,6 @@ import socket
 from dask_jobqueue import (JobQueueCluster, PBSCluster, MoabCluster,
                            SLURMCluster, SGECluster, LSFCluster)
 
-from dask_jobqueue.core import _job_id_from_submit_output
-
 
 def test_errors():
     with pytest.raises(NotImplementedError) as info:
@@ -57,6 +55,8 @@ def test_forward_ip():
      'Job <{jobid}> is submitted to default queue <normal>.',
      '{jobid}'])
 def test_jobid_from_qsub(qsub_return_string):
-    jobid = '654321'
-    qsub_return_string = qsub_return_string.format(jobid=jobid)
-    assert (_job_id_from_submit_output(qsub_return_string) == jobid)
+    original_jobid = '654321'
+    qsub_return_string = qsub_return_string.format(jobid=original_jobid)
+    parsed_jobid = JobQueueCluster._job_id_from_submit_output(
+        qsub_return_string.format(jobid=original_jobid))
+    assert parsed_jobid == original_jobid

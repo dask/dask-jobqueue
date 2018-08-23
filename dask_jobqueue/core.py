@@ -295,7 +295,7 @@ class JobQueueCluster(Cluster):
         for _ in range(num_jobs):
             with self.job_file() as fn:
                 out = self._submit_job(fn)
-                job = _job_id_from_submit_output(out.decode())
+                job = self._job_id_from_submit_output(out.decode())
                 logger.debug("started job: %s" % job)
                 self.pending_jobs[job] = {}
 
@@ -407,6 +407,6 @@ class JobQueueCluster(Cluster):
             del self.pending_jobs[job_id]
         return jobs
 
-
-def _job_id_from_submit_output(out):
-    return re.findall(r'\d+', out)[0]
+    @staticmethod
+    def _job_id_from_submit_output(out):
+        return re.findall(r'\d+', out)[0]
