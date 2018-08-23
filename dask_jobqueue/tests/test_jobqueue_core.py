@@ -48,11 +48,14 @@ def test_forward_ip():
         assert cluster.local_cluster.scheduler.ip == default_ip
 
 
-@pytest.mark.parametrize('qsub_return_string',
-                         ['Request {jobid}.asdf was sumbitted to queue 12.',
-                          '{jobid}',
-                          '  <{jobid}>  ',
-                          '{jobid}; asdf'])
+@pytest.mark.parametrize(
+    'qsub_return_string',
+    ['{jobid}.admin01',
+     'Request {jobid}.asdf was sumbitted to queue: standard.',
+     'sbatch: Submitted batch job {jobid}',
+     '{jobid};cluster',
+     'Job <{jobid}> is submitted to default queue <normal>.',
+     '{jobid}'])
 def test_jobid_from_qsub(qsub_return_string):
     jobid = '654321'
     qsub_return_string = qsub_return_string.format(jobid=jobid)
