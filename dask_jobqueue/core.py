@@ -409,10 +409,16 @@ class JobQueueCluster(Cluster):
         return jobs
 
     def _job_id_from_submit_output(self, out):
+        msg = ('Could not parse job id from submission command output. Job id '
+               'regexp is {}, submission command output is: {}'.format(
+                    self.job_id_regexp, out))
+
         match = re.search(self.job_id_regexp, out)
+        if match is None:
+            raise ValueError(msg)
+
         job_id = match.group('job_id')
         if job_id is None:
-            raise ValueError('Could not parse job id from submission command'
-                             'output. Job id regexp is {}, submission command'
-                             'output is: {}'.format(self.job_id_regexp, out))
+            raise ValueError(msg)
+
         return job_id
