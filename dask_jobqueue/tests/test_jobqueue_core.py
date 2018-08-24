@@ -47,7 +47,7 @@ def test_forward_ip():
 
 
 @pytest.mark.parametrize('Cluster', [PBSCluster, MoabCluster, SLURMCluster,
-                                     SGECluster, LSFCluster, JobQueueCluster])
+                                     SGECluster, LSFCluster])
 @pytest.mark.parametrize(
     'qsub_return_string',
     ['{job_id}.admin01',
@@ -59,6 +59,7 @@ def test_forward_ip():
 def test_job_id_from_qsub(Cluster, qsub_return_string):
     original_job_id = '654321'
     qsub_return_string.format(job_id=original_job_id)
-    with Cluster() as cluster:
+    with Cluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
+                 name='dask-worker') as cluster:
         assert (original_job_id
                 == cluster._job_id_from_submit_output(qsub_return_string))
