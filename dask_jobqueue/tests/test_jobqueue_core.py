@@ -83,11 +83,11 @@ def test_job_id_error_handling(Cluster, qsub_return_string):
         with pytest.raises(ValueError, match="Could not parse job id"):
             cluster.job_id_regexp = r'(?P<job_id>XXXX)'
             return_string = qsub_return_string.format(job_id='654321')
-            job_id = cluster._job_id_from_submit_output(return_string)
+            cluster._job_id_from_submit_output(return_string)
 
     # test for missing job_id  (Will fail for return string w/ number.)
     with Cluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
                  name='dask-worker') as cluster:
         with pytest.raises(ValueError, match="Could not parse job id"):
             return_string = qsub_return_string.format(job_id='XXXXX')
-            job_id = cluster._job_id_from_submit_output(return_string)
+            cluster._job_id_from_submit_output(return_string)
