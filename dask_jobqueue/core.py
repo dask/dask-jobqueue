@@ -409,7 +409,7 @@ class JobQueueCluster(Cluster):
         return jobs
 
     def _job_id_from_submit_output(self, out):
-        regexp = r'(?P<job_id>{}'.format(self.job_id_regexp)
+        regexp = r'(?P<job_id>{})'.format(self.job_id_regexp)
         match = re.search(regexp, out)
         job_id = match.group('job_id')
         if job_id is None:
