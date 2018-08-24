@@ -1,11 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import sys
-from time import sleep, time
-
-import pytest
-from distributed import Client
-from distributed.utils_test import loop  # noqa: F401
 
 from dask_jobqueue import OARCluster
 
@@ -47,10 +42,9 @@ def test_job_script():
         assert '--nthreads 2 --nprocs 4 --memory-limit 7.00GB' in job_script
 
     with OARCluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
-                      env_extra=['export LANG="en_US.utf8"',
-                                 'export LANGUAGE="en_US.utf8"',
-                                 'export LC_ALL="en_US.utf8"']
-                      ) as cluster:
+                    env_extra=['export LANG="en_US.utf8"',
+                               'export LANGUAGE="en_US.utf8"',
+                               'export LC_ALL="en_US.utf8"']) as cluster:
         job_script = cluster.job_script()
         assert '#OAR' in job_script
         assert '#OAR -n dask-worker' in job_script
@@ -65,6 +59,3 @@ def test_job_script():
 
         assert '{} -m distributed.cli.dask_worker tcp://'.format(sys.executable) in job_script
         assert '--nthreads 2 --nprocs 4 --memory-limit 7.00GB' in job_script
-
-#OAR -l /nodes=1/cores=8,walltime=00:02:00
-#OAR -l /nodes=1/core=8,walltime=00:02:00
