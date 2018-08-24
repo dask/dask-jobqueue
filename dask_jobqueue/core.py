@@ -139,7 +139,7 @@ class JobQueueCluster(Cluster):
     cancel_command = None
     scheduler_name = ''
     _adaptive_options = {'worker_key': lambda ws: _job_id_from_worker_name(ws.name)}
-    job_id_regexp = r'(?P<job_id>{})'
+    job_id_regexp = r'(?P<job_id>\d+)'
 
     def __init__(self,
                  name=None,
