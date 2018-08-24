@@ -8,7 +8,6 @@ import sys
 import warnings
 from collections import OrderedDict
 from contextlib import contextmanager
-import socket
 
 import dask
 import docrep
