@@ -139,6 +139,7 @@ class JobQueueCluster(Cluster):
     cancel_command = None
     scheduler_name = ''
     _adaptive_options = {'worker_key': lambda ws: _job_id_from_worker_name(ws.name)}
+    job_id_regexp = r'\d+'
 
     def __init__(self,
                  name=None,
@@ -407,6 +408,12 @@ class JobQueueCluster(Cluster):
             del self.pending_jobs[job_id]
         return jobs
 
-    @staticmethod
-    def _job_id_from_submit_output(out):
-        return re.findall(r'\d+', out)[0]
+    def _job_id_from_submit_output(self, out):
+        regexp = r'(?P<job_id>{}'.format(self.job_id_regexp)
+        match = re.search(regexp, out)
+        job_id = match.group('job_id')
+        if job_id is None:
+            raise ValueError('Could not parse job id from submission command'
+                             'output. Job id regexp is {}, submission command'
+                             'output is: {}'.format(self.job_id_regexp, out))
+        return job_id

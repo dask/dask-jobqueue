@@ -46,17 +46,19 @@ def test_forward_ip():
         assert cluster.local_cluster.scheduler.ip == default_ip
 
 
+@pytest.mark.parametrize('Cluster', [PBSCluster, MoabCluster, SLURMCluster,
+                                     SGECluster, LSFCluster, JobQueueCluster])
 @pytest.mark.parametrize(
     'qsub_return_string',
-    ['{jobid}.admin01',
-     'Request {jobid}.asdf was sumbitted to queue: standard.',
-     'sbatch: Submitted batch job {jobid}',
-     '{jobid};cluster',
-     'Job <{jobid}> is submitted to default queue <normal>.',
-     '{jobid}'])
-def test_jobid_from_qsub(qsub_return_string):
-    original_jobid = '654321'
-    qsub_return_string = qsub_return_string.format(jobid=original_jobid)
-    parsed_jobid = JobQueueCluster._job_id_from_submit_output(
-        qsub_return_string.format(jobid=original_jobid))
-    assert parsed_jobid == original_jobid
+    ['{job_id}.admin01',
+     'Request {job_id}.asdf was sumbitted to queue: standard.',
+     'sbatch: Submitted batch job {job_id}',
+     '{job_id};cluster',
+     'Job <{job_id}> is submitted to default queue <normal>.',
+     '{job_id}'])
+def test_job_id_from_qsub(Cluster, qsub_return_string):
+    original_job_id = '654321'
+    qsub_return_string.format(job_id=original_job_id)
+    with Cluster() as cluster:
+        assert (original_job_id
+                == cluster._job_id_from_submit_output(sub_return_string))
