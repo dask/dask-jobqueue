@@ -61,4 +61,4 @@ def test_job_id_from_qsub(Cluster, qsub_return_string):
     qsub_return_string.format(job_id=original_job_id)
     with Cluster() as cluster:
         assert (original_job_id
-                == cluster._job_id_from_submit_output(sub_return_string))
+                == cluster._job_id_from_submit_output(qsub_return_string))
