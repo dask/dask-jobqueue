@@ -395,6 +395,30 @@ class JobQueueCluster(Cluster):
         self.stop_all_jobs()
         self.local_cluster.close()
 
+    def status(self, verbose=False):
+        running_workers = sum(len(value) for value in self.running_jobs.values())
+        running_cores = running_workers * self.worker_threads
+        total_jobs = len(self.pending_jobs) + len(self.running_jobs)
+        total_workers = total_jobs * self.worker_processes
+        running_memory = running_workers * self.worker_memory / self.worker_processes
+
+        status = '- running: (cores=%d, memory=%s, workers=%d, jobs=%d)\n' % \
+                 (running_cores, format_bytes(running_memory), running_workers,
+                  len(self.running_jobs))
+        if verbose:
+            status += str(self.running_jobs) + '\n'
+        status += '- pending: (cores=%d, memory=%s, workers=%d, jobs=%d)\n' % \
+                  (len(self.pending_jobs) * self.worker_cores,
+                   format_bytes(len(self.pending_jobs) * self.worker_memory),
+                   len(self.pending_jobs) * self.worker_threads,
+                   len(self.pending_jobs))
+        if verbose:
+            status += str(list(self.pending_jobs.keys())) + '\n'
+        status += '- finished: (jobs=%d)\n' % len(self.finished_jobs)
+        if verbose:
+            status += str(list(self.finished_jobs.keys())) + '\n'
+        return status
+
     def __enter__(self):
         return self
 
