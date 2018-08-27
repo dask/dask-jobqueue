@@ -409,16 +409,20 @@ class JobQueueCluster(Cluster):
         return jobs
 
     def _job_id_from_submit_output(self, out):
-        msg = ('Could not parse job id from submission command output. Job id '
-               'regexp is {}, submission command output is: {}'.format(
-                    self.job_id_regexp, out))
+        no_match_msg = ('Could not parse job id from submission command '
+                        'output. Job id regexp is {}, submission command '
+                        'output is: {}'.format(self.job_id_regexp, out))
 
         match = re.search(self.job_id_regexp, out)
         if match is None:
-            raise ValueError(msg)
+            raise ValueError(no_match_msg)
 
-        job_id = match.group('job_id')
+        no_job_id_msg = ("You need to use a `job_id` named group, e.g. "
+                         "'(?P<job_id>\d+),' in your regexp. Your regexp was: "
+                         "{}".format(self.job_id_regexp))
+
+        job_id = match.groupdict().get('job_id')
         if job_id is None:
-            raise ValueError(msg)
+            raise ValueError(no_job_id_msg)
 
         return job_id
