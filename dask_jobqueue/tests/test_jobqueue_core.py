@@ -73,13 +73,13 @@ def test_job_id_error_handling(Cluster):
     with Cluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
                  name='dask-worker') as cluster:
         with pytest.raises(ValueError, match="Could not parse job id"):
-            cluster.job_id_regexp = r'(?P<job_id>XXXX)'
-            return_string = "654321"
+            return_string = "there is no number here"
             cluster._job_id_from_submit_output(return_string)
 
     # test for missing job_id  (Will fail for return string w/ number.)
     with Cluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
                  name='dask-worker') as cluster:
         with pytest.raises(ValueError, match="You need to use a"):
-            return_string = "there is no number here"
+            return_string = 'Job <12345> submited to <normal>.'
+            cluster.job_id_regexp = r'(\d+)'
             cluster._job_id_from_submit_output(return_string)
