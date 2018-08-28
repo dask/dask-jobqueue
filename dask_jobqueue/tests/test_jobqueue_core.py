@@ -75,7 +75,7 @@ def test_job_id_error_handling(Cluster):
 
     # no job_id named group in the regexp
     with Cluster(cores=1, memory='1GB') as cluster:
-        with pytest.raises(ValueError, match="You need to use a"):
+        with pytest.raises(ValueError, match="You need to use a 'job_id' named group"):
             return_string = 'Job <12345> submited to <normal>.'
             cluster.job_id_regexp = r'(\d+)'
             cluster._job_id_from_submit_output(return_string)
