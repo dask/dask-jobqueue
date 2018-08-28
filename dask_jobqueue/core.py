@@ -6,7 +6,7 @@ import shlex
 import subprocess
 import sys
 import warnings
-import html
+from xml.sax.saxutils import escape
 from collections import OrderedDict
 from contextlib import contextmanager
 
@@ -458,7 +458,7 @@ class ClusterStatus():
         if self.verbose:
             text += '    <ul>\n'
             for job_id, workers in self.cluster.running_jobs.items():
-                text += "      <li><b>%s: </b> %s\n" % (job_id, html.escape(str(workers)))
+                text += "      <li><b>%s: </b> %s\n" % (job_id, escape(str(workers)))
             text += "    </ul>\n"
         text += "  <li><b>Pending: </b>(cores=%d, memory=%s, workers=%d, jobs=%d)\n" % \
             self.pending_stats
