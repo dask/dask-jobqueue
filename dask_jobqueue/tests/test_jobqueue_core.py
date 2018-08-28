@@ -59,8 +59,7 @@ def test_forward_ip():
 def test_job_id_from_qsub(Cluster, qsub_return_string):
     original_job_id = '654321'
     qsub_return_string = qsub_return_string.format(job_id=original_job_id)
-    with Cluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
-                 name='dask-worker') as cluster:
+    with Cluster(cores=1, memory='1GB') as cluster:
         assert (original_job_id
                 == cluster._job_id_from_submit_output(qsub_return_string))
 
@@ -68,17 +67,14 @@ def test_job_id_from_qsub(Cluster, qsub_return_string):
 @pytest.mark.parametrize('Cluster', [PBSCluster, MoabCluster, SLURMCluster,
                                      SGECluster, LSFCluster])
 def test_job_id_error_handling(Cluster):
-
-    # test for broken regexp
-    with Cluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
-                 name='dask-worker') as cluster:
+    # non-matching regexp
+    with Cluster(cores=1, memory='1GB') as cluster:
         with pytest.raises(ValueError, match="Could not parse job id"):
             return_string = "there is no number here"
             cluster._job_id_from_submit_output(return_string)
 
-    # test for missing job_id  (Will fail for return string w/ number.)
-    with Cluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
-                 name='dask-worker') as cluster:
+    # no job_id named group in the regexp
+    with Cluster(cores=1, memory='1GB') as cluster:
         with pytest.raises(ValueError, match="You need to use a"):
             return_string = 'Job <12345> submited to <normal>.'
             cluster.job_id_regexp = r'(\d+)'
