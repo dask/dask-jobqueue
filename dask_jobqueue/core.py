@@ -6,6 +6,7 @@ import shlex
 import subprocess
 import sys
 import warnings
+import html
 from collections import OrderedDict
 from contextlib import contextmanager
 
@@ -396,28 +397,7 @@ class JobQueueCluster(Cluster):
         self.local_cluster.close()
 
     def status(self, verbose=False):
-        running_workers = sum(len(value) for value in self.running_jobs.values())
-        running_cores = running_workers * self.worker_threads
-        total_jobs = len(self.pending_jobs) + len(self.running_jobs)
-        total_workers = total_jobs * self.worker_processes
-        running_memory = running_workers * self.worker_memory / self.worker_processes
-
-        status = '- running: (cores=%d, memory=%s, workers=%d, jobs=%d)\n' % \
-                 (running_cores, format_bytes(running_memory), running_workers,
-                  len(self.running_jobs))
-        if verbose:
-            status += str(self.running_jobs) + '\n'
-        status += '- pending: (cores=%d, memory=%s, workers=%d, jobs=%d)\n' % \
-                  (len(self.pending_jobs) * self.worker_cores,
-                   format_bytes(len(self.pending_jobs) * self.worker_memory),
-                   len(self.pending_jobs) * self.worker_threads,
-                   len(self.pending_jobs))
-        if verbose:
-            status += str(list(self.pending_jobs.keys())) + '\n'
-        status += '- finished: (jobs=%d)\n' % len(self.finished_jobs)
-        if verbose:
-            status += str(list(self.finished_jobs.keys())) + '\n'
-        return status
+        return ClusterStatus(self, verbose)
 
     def __enter__(self):
         return self
@@ -436,3 +416,63 @@ class JobQueueCluster(Cluster):
     def _job_id_from_submit_output(self, out):
         raise NotImplementedError('_job_id_from_submit_output must be implemented when JobQueueCluster is '
                                   'inherited. It should convert the stdout from submit_command to the job id')
+
+
+class ClusterStatus():
+    "Status objet for printing cluster and jobs detailed state"
+
+    def __init__(self, cluster, verbose):
+        self.cluster = cluster
+        self.verbose = verbose
+        running_workers = sum(len(value) for value in self.cluster.running_jobs.values())
+        running_cores = running_workers * self.cluster.worker_threads
+        running_memory = running_workers * self.cluster.worker_memory / self.cluster.worker_processes
+        self.running_stats = (running_cores, format_bytes(running_memory), running_workers,
+                  len(self.cluster.running_jobs))
+        self.pending_stats = (len(self.cluster.pending_jobs) * self.cluster.worker_cores,
+                   format_bytes(len(self.cluster.pending_jobs) * self.cluster.worker_memory),
+                   len(self.cluster.pending_jobs) * self.cluster.worker_threads,
+                   len(self.cluster.pending_jobs))
+
+    def __repr__(self):
+        status = '- Running: (cores=%d, memory=%s, workers=%d, jobs=%d)\n' % \
+                 self.running_stats
+        if self.verbose:
+            for job_id, workers in self.cluster.running_jobs.items():
+                status += '  - %s: %s\n' % (job_id, str(workers))
+        status += '- Pending: (cores=%d, memory=%s, workers=%d, jobs=%d)\n' % \
+                  self.pending_stats
+        if self.verbose:
+            for job_id in self.cluster.pending_jobs.keys():
+                status += '  - %s\n' % job_id
+        status += '- Finished: (jobs=%d)\n' % len(self.cluster.finished_jobs)
+        if self.verbose:
+            status += '  - ' + str(list(self.cluster.finished_jobs.keys())) + '\n'
+        return status
+
+    def _repr_html_(self):
+        text = ("<h3>Cluster Status</h3>\n"
+                    "<ul>\n"
+                    "  <li><b>Running: </b>(cores=%d, memory=%s, workers=%d, jobs=%d)\n") % \
+            self.running_stats
+        if self.verbose:
+            text += '    <ul>\n'
+            for job_id, workers in self.cluster.running_jobs.items():
+                text += "      <li><b>%s: </b> %s\n" % (job_id, html.escape(str(workers)))
+            text += "    </ul>\n"
+        text += "  <li><b>Pending: </b>(cores=%d, memory=%s, workers=%d, jobs=%d)\n" % \
+            self.pending_stats
+        if self.verbose:
+            text += "    <ul>\n"
+            for job_id in self.cluster.pending_jobs.keys():
+                text += "      <li>%s\n" % job_id
+            text += "    </ul>\n"
+        text += "  <li><b>Finished: </b>(jobs=%d)\n" % len(self.cluster.finished_jobs)
+        if self.verbose:
+            text += "    <ul>\n"
+            for job_id in self.cluster.finished_jobs.keys():
+                text += "      <li>%s\n" % job_id
+            text += "    </ul>\n"
+        text +="</ul>\n"
+        return text
+

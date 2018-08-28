@@ -5,6 +5,7 @@ import socket
 
 from dask_jobqueue import (JobQueueCluster, PBSCluster, MoabCluster,
                            SLURMCluster, SGECluster, LSFCluster)
+from dask_jobqueue.core import ClusterStatus
 
 
 def test_errors():
@@ -44,3 +45,23 @@ def test_forward_ip():
     with PBSCluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
                     name='dask-worker') as cluster:
         assert cluster.local_cluster.scheduler.ip == default_ip
+
+
+def test_status():
+    with PBSCluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
+                    name='dask-worker') as cluster:
+        status = cluster.status()
+        assert isinstance(status, ClusterStatus)
+        assert 'Running: (cores=0, memory=0 B, workers=0, jobs=0)' in status.__repr__()
+        assert 'Pending: ' in status.__repr__()
+        assert 'Finished: ' in status.__repr__()
+        assert '<h3>Cluster Status</h3>' in status._repr_html_()
+        assert '<b>Running: </b>(cores=0, memory=0 B, workers=0, jobs=0)' in status._repr_html_()
+
+        status = cluster.status(True)
+        assert isinstance(status, ClusterStatus)
+        assert 'Running: ' in status.__repr__()
+        assert 'Pending: ' in status.__repr__()
+        assert 'Finished: ' in status.__repr__()
+        assert '<h3>Cluster Status</h3>' in status._repr_html_()
+        assert '<b>Running: </b>(cores=0, memory=0 B, workers=0, jobs=0)' in status._repr_html_()
