@@ -428,11 +428,11 @@ class ClusterStatus():
         running_cores = running_workers * self.cluster.worker_threads
         running_memory = running_workers * self.cluster.worker_memory / self.cluster.worker_processes
         self.running_stats = (running_cores, format_bytes(running_memory), running_workers,
-                  len(self.cluster.running_jobs))
+                              len(self.cluster.running_jobs))
         self.pending_stats = (len(self.cluster.pending_jobs) * self.cluster.worker_cores,
-                   format_bytes(len(self.cluster.pending_jobs) * self.cluster.worker_memory),
-                   len(self.cluster.pending_jobs) * self.cluster.worker_threads,
-                   len(self.cluster.pending_jobs))
+                              format_bytes(len(self.cluster.pending_jobs) * self.cluster.worker_memory),
+                              len(self.cluster.pending_jobs) * self.cluster.worker_threads,
+                              len(self.cluster.pending_jobs))
 
     def __repr__(self):
         status = '- Running: (cores=%d, memory=%s, workers=%d, jobs=%d)\n' % \
@@ -452,8 +452,8 @@ class ClusterStatus():
 
     def _repr_html_(self):
         text = ("<h3>Cluster Status</h3>\n"
-                    "<ul>\n"
-                    "  <li><b>Running: </b>(cores=%d, memory=%s, workers=%d, jobs=%d)\n") % \
+                "<ul>\n"
+                "  <li><b>Running: </b>(cores=%d, memory=%s, workers=%d, jobs=%d)\n") % \
             self.running_stats
         if self.verbose:
             text += '    <ul>\n'
@@ -473,6 +473,5 @@ class ClusterStatus():
             for job_id in self.cluster.finished_jobs.keys():
                 text += "      <li>%s\n" % job_id
             text += "    </ul>\n"
-        text +="</ul>\n"
+        text += "</ul>\n"
         return text
-
