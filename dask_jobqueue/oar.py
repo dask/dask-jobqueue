@@ -46,6 +46,7 @@ class OARCluster(JobQueueCluster):
     submit_command = 'oarsub'
     cancel_command = 'oardel'
     scheduler_name = 'oar'
+    job_id_regexp = r'OAR_JOB_ID=(?P<job_id>\d+)'
 
     def __init__(self, queue=None, project=None, resource_spec=None, walltime=None, job_extra=None, **kwargs):
         if queue is None:
@@ -89,16 +90,6 @@ class OARCluster(JobQueueCluster):
         self.job_header = '\n'.join(header_lines)
 
         logger.debug("Job script: \n %s" % self.job_script())
-
-    def _job_id_from_submit_output(self, out):
-        job_id_regexp = r'OAR_JOB_ID=(?P<job_id>\d+)'
-        match = re.search(job_id_regexp, out)
-        if match is None:
-            raise ValueError('Unexpected output from the submission command')
-        group_dict = match.groupdict()
-        if 'job_id' not in group_dict:
-            raise ValueError('Unexpected output from the submission command')
-        return group_dict['job_id']
 
     def _submit_job(self, fn):
         # OAR specificity: the submission script needs to exist on the worker
