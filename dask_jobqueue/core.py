@@ -10,6 +10,8 @@ import warnings
 from collections import OrderedDict
 from contextlib import contextmanager
 
+import six
+
 import dask
 import docrep
 from distributed import LocalCluster
@@ -299,7 +301,7 @@ class JobQueueCluster(Cluster):
         for _ in range(num_jobs):
             with self.job_file() as fn:
                 out = self._submit_job(fn)
-                job = self._job_id_from_submit_output(out.decode())
+                job = self._job_id_from_submit_output(out)
                 logger.debug("started job: %s" % job)
                 self.pending_jobs[job] = {}
 
@@ -326,7 +328,7 @@ class JobQueueCluster(Cluster):
 
         Returns
         -------
-        The stdout produced by the command
+        The stdout produced by the command, as string.
 
         Raises
         ------
@@ -340,11 +342,15 @@ class JobQueueCluster(Cluster):
                                 stderr=subprocess.PIPE)
 
         out, err = proc.communicate()
+        if six.PY3:
+            out, err = out.decode(), err.decode()
         if proc.returncode != 0:
             raise RuntimeError('Command exited with non-zero exit code.\n'
-                               'Command:\n{}'
-                               'stdout:\n{}'
-                               'stderr:\n{}'.format(cmd_str, out, err))
+                               'Exit code: {}\n'
+                               'Command:\n{}\n'
+                               'stdout:\n{}\n'
+                               'stderr:\n{}\n'.format(proc.returncode,
+                                                      cmd_str, out, err))
         return out
 
     def stop_workers(self, workers):

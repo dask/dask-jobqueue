@@ -1,7 +1,10 @@
 from __future__ import absolute_import, division, print_function
 
-import pytest
 import socket
+import sys
+import re
+
+import pytest
 
 from dask_jobqueue import (JobQueueCluster, PBSCluster, MoabCluster,
                            SLURMCluster, SGECluster, LSFCluster)
@@ -79,3 +82,25 @@ def test_job_id_error_handling(Cluster):
             return_string = 'Job <12345> submited to <normal>.'
             cluster.job_id_regexp = r'(\d+)'
             cluster._job_id_from_submit_output(return_string)
+
+
+def test_jobqueue_cluster_call(tmpdir):
+    cluster = PBSCluster(cores=1, memory='1GB')
+
+    path = tmpdir.join('test.py')
+    path.write('print("this is the stdout")')
+
+    out = cluster._call([sys.executable, path.strpath])
+    assert out == 'this is the stdout\n'
+
+    path_with_error = tmpdir.join('non-zero-exit-code.py')
+    path_with_error.write('print("this is the stdout")\n1/0')
+
+    match = ('Command exited with non-zero exit code.+'
+             'Exit code: 1.+'
+             'stdout:\nthis is the stdout.+'
+             'stderr:.+ZeroDivisionError')
+
+    match = re.compile(match, re.DOTALL)
+    with pytest.raises(RuntimeError, match=match):
+        cluster._call([sys.executable, path_with_error.strpath])
