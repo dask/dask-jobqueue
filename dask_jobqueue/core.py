@@ -308,43 +308,44 @@ class JobQueueCluster(Cluster):
         """ The scheduler of this cluster """
         return self.local_cluster.scheduler
 
-    def _calls(self, cmds, **kwargs):
-        """ Call a command using subprocess.communicate
+    def _call(self, cmd):
+        """ Call a command using subprocess.Popen.
 
-        This centralizes calls out to the command line, providing consistent outputs, logging, and an opportunity
-        to go asynchronous in the future
+        This centralizes calls out to the command line, providing consistent
+        outputs, logging, and an opportunity to go asynchronous in the future.
 
         Parameters
         ----------
-        cmd: List(List(str))
-            A list of commands, each of which is a list of strings to hand to subprocess.communicate
+        cmd: List(str))
+            A command, each of which is a list of strings to hand to
+            subprocess.communicate
 
         Examples
         --------
-        >>> self._calls([['ls'], ['ls', '/foo']])
+        >>> self._call(['ls', '/foo'])
 
         Returns
         -------
-        The stdout result as a string
-        Also logs any stderr information
+        The stdout produced by the command
+
+        Raises
+        ------
+        RuntimeError if the command exits with a non-zero exit code
         """
-        logger.debug("Submitting the following calls to command line")
-        procs = []
-        for cmd in cmds:
-            logger.debug(' '.join(cmd))
-            procs.append(subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs))
+        cmd_str = ' '.join(cmd)
+        logger.debug("Executing the following command to command line\n{}".format(cmd_str))
 
-        result = []
-        for proc in procs:
-            out, err = proc.communicate()
-            if err:
-                logger.error(err.decode())
-            result.append(out)
-        return result
+        proc = subprocess.Popen(cmd,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
 
-    def _call(self, cmd, **kwargs):
-        """ Singular version of _calls """
-        return self._calls([cmd], **kwargs)[0]
+        out, err = proc.communicate()
+        if proc.returncode != 0:
+            raise RuntimeError('Command exited with non-zero exit code.\n'
+                               'Command:\n{}'
+                               'stdout:\n{}'
+                               'stderr:\n{}'.format(cmd_str, out, err))
+        return out
 
     def stop_workers(self, workers):
         """ Stop a list of workers"""
