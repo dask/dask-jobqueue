@@ -19,6 +19,7 @@ jobqueue:
     env-extra: []
     resource-spec: null
     job-extra: []
+    log-directory: 'dask-jobqueue-logs'
 
   pbs:
     name: dask-worker
@@ -40,6 +41,7 @@ jobqueue:
     env-extra: []
     resource-spec: null
     job-extra: []
+    log-directory: 'dask-jobqueue-logs'
 
   sge:
     name: dask-worker
@@ -59,6 +61,7 @@ jobqueue:
     walltime: '00:30:00'
     extra: ""
     env-extra: []
+    log-directory: 'dask-jobqueue-logs'
 
     resource-spec: null
 
@@ -83,6 +86,7 @@ jobqueue:
     job-cpu: null
     job-mem: null
     job-extra: {}
+    log-directory: 'dask-jobqueue-logs'
 
   moab:
     name: dask-worker
@@ -104,6 +108,7 @@ jobqueue:
     env-extra: []
     resource-spec: null
     job-extra: []
+    log-directory: 'dask-jobqueue-logs'
 
   lsf:
     name: dask-worker
@@ -126,3 +131,4 @@ jobqueue:
     ncpus: null
     mem: null
     job-extra: []
+    log-directory: 'dask-jobqueue-logs'

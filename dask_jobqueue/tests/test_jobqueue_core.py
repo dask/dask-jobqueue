@@ -1,6 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
+import os
 import pytest
+import shutil
 import socket
 
 from dask_jobqueue import (JobQueueCluster, PBSCluster, MoabCluster,
@@ -79,3 +81,10 @@ def test_job_id_error_handling(Cluster):
             return_string = 'Job <12345> submited to <normal>.'
             cluster.job_id_regexp = r'(\d+)'
             cluster._job_id_from_submit_output(return_string)
+
+
+def test_log_directory():
+    shutil.rmtree('log-folder', ignore_errors=True)
+    with PBSCluster(cores=1, memory='1GB',
+                    log_directory='log-folder') as cluster:
+        assert os.path.exists('log-folder')

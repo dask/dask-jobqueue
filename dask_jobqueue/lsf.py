@@ -73,8 +73,8 @@ class LSFCluster(JobQueueCluster):
         # LSF header build
         if self.name is not None:
             header_lines.append('#BSUB -J %s' % self.name)
-            header_lines.append('#BSUB -e %s.err' % self.name)
-            header_lines.append('#BSUB -o %s.out' % self.name)
+            header_lines.append('#BSUB -e %s-%%J.err' % self.name)
+            header_lines.append('#BSUB -o %s-%%J.out' % self.name)
         if queue is not None:
             header_lines.append('#BSUB -q %s' % queue)
         if project is not None:
@@ -104,7 +104,7 @@ class LSFCluster(JobQueueCluster):
 
     def _submit_job(self, script_filename):
         piped_cmd = [self.submit_command + ' ' + script_filename + ' 2> /dev/null']
-        return self._call(piped_cmd, shell=True)
+        return self._call(piped_cmd, shell=True, cwd=self.log_directory)
 
 
 def lsf_format_bytes_ceil(n):

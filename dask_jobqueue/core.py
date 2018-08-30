@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import logging
 import math
+import os
 import re
 import shlex
 import subprocess
@@ -151,6 +152,7 @@ class JobQueueCluster(Cluster):
                  local_directory=None,
                  extra=None,
                  env_extra=None,
+                 log_directory=None,
                  walltime=None,
                  threads=None,
                  **kwargs
@@ -183,6 +185,8 @@ class JobQueueCluster(Cluster):
             extra = dask.config.get('jobqueue.%s.extra' % self.scheduler_name)
         if env_extra is None:
             env_extra = dask.config.get('jobqueue.%s.env-extra' % self.scheduler_name)
+        if log_directory is None:
+            log_directory = dask.config.get('jobqueue.%s.log-directory' % self.scheduler_name)
 
         if dask.config.get('jobqueue.%s.threads', None):
             warnings.warn(threads_deprecation_message)
@@ -240,6 +244,10 @@ class JobQueueCluster(Cluster):
             self._command_template += " --local-directory %s" % local_directory
         if extra is not None:
             self._command_template += extra
+        if log_directory is not None:
+            self.log_directory = log_directory
+            if not os.path.exists(self.log_directory):
+                os.mkdir(self.log_directory)
 
     def __repr__(self):
         running_workers = sum(len(value) for value in self.running_jobs.values())
@@ -290,7 +298,8 @@ class JobQueueCluster(Cluster):
             yield fn
 
     def _submit_job(self, script_filename):
-        return self._call(shlex.split(self.submit_command) + [script_filename])
+        return self._call(shlex.split(self.submit_command) + [script_filename],
+                          cwd=self.log_directory)
 
     def start_workers(self, n=1):
         """ Start workers and point them to our local scheduler """
