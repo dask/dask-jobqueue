@@ -89,7 +89,7 @@ Once Jupyter is installed and configured, using a Jupyter notebook is done by:
 
    $ ssh -N -L 8888:x.x.x.x:8888 username@hpc_domain
 
-Now you can fo to ``http://localhost:8888`` on your browser to access the
+Now you can go to ``http://localhost:8888`` on your browser to access the
 notebook server.
 
 Viewing the Dask Dashboard
