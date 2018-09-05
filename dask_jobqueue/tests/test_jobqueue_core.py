@@ -83,8 +83,11 @@ def test_job_id_error_handling(Cluster):
             cluster._job_id_from_submit_output(return_string)
 
 
-def test_log_directory():
-    shutil.rmtree('log-folder', ignore_errors=True)
+def test_log_directory(tmpdir):
+    shutil.rmtree(tmpdir.strpath, ignore_errors=True)
+    with PBSCluster(cores=1, memory='1GB'):
+        assert not os.path.exists(tmpdir.strpath)
+
     with PBSCluster(cores=1, memory='1GB',
-                    log_directory='log-folder') as cluster:
-        assert os.path.exists('log-folder')
+                    log_directory=tmpdir.strpath):
+        assert os.path.exists(tmpdir.strpath)

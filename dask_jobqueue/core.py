@@ -244,10 +244,11 @@ class JobQueueCluster(Cluster):
             self._command_template += " --local-directory %s" % local_directory
         if extra is not None:
             self._command_template += extra
-        if log_directory is not None:
-            self.log_directory = log_directory
+
+        self.log_directory = log_directory
+        if self.log_directory is not None:
             if not os.path.exists(self.log_directory):
-                os.mkdir(self.log_directory)
+                os.makedirs(self.log_directory)
 
     def __repr__(self):
         running_workers = sum(len(value) for value in self.running_jobs.values())
@@ -298,8 +299,7 @@ class JobQueueCluster(Cluster):
             yield fn
 
     def _submit_job(self, script_filename):
-        return self._call(shlex.split(self.submit_command) + [script_filename],
-                          cwd=self.log_directory)
+        return self._call(shlex.split(self.submit_command) + [script_filename])
 
     def start_workers(self, n=1):
         """ Start workers and point them to our local scheduler """
