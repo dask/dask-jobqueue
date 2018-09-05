@@ -152,6 +152,16 @@ Note that if using Jupyterhub, the service admin should deploy nbserverproxy
 on the environment used for starting singleuser notebook, but each user may
 have to activate the nbserverproxy extension.
 
+Finally, you may want to update the Dashboard link that is displayed in the
+notebook, shown from Cluster and Client objects. In order to do this, just
+edit dask config file, either ``~/.config/dask/jobqueue.yaml`` or
+``~/.config/dask/distributed.yaml``, and add the following:
+
+.. code-block::
+
+   distributed.dashboard.link: "/proxy/{port}/status" # for user launched notebook
+   distributed.dashboard.link: "/user/{JUPYTERHUB_USER}/proxy/{port}/status" # for jupyterhub launched notebook
+
 
 Configuration
 -------------
