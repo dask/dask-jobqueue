@@ -28,5 +28,8 @@ python setup.py sdist bdist_wheel --universal
 wine upload dist/*
 ````
 
-* Conda forge bots should pick up the change automatically.
+* Conda forge bots should pick up the change automatically. Just follow
+instructions from automatic email that you should receive:
+  * check that dependencies have not changed,
+  * Merge the PR on conda-forge/dask-jobqueue-feedstock once tests have passed.
 
