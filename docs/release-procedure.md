@@ -4,10 +4,11 @@ We may want to check their status while releasing.
 
 Release for dask-jobqueue, from within your fork:
 
-* Update release notes in `docs/source/changelog.rst`. Preferably within a PR,
-which informs of incoming release.
+* Submit a PR that updates the release notes in `docs/source/changelog.rst`. 
+We submit a PR to inform other developers of the pending release, and possibly
+discuss its content.
 
-* Once PR is merge, checkout master branch:
+* Once the PR is merge, checkout master branch:
 
 ````
 git checkout upstream/master
@@ -25,11 +26,12 @@ git push --tags upstream
 ````
 git clean -xfd
 python setup.py sdist bdist_wheel --universal
-wine upload dist/*
+twine upload dist/*
 ````
 
-* Conda forge bots should pick up the change automatically. Just follow
-instructions from automatic email that you should receive:
-  * check that dependencies have not changed,
+* The Conda Forge bots should pick up the change automatically within an hour
+or two. Then follow the instructions from the automatic e-mail that you will
+receive from Conda Forge, basically:
+  * Check that dependencies have not changed.
   * Merge the PR on conda-forge/dask-jobqueue-feedstock once tests have passed.
 
