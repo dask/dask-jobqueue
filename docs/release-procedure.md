@@ -8,7 +8,7 @@ Release for dask-jobqueue, from within your fork:
 We submit a PR to inform other developers of the pending release, and possibly
 discuss its content.
 
-* Once the PR is merge, checkout master branch:
+* Once the PR is merged, checkout the master branch:
 
 ````
 git checkout upstream/master
