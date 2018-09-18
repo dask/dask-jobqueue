@@ -27,32 +27,27 @@ class PBSCluster(JobQueueCluster):
     walltime : str
         Walltime for each worker job.
     job_extra : list
-        List of other PBS options, for example -j oe. Each option will be
-        prepended with the #PBS prefix.
+        List of other PBS options, for example -j oe. Each option will be prepended with the #PBS prefix.
     %(JobQueueCluster.parameters)s
 
     Examples
     --------
     >>> from dask_jobqueue import PBSCluster
-    >>> cluster = PBSCluster(queue='regular', project='DaskOnPBS')
+    >>> cluster = PBSCluster(queue='regular', project='DaskOnPBS', cores=12)
     >>> cluster.scale(10)  # this may take a few seconds to launch
 
     >>> from dask.distributed import Client
     >>> client = Client(cluster)
 
-    This also works with adaptive clusters.  This automatically launches and
-    kill workers based on load.
+    This also works with adaptive clusters.  This automatically launches and kill workers based on load.
 
     >>> cluster.adapt()
 
-    It is a good practice to define local_directory to your PBS system scratch
-    directory, and you should specify resource_spec according to the processes
-    and threads asked:
+    It is a good practice to define local_directory to your PBS system scratch directory:
 
     >>> cluster = PBSCluster(queue='regular', project='DaskOnPBS',
-    ...                      local_directory=os.getenv('TMPDIR', '/tmp'),
-    ...                      threads=4, processes=6, memory='16GB',
-    ...                      resource_spec='select=1:ncpus=24:mem=100GB')
+    ...                      local_directory='$TMPDIR',
+    ...                      cores=24, processes=6, memory='100GB')
     """, 4)
 
     # Override class variables
@@ -91,8 +86,7 @@ class PBSCluster(JobQueueCluster):
             resource_spec = "select=1:ncpus=%d" % self.worker_cores
             memory_string = pbs_format_bytes_ceil(self.worker_memory)
             resource_spec += ':mem=' + memory_string
-            logger.info("Resource specification for PBS not set, "
-                        "initializing it to %s" % resource_spec)
+            logger.info("Resource specification for PBS not set, initializing it to %s" % resource_spec)
         if resource_spec is not None:
             header_lines.append('#PBS -l %s' % resource_spec)
         if walltime is not None:
@@ -105,14 +99,11 @@ class PBSCluster(JobQueueCluster):
 
         logger.debug("Job script: \n %s" % self.job_script())
 
-    def _job_id_from_submit_output(self, out):
-        return out.split('.')[0].strip()
-
 
 def pbs_format_bytes_ceil(n):
-    """ Format bytes as text
-    PBS expects KiB, MiB or Gib, but names it KB, MB, GB
-    Whereas Dask makes the difference between KB and KiB
+    """ Format bytes as text.
+
+    PBS expects KiB, MiB or Gib, but names it KB, MB, GB whereas Dask makes the difference between KB and KiB.
 
     >>> pbs_format_bytes_ceil(1)
     '1B'

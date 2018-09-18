@@ -45,6 +45,125 @@ save resources when not actively computing.
    cluster.adapt(minimum=6, maximum=90)  # auto-scale between 6 and 90 workers
 
 
+Interactive Use
+---------------
+
+While dask-jobqueue can perfectly be used to submit batch processing, it is
+better suited to interactive processing, using tools like ipython or jupyter
+notebooks. Batch processing with dask-jobqueue can be tricky in some cases
+depending on how your cluster is configured and which resources and queues you
+have access to: scheduler might hang on for a long time before having some
+connected workers, and you could end up with less computing power than you
+expected. Another good solution for batch processing on HPC system using dask
+is the `dask-mpi <http://dask.pydata.org/en/latest/setup/hpc.html#using-mpi>`_
+command.
+
+The following paragraphs describe how to have access to Jupyter notebook and
+Dask dashboard on your HPC system.
+
+Using Jupyter
+~~~~~~~~~~~~~
+
+It is convenient to run a Jupyter notebook server on the HPC for use with
+dask-jobqueue. You may already have a Jupyterhub instance available on your
+system, which can be used as is. Otherwise, a really good documentation for
+starting your own notebook is available in the `Pangeo documentation
+<http://pangeo-data.org/setup_guides/hpc.html#configure-jupyter>`_.
+
+Once Jupyter is installed and configured, using a Jupyter notebook is done by:
+
+- Starting a Jupyter notebook server on the HPC (it is often good practice to
+  run/submit this as a job to an interactive queue, see Pangeo docs for more
+  details).
+
+.. code-block:: bash
+
+   $ jupyter notebook --no-browser --ip=`hostname` --port=8888
+
+- Reading the output of the command above to get the ip or hostname of your
+  notebook, and use SSH tunneling on your local machine to access the notebook.
+  This must only be done in the probable case where you don't have direct
+  access to the notebook URL from your computer browser.
+
+.. code-block:: bash
+
+   $ ssh -N -L 8888:x.x.x.x:8888 username@hpc_domain
+
+Now you can go to ``http://localhost:8888`` on your browser to access the
+notebook server.
+
+Viewing the Dask Dashboard
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Whether or not you are using dask-jobqueue in Jupyter, ipython or other tools,
+at one point you will want to have access to Dask Dashboard. Once you've
+started a cluster and connected a client to it using commands described in
+`Example`_), inspecting ``client`` object will give you the Dashboard URL,
+for example ``http://172.16.23.102:8787/status``. The Dask Dashboard may be
+accessible by clicking the link displayed, otherwise, you'll have to use SSH
+tunneling:
+
+.. code-block:: bash
+
+    # General syntax
+    $ ssh -fN your-login@scheduler-ip-address -L port-number:localhost:port-number
+    # As applied to this example:
+    $ ssh -fN username@172.16.23.102 -L 8787:localhost:8787
+
+Now, you can go to ``http://localhost:8787`` on your browser to view the
+dashboard. Note that you can do SSH tunneling for both Jupyter and Dashboard in
+one command.
+
+A good example of using Jupyter along with dask-jobqueue and the Dashboard is
+availaible below:
+
+.. raw:: html
+
+   <iframe width="560" height="315"
+           src="https://www.youtube.com/embed/nH_AQo8WdKw?rel=0"
+           frameborder="0" allow="autoplay; encrypted-media"
+           allowfullscreen></iframe>
+
+
+Dask Dashboard with Jupyter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you are using dask-jobqueue within jupyter, one user friendly solution to
+see the Dashboard is to use `nbserverproxy
+<https://github.com/jupyterhub/nbserverproxy>`_. As Dashboard http end point is
+launched inside the same node as jupyter, this is a great solution for viewing
+it without having to do SSH tunneling. You just need to install
+``nbserverproxy`` in the python env you use for launching the notebook, and
+activate it as indicated in the docs:
+
+.. code-block:: bash
+
+   pip install nbserverproxy
+   jupyter serverextension enable --py nbserverproxy
+
+Then, once started, the Dashboard will be accessible from your notebook URL
+by just adding the path ``/proxy/8787/status``, replacing 8787 by any other
+port you use or the Dashboard is bind to if needed. Sor for example:
+
+ - ``http://localhost:8888/proxy/8787/status`` with the example above
+ - ``http://myjupyterhub.org/user/username/proxy/8787/status`` if using
+   jupyterhub
+
+Note that if using Jupyterhub, the service admin should deploy nbserverproxy
+on the environment used for starting singleuser notebook, but each user may
+have to activate the nbserverproxy extension.
+
+Finally, you may want to update the Dashboard link that is displayed in the
+notebook, shown from Cluster and Client objects. In order to do this, just
+edit dask config file, either ``~/.config/dask/jobqueue.yaml`` or
+``~/.config/dask/distributed.yaml``, and add the following:
+
+.. code-block:: yaml
+
+   distributed.dashboard.link: "/proxy/{port}/status" # for user launched notebook
+   distributed.dashboard.link: "/user/{JUPYTERHUB_USER}/proxy/{port}/status" # for jupyterhub launched notebook
+
+
 Configuration
 -------------
 
@@ -141,10 +260,12 @@ documentation <http://dask.pydata.org/en/latest/configuration.html>`_
 
    index.rst
    install.rst
+   examples.rst
    configurations.rst
    configuration-setup.rst
    history.rst
    api.rst
+   changelog.rst
 
 How this works
 --------------
@@ -216,3 +337,73 @@ In dask-distributed, a ``Worker`` is a Python object and node in a dask
 computations. ``Jobs`` are resources submitted to, and managed by, the job
 queueing system (e.g. PBS, SGE, etc.). In dask-jobqueue, a single ``Job`` may
 include one or more ``Workers``.
+
+How to debug
+------------
+
+Dask jobqueue has been developed and tested by several contributors, each of
+us having a given HPC system setup to work on: a job scheduler in a given
+version running on a given OS. Thus, in some specific case, it might not work
+out of the box on your system. This section provides some hints to help you
+sort what may be going wrong.
+
+Checking job script
+~~~~~~~~~~~~~~~~~~~
+
+Dask-jobqueue submits "job scripts" to your queueing system (see `How this
+works`_). Inspecting these scripts often reveals errors in the configuration
+of your Cluster object or maybe directives unexpected by your job scheduler,
+in particular the header containing ``#PBS``, ``#SBATCH`` or equivalent lines.
+This can be done easily once you've created a cluster object:
+
+.. code-block:: python
+
+   print(cluster.job_script())
+
+If everything in job script appears correct, the next step is to try to submit
+a test job using the script. You can simply copy and paste printed content to
+a real job script file, and submit it using ``qsub``, ``sbatch``, ``bsub`` or
+what is appropriate for you job queuing system.
+
+To correct any problem detected at this point, you could try to use
+``job_extra`` or ``env_extra`` kwargs when initializing your cluster object.
+
+Activate debug mode
+~~~~~~~~~~~~~~~~~~~
+
+Dask-jobqueue uses python logging module. To understand better what is
+happening under the hood, you may want to activate logging display. This can be
+done by running this line of python code in your script or notebook:
+
+.. code-block:: python
+
+   import logging
+   logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+
+
+Interact with you job queuing system
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Every worker is launched inside a batch job, as explained above. It can be very
+helpful to query your job queuing system. Some things you might want to check:
+
+- are there running jobs related to dask-jobqueue?
+- are there finished jobs, error jobs?
+- what is the stdout or stderr of dask-jobqueue jobs?
+
+Other things you might look at
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+From here it gets a little more complicated. A couple of other already seen
+problems are the following:
+
+- submit command used in dask-jobqueue (``qsub`` or equivalent) doesn't
+  correspond to the one you use. Check in the given ``JobQueueCluster``
+  implementation that job submission command and eventual arguments look
+  familliar to you, eventually try them.
+
+- submit command output is not the same as the one expected by dask-jobqueue.
+  We use submit command stdout to parse the job_id corresponding to the
+  launched group of worker. If the parsing fails, then dask-jobqueue won't work
+  as expected and may throw exceptions. You can have a look at the parsing
+  function ``JobQueueCluster._job_id_from_submit_output``.

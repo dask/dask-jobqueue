@@ -18,25 +18,22 @@ class SLURMCluster(JobQueueCluster):
     queue : str
         Destination queue for each worker job. Passed to `#SBATCH -p` option.
     project : str
-        Accounting string associated with each worker job. Passed to
-        `#SBATCH -A` option.
+        Accounting string associated with each worker job. Passed to `#SBATCH -A` option.
     walltime : str
         Walltime for each worker job.
     job_cpu : int
-        Number of cpu to book in SLURM, if None, defaults to worker
-        threads * processes
+        Number of cpu to book in SLURM, if None, defaults to worker `threads * processes`
     job_mem : str
         Amount of memory to request in SLURM. If None, defaults to worker
         processes * memory
     job_extra : list
-        List of other Slurm options, for example -j oe. Each option will be
-        prepended with the #SBATCH prefix.
+        List of other Slurm options, for example -j oe. Each option will be prepended with the #SBATCH prefix.
     %(JobQueueCluster.parameters)s
 
     Examples
     --------
     >>> from dask_jobqueue import SLURMCluster
-    >>> cluster = SLURMCluster(processes=6, threads=4, memory="16GB",
+    >>> cluster = SLURMCluster(processes=6, cores=24, memory="120GB",
                                env_extra=['export LANG="en_US.utf8"',
                                           'export LANGUAGE="en_US.utf8"',
                                           'export LC_ALL="en_US.utf8"'])
@@ -45,8 +42,7 @@ class SLURMCluster(JobQueueCluster):
     >>> from dask.distributed import Client
     >>> client = Client(cluster)
 
-    This also works with adaptive clusters.  This automatically launches and
-    kill workers based on load.
+    This also works with adaptive clusters.  This automatically launches and kill workers based on load.
 
     >>> cluster.adapt()
     """, 4)
@@ -56,8 +52,7 @@ class SLURMCluster(JobQueueCluster):
     cancel_command = 'scancel'
     scheduler_name = 'slurm'
 
-    def __init__(self, queue=None, project=None, walltime=None,
-                 job_cpu=None, job_mem=None, job_extra=None, **kwargs):
+    def __init__(self, queue=None, project=None, walltime=None, job_cpu=None, job_mem=None, job_extra=None, **kwargs):
         if queue is None:
             queue = dask.config.get('jobqueue.slurm.queue')
         if project is None:
@@ -107,14 +102,11 @@ class SLURMCluster(JobQueueCluster):
 
         logger.debug("Job script: \n %s" % self.job_script())
 
-    def _job_id_from_submit_output(self, out):
-        return out.split(';')[0].strip()
-
 
 def slurm_format_bytes_ceil(n):
-    """ Format bytes as text
-    SLURM expects KiB, MiB or Gib, but names it KB, MB, GB
-    SLURM does not handle Bytes, only starts at KB
+    """ Format bytes as text.
+
+    SLURM expects KiB, MiB or Gib, but names it KB, MB, GB. SLURM does not handle Bytes, only starts at KB.
 
     >>> slurm_format_bytes_ceil(1)
     '1K'
