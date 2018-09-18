@@ -241,6 +241,8 @@ class JobQueueCluster(Cluster):
         if extra is not None:
             self._command_template += extra
 
+        self._target_scale = 0
+
     def __repr__(self):
         running_workers = self._count_active_workers()
         running_cores = running_workers * self.worker_threads
@@ -377,44 +379,26 @@ class JobQueueCluster(Cluster):
             if job_id in self.pending_jobs:
                 del self.pending_jobs[job_id]
 
-    def scale(self, n):
-        """ Scale cluster to n workers
-        Parameters
-        ----------
-        n: int
-            Target number of workers
-        Example
-        -------
-        >>> cluster.scale(10)  # scale cluster to ten workers
-        See Also
-        --------
-        Cluster.scale_up
-        Cluster.scale_down
-        """
-        with log_errors():
-            active_and_pending = self._count_active_and_pending_workers()
-            if n >= active_and_pending:
-                self.scheduler.loop.add_callback(self.scale_up, n)
-            else:
-                n_to_close = active_and_pending - n
-
-                if n_to_close < self._count_pending_workers():
-                    # We only need to kill some pending jobs
-                    to_kill = int(n_to_close / self.worker_processes)
-                    jobs = list(self.pending_jobs.keys())[to_kill:]
-                    self.stop_jobs(jobs)
-                else:
-                    # we need to retire some workers (and maybe pending jobs)
-                    to_close = self.scheduler.workers_to_close(n=n_to_close)
-                logger.debug("Closing workers: %s", to_close)
-                self.scheduler.loop.add_callback(
-                    self.scheduler.retire_workers, workers=to_close)
-                self.scheduler.loop.add_callback(self.scale_down, to_close)
-
     def scale_up(self, n, **kwargs):
         """ Brings total worker count up to ``n`` """
-        logger.debug("Scaling up to %d workers.", n)
-        self.start_workers(n - self._count_active_and_pending_workers())
+        active_and_pending = self._count_active_and_pending_workers()
+        if n >= active_and_pending:
+            logger.debug("Scaling up to %d workers.", n)
+            self.start_workers(n - self._count_active_and_pending_workers())
+        else:
+            n_to_close = active_and_pending - n
+            if n_to_close < self._count_pending_workers():
+                # We only need to kill some pending jobs, this is actually a
+                # scale down bu could not be handled upstream
+                to_kill = int(n_to_close / self.worker_processes)
+                jobs = list(self.pending_jobs.keys())[to_kill:]
+                self.stop_jobs(jobs)
+            else:
+                # We should not end here, a new scale call should not begin
+                # until a scale_up or scale_down has ended
+                raise RuntimeError('JobQueueCluster.scale_up was called with'
+                                   ' a number of worker lower than the '
+                                   'currently connected workers')
 
     def _count_active_and_pending_workers(self):
         active_and_pending = (self._count_active_workers() +
