@@ -300,7 +300,7 @@ class JobQueueCluster(Cluster):
         """ Start workers and point them to our local scheduler """
         logger.debug('starting %s workers' % n)
         num_jobs = math.ceil(n / self.worker_processes)
-        for _ in range(num_jobs):
+        for _ in range(int(num_jobs)):
             with self.job_file() as fn:
                 out = self._submit_job(fn)
                 job = self._job_id_from_submit_output(out.decode())
