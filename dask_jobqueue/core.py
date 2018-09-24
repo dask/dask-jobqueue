@@ -244,7 +244,7 @@ class JobQueueCluster(Cluster):
         if extra is not None:
             command_args += extra
 
-        self._command_template = ' '.join(map(str,command_args))
+        self._command_template = ' '.join(map(str, command_args))
 
     def __repr__(self):
         running_workers = sum(len(value) for value in self.running_jobs.values())
