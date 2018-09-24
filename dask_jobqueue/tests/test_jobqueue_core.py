@@ -24,7 +24,7 @@ def test_threads_deprecation():
 
 
 def test_command_template():
-    with PBSCluster(cores=2) as cluster:
+    with PBSCluster(cores=2, memory='4GB') as cluster:
         assert '%s -m distributed.cli.dask_worker' % (sys.executable) \
                in cluster._command_template
         assert ' --nthreads 2' in cluster._command_template
@@ -32,7 +32,7 @@ def test_command_template():
         assert ' --memory-limit ' in cluster._command_template
         assert ' --name ' in cluster._command_template
 
-    with PBSCluster(cores=2, death_timeout=60, local_directory='/scratch',
+    with PBSCluster(cores=2, memory='4GB', death_timeout=60, local_directory='/scratch',
                     extra='--preload mymodule') as cluster:
         assert ' --death-timeout 60' in cluster._command_template
         assert ' --local-directory /scratch' in cluster._command_template
