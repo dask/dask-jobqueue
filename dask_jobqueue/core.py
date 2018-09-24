@@ -243,7 +243,7 @@ class JobQueueCluster(Cluster):
         if local_directory is not None:
             self._command_template += " --local-directory %s" % local_directory
         if extra is not None:
-            self._command_template += extra
+            self._command_template += ' ' + extra
 
     def __repr__(self):
         running_workers = sum(len(value) for value in self.running_jobs.values())
