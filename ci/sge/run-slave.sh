@@ -7,4 +7,7 @@ sleep 4
 
 sudo service gridengine-exec restart
 
-python -m http.server 8888
+if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then
+    python -m SimpleHTTPServer 8888
+else
+    python -m http.server 8888
