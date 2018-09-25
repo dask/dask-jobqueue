@@ -201,7 +201,7 @@ class JobQueueCluster(Cluster):
         self.job_header = None
 
         if interface:
-            extra += ' --interface  %s ' % interface
+            extra += ['--interface', interface]
             kwargs.setdefault('ip', get_ip_interface(interface))
         else:
             kwargs.setdefault('ip', '')
