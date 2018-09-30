@@ -20,8 +20,4 @@ bash add_worker.sh dask.q slave_two 4
 
 sudo service gridengine-master restart
 
-if [ "$TRAVIS_PYTHON_VERSION" == "2.7" ]; then
-    python -m SimpleHTTPServer 8888
-else
-    python -m http.server 8888
-fi
+sleep infinity
