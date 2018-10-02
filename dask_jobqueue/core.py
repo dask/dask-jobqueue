@@ -61,7 +61,8 @@ class JobQueuePlugin(SchedulerPlugin):
             if job_id in self.pending_jobs:
                 self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
             elif job_id in self.finished_jobs:
-                logger.warning('Job %s has got a restarting worker %s', job_id, w)
+                logger.warning('Worker %s restart in Job %s. '
+                               'This can be due to memory issue.', w, job_id)
                 self.running_jobs[job_id] = self.finished_jobs.pop(job_id)
             else:
                 logger.error('Unknown job_id: %s for worker %s', job_id, w)
