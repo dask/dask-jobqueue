@@ -3,10 +3,6 @@
 function jobqueue_before_install {
     docker version
     docker-compose version
-    if [ -z "$TRAVIS_PYTHON_VERSION" ]; then
-        export TRAVIS_PYTHON_VERSION='2.7'
-    fi
-    echo "Using Python version: $TRAVIS_PYTHON_VERSION"
     # start sge cluster
     cd ./ci/sge
     ./start-sge.sh
