@@ -167,7 +167,7 @@ class JobQueueCluster(Cluster):
                  env_extra=None,
                  walltime=None,
                  threads=None,
-                 python=None,
+                 python=sys.executable,
                  **kwargs
                  ):
         """ """
@@ -198,8 +198,6 @@ class JobQueueCluster(Cluster):
             extra = dask.config.get('jobqueue.%s.extra' % self.scheduler_name)
         if env_extra is None:
             env_extra = dask.config.get('jobqueue.%s.env-extra' % self.scheduler_name)
-        if python is None:
-            python = sys.executable
 
         if dask.config.get('jobqueue.%s.threads', None):
             warnings.warn(threads_deprecation_message)
