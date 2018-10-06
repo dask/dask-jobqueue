@@ -12,8 +12,8 @@ from contextlib import contextmanager
 
 import dask
 import docrep
+from . import ClusterManager
 from distributed import LocalCluster
-from distributed.deploy import Cluster
 from distributed.diagnostics.plugin import SchedulerPlugin
 from distributed.utils import format_bytes, parse_bytes, tmpfile, get_ip_interface
 
@@ -88,7 +88,7 @@ class JobQueuePlugin(SchedulerPlugin):
 
 
 @docstrings.get_sectionsf('JobQueueCluster')
-class JobQueueCluster(Cluster):
+class JobQueueCluster(ClusterManager):
     """ Base class to launch Dask Clusters for Job queues
 
     This class should not be used directly, use inherited class appropriate for your queueing system (e.g. PBScluster
