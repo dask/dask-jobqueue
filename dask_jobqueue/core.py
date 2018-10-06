@@ -58,8 +58,17 @@ class JobQueuePlugin(SchedulerPlugin):
 
         # if this is the first worker for this job, move job to running
         if job_id not in self.running_jobs:
-            logger.debug("%s is a new job, adding to running_jobs", job_id)
-            self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
+            logger.debug("%s is a new job or restarting worker", job_id)
+            if job_id in self.pending_jobs:
+                logger.debug("%s is a new job, adding to running_jobs", job_id)
+                self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
+            elif job_id in self.finished_jobs:
+                logger.warning('Worker %s restart in Job %s. '
+                               'This can be due to memory issue.', w, job_id)
+                self.running_jobs[job_id] = self.finished_jobs.pop(job_id)
+            else:
+                logger.error('Unknown job_id: %s for worker %s', job_id, w)
+                self.running_jobs[job_id] = {}
 
         # add worker to dict of workers in this job
         self.running_jobs[job_id][w.name] = w
@@ -102,10 +111,12 @@ class JobQueueCluster(Cluster):
         Seconds to wait for a scheduler before closing workers
     local_directory : str
         Dask worker local directory for file spilling.
-    extra : str
+    extra : list
         Additional arguments to pass to `dask-worker`
     env_extra : list
         Other commands to add to script before launching worker.
+    python : str
+        Python executable used to launch Dask workers.
     kwargs : dict
         Additional keyword arguments to pass to `LocalCluster`
 
@@ -113,10 +124,10 @@ class JobQueueCluster(Cluster):
     ----------
     submit_command: str
         Abstract attribute for job scheduler submit command,
-        should be overriden
+        should be overridden
     cancel_command: str
         Abstract attribute for job scheduler cancel command,
-        should be overriden
+        should be overridden
 
     See Also
     --------
@@ -138,7 +149,7 @@ class JobQueueCluster(Cluster):
 %(worker_command)s
 """.lstrip()
 
-    # Following class attributes should be overriden by extending classes.
+    # Following class attributes should be overridden by extending classes.
     submit_command = None
     cancel_command = None
     scheduler_name = ''
@@ -157,6 +168,7 @@ class JobQueueCluster(Cluster):
                  env_extra=None,
                  walltime=None,
                  threads=None,
+                 python=sys.executable,
                  **kwargs
                  ):
         """ """
@@ -197,11 +209,11 @@ class JobQueueCluster(Cluster):
         if memory is None:
             raise ValueError("You must specify how much memory to use per job like ``memory='24 GB'``")
 
-        # This attribute should be overriden
+        # This attribute should be overridden
         self.job_header = None
 
         if interface:
-            extra += ' --interface  %s ' % interface
+            extra += ['--interface', interface]
             kwargs.setdefault('ip', get_ip_interface(interface))
         else:
             kwargs.setdefault('ip', '')
@@ -226,23 +238,24 @@ class JobQueueCluster(Cluster):
         self._env_header = '\n'.join(env_extra)
 
         # dask-worker command line build
-        dask_worker_command = '%(python)s -m distributed.cli.dask_worker' % dict(python=sys.executable)
-        self._command_template = ' '.join([dask_worker_command, self.scheduler.address])
-        self._command_template += " --nthreads %d" % self.worker_threads
+        dask_worker_command = '%(python)s -m distributed.cli.dask_worker' % dict(python=python)
+        command_args = [dask_worker_command, self.scheduler.address]
+        command_args += ['--nthreads', self.worker_threads]
         if processes is not None and processes > 1:
-            self._command_template += " --nprocs %d" % processes
+            command_args += ['--nprocs', processes]
 
         mem = format_bytes(self.worker_memory / self.worker_processes)
-        mem = mem.replace(' ', '')
-        self._command_template += " --memory-limit %s" % mem
-        self._command_template += " --name %s--${JOB_ID}--" % name
+        command_args += ['--memory-limit', mem.replace(' ', '')]
+        command_args += ['--name', '%s--${JOB_ID}--' % name]
 
         if death_timeout is not None:
-            self._command_template += " --death-timeout %s" % death_timeout
+            command_args += ['--death-timeout', death_timeout]
         if local_directory is not None:
-            self._command_template += " --local-directory %s" % local_directory
+            command_args += ['--local-directory', local_directory]
         if extra is not None:
-            self._command_template += extra
+            command_args += extra
+
+        self._command_template = ' '.join(map(str, command_args))
 
         self._target_scale = 0
 
@@ -299,8 +312,8 @@ class JobQueueCluster(Cluster):
 
     def start_workers(self, n=1):
         """ Start workers and point them to our local scheduler """
-        logger.debug('starting %d workers', n)
-        num_jobs = math.ceil(n / self.worker_processes)
+        logger.debug('starting %s workers', n)
+        num_jobs = int(math.ceil(n / self.worker_processes))
         for _ in range(num_jobs):
             with self.job_file() as fn:
                 out = self._submit_job(fn)
