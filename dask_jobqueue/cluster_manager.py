@@ -52,4 +52,4 @@ class ClusterManager(Cluster):
         """
         # TODO we should not rely on scheduler loop here, self should have its
         # own loop
-        self.scheduler.loop.add_callback(self._scale(n))
+        self.scheduler.loop.add_callback(self._scale, n)
