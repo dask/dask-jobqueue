@@ -175,6 +175,8 @@ class JobQueueCluster(ClusterManager):
         # """
         # This initializer should be considered as Abstract, and never used directly.
         # """
+        super(JobQueueCluster, self).__init__()
+
         if threads is not None:
             raise ValueError(threads_deprecation_message)
 
@@ -256,8 +258,6 @@ class JobQueueCluster(ClusterManager):
             command_args += extra
 
         self._command_template = ' '.join(map(str, command_args))
-
-        self._target_scale = 0
 
     def __repr__(self):
         running_workers = self._count_active_workers()
@@ -396,21 +396,12 @@ class JobQueueCluster(ClusterManager):
         active_and_pending = self._count_active_and_pending_workers()
         if n >= active_and_pending:
             logger.debug("Scaling up to %d workers.", n)
-            self.start_workers(n - self._count_active_and_pending_workers())
+            self.start_workers(n - active_and_pending)
         else:
-            n_to_close = active_and_pending - n
-            if n_to_close < self._count_pending_workers():
-                # We only need to kill some pending jobs, this is actually a
-                # scale down bu could not be handled upstream
-                to_kill = int(n_to_close / self.worker_processes)
-                jobs = list(self.pending_jobs.keys())[to_kill:]
-                self.stop_jobs(jobs)
-            else:
-                # We should not end here, a new scale call should not begin
-                # until a scale_up or scale_down has ended
-                raise RuntimeError('JobQueueCluster.scale_up was called with'
-                                   ' a number of worker lower than the '
-                                   'currently connected workers')
+            # scale_up should not be called if n < active + pending jobs
+            raise RuntimeError('JobQueueCluster.scale_up was called with a'
+                               ' number of workers lower that what is already'
+                               ' running or pending')
 
     def _count_active_and_pending_workers(self):
         active_and_pending = (self._count_active_workers() +
@@ -427,17 +418,30 @@ class JobQueueCluster(ClusterManager):
     def _count_pending_workers(self):
         return self.worker_processes * len(self.pending_jobs)
 
-    def scale_down(self, workers):
+    def scale_down(self, n, workers):
         ''' Close the workers with the given addresses '''
-        logger.debug("Scaling down. Workers: %s", workers)
-        worker_states = []
-        for w in workers:
-            try:
-                # Get the actual WorkerState
-                worker_states.append(self.scheduler.workers[w])
-            except KeyError:
-                logger.debug('worker %s is already gone', w)
-        self.stop_workers(worker_states)
+        logger.debug("Scaling down to %d Workers: %s", n, workers)
+        active_and_pending = self._count_active_and_pending_workers()
+        n_to_close = active_and_pending - n
+        if n_to_close < 0:
+            raise RuntimeError('JobQueueCluster.scale_down was called with'
+                               ' a number of worker greater than what is'
+                               ' already running or pending.')
+        elif n_to_close <= self._count_pending_workers():
+            # We only need to kill some pending jobs,
+            to_kill = int(n_to_close / self.worker_processes)
+            jobs = list(self.pending_jobs.keys())[-to_kill:]
+            logger.debug("%d jobs to stop, stoppubg jobs %s", to_kill, jobs)
+            self.stop_jobs(jobs)
+        else:
+            worker_states = []
+            for w in workers:
+                try:
+                    # Get the actual WorkerState
+                    worker_states.append(self.scheduler.workers[w])
+                except KeyError:
+                    logger.debug('worker %s is already gone', w)
+            self.stop_workers(worker_states)
 
     def stop_all_jobs(self):
         ''' Stops all running and pending jobs '''
