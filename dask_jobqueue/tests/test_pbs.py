@@ -128,6 +128,10 @@ def test_basic_scale_edge_cases(loop):
 
         # Wait to see what happens
         sleep(0.2)
+        start = time()
+        while cluster.pending_jobs or cluster.running_jobs:
+            sleep(0.1)
+            assert time() < start + QUEUE_WAIT
 
         assert not(cluster.pending_jobs or cluster.running_jobs)
 
