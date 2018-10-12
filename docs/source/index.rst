@@ -52,7 +52,6 @@ Content
    :maxdepth: 1
    :caption: Getting Started
 
-   index
    install
    interactive
    howitworks
@@ -68,7 +67,7 @@ Content
    api
 
 .. toctree::
-   :mawdepth: 1
+   :maxdepth: 1
    :caption: Help & Reference
 
    debug

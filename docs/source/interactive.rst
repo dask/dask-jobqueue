@@ -1,5 +1,5 @@
 Interactive Use
----------------
+===============
 
 While dask-jobqueue can perfectly be used to submit batch processing, it is
 better suited to interactive processing, using tools like ipython or jupyter
@@ -15,7 +15,7 @@ The following paragraphs describe how to have access to Jupyter notebook and
 Dask dashboard on your HPC system.
 
 Using Jupyter
-~~~~~~~~~~~~~
+-------------
 
 It is convenient to run a Jupyter notebook server on the HPC for use with
 dask-jobqueue. You may already have a Jupyterhub instance available on your
@@ -47,7 +47,7 @@ notebook server.
 
 
 Viewing the Dask Dashboard
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
 Whether or not you are using dask-jobqueue in Jupyter, ipython or other tools,
 at one point you will want to have access to Dask Dashboard. Once you've
@@ -80,7 +80,7 @@ availaible below:
 
 
 Dask Dashboard with Jupyter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------
 
 If you are using dask-jobqueue within jupyter, one user friendly solution to
 see the Dashboard is to use `nbserverproxy

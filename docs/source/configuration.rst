@@ -1,5 +1,5 @@
 Configuration
--------------
+=============
 
 Dask-jobqueue should be configured for your cluster so that it knows how many
 resources to request of each job and how to break up those resources.  You can
@@ -7,7 +7,7 @@ specify configuration either with keyword arguments when creating a ``Cluster``
 object, or with a configuration file.
 
 Keyword Arguments
-~~~~~~~~~~~~~~~~~
+-----------------
 
 You can pass keywords to the Cluster objects to define how Dask-jobqueue should
 define a single job:
@@ -38,7 +38,7 @@ will specify how many jobs to deploy using the scale method.
 
 
 Configuration Files
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 Specifying all parameters to the Cluster constructor every time can be error
 prone, especially when sharing this workflow with new users.  Instead, we

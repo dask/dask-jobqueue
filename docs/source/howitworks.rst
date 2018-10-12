@@ -1,5 +1,10 @@
+.. _how-this-works:
+
 How this works
---------------
+==============
+
+Scheduler and jobs
+------------------
 
 Dask-jobqueue creates a Dask Scheduler in the Python process where the cluster
 object is instantiated:

@@ -1,5 +1,5 @@
 How to debug
-------------
+============
 
 Dask jobqueue has been developed and tested by several contributors, each of
 us having a given HPC system setup to work on: a job scheduler in a given
@@ -8,13 +8,13 @@ out of the box on your system. This section provides some hints to help you
 sort what may be going wrong.
 
 Checking job script
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
-Dask-jobqueue submits "job scripts" to your queueing system (see `How this
-works`_). Inspecting these scripts often reveals errors in the configuration
-of your Cluster object or maybe directives unexpected by your job scheduler,
-in particular the header containing ``#PBS``, ``#SBATCH`` or equivalent lines.
-This can be done easily once you've created a cluster object:
+Dask-jobqueue submits "job scripts" to your queueing system (see
+:ref:`how-this-works`). Inspecting these scripts often reveals errors in the
+configuration of your Cluster object or maybe directives unexpected by your
+job scheduler, in particular the header containing ``#PBS``, ``#SBATCH`` or
+equivalent lines. This can be done easily once you've created a cluster object:
 
 .. code-block:: python
 
@@ -30,7 +30,7 @@ To correct any problem detected at this point, you could try to use
 
 
 Activate debug mode
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 Dask-jobqueue uses python logging module. To understand better what is
 happening under the hood, you may want to activate logging display. This can be
@@ -42,8 +42,8 @@ done by running this line of python code in your script or notebook:
    logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
 
-Interact with you job queuing system
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Interact with your job queuing system
+-------------------------------------
 
 Every worker is launched inside a batch job, as explained above. It can be very
 helpful to query your job queuing system. Some things you might want to check:
@@ -53,7 +53,7 @@ helpful to query your job queuing system. Some things you might want to check:
 - what is the stdout or stderr of dask-jobqueue jobs?
 
 Other things you might look at
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
 
 From here it gets a little more complicated. A couple of other already seen
 problems are the following:
