@@ -1,8 +1,8 @@
 Interactive Use
 ===============
 
-While dask-jobqueue can perfectly be used to submit batch processing, it is
-better suited to interactive processing, using tools like ipython or jupyter
+While dask-jobqueue can be used to submit batch processing, it more often
+used for interactive processing, using tools like IPython or Jupyter
 notebooks. Batch processing with dask-jobqueue can be tricky in some cases
 depending on how your cluster is configured and which resources and queues you
 have access to: scheduler might hang on for a long time before having some

@@ -45,9 +45,6 @@ save resources when not actively computing.
    cluster.adapt(minimum=6, maximum=90)  # auto-scale between 6 and 90 workers
 
 
-Content
--------
-
 .. toctree::
    :maxdepth: 1
    :caption: Getting Started
