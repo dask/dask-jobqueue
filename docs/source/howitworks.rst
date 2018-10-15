@@ -46,7 +46,7 @@ generate as follows:
    #PBS -l select=1:ncpus=24:mem=100G
    #PBS -l walltime=02:00:00
 
-   /home/mrocklin/Software/anaconda/bin/dask-worker tcp://127.0.1.1:43745
+   /home/username/path/to/bin/dask-worker tcp://127.0.1.1:43745
    --nthreads 4 --nprocs 6 --memory-limit 18.66GB --name dask-worker-3
    --death-timeout 60
 

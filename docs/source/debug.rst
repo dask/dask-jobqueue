@@ -1,11 +1,12 @@
 How to debug
 ============
 
-Dask jobqueue has been developed and tested by several contributors, each of
-us having a given HPC system setup to work on: a job scheduler in a given
-version running on a given OS. Thus, in some specific case, it might not work
-out of the box on your system. This section provides some hints to help you
-sort what may be going wrong.
+Dask jobqueue has been developed and tested by several contributors, each
+having a given HPC system setup to work on: a job scheduler in a given version
+running on a given OS. Thus, in some specific cases, it might not work out of
+the box on your system. This section provides some hints to help you determine
+what may be going wrong.
+
 
 Checking job script
 -------------------
@@ -32,7 +33,7 @@ To correct any problem detected at this point, you could try to use
 Activate debug mode
 -------------------
 
-Dask-jobqueue uses python logging module. To understand better what is
+Dask-jobqueue uses the Python logging module. To understand better what is
 happening under the hood, you may want to activate logging display. This can be
 done by running this line of python code in your script or notebook:
 
@@ -52,18 +53,19 @@ helpful to query your job queuing system. Some things you might want to check:
 - are there finished jobs, error jobs?
 - what is the stdout or stderr of dask-jobqueue jobs?
 
+
 Other things you might look at
 ------------------------------
 
-From here it gets a little more complicated. A couple of other already seen
+From here it gets a little more complicated.  A couple of other already seen
 problems are the following:
 
-- submit command used in dask-jobqueue (``qsub`` or equivalent) doesn't
-  correspond to the one you use. Check in the given ``JobQueueCluster``
-  implementation that job submission command and eventual arguments look
-  familliar to you, eventually try them.
+- The submit command used in dask-jobqueue (``qsub`` or equivalent) doesn't
+  correspond to the one that you use. Check in the given ``JobQueueCluster``
+  implementation that job submission command and arguments look familiar to
+  you, eventually try them.
 
-- submit command output is not the same as the one expected by dask-jobqueue.
+- The submit command output is not the same as the one expected by dask-jobqueue.
   We use submit command stdout to parse the job_id corresponding to the
   launched group of worker. If the parsing fails, then dask-jobqueue won't work
   as expected and may throw exceptions. You can have a look at the parsing
