@@ -310,7 +310,7 @@ class JobQueueCluster(Cluster):
         """ The scheduler of this cluster """
         return self.local_cluster.scheduler
 
-    def _call(self, cmd):
+    def _call(self, cmd, **kwargs):
         """ Call a command using subprocess.Popen.
 
         This centralizes calls out to the command line, providing consistent
@@ -320,7 +320,7 @@ class JobQueueCluster(Cluster):
         ----------
         cmd: List(str))
             A command, each of which is a list of strings to hand to
-            subprocess.communicate
+            subprocess.Popen
 
         Examples
         --------
@@ -339,7 +339,8 @@ class JobQueueCluster(Cluster):
 
         proc = subprocess.Popen(cmd,
                                 stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
+                                stderr=subprocess.PIPE,
+                                **kwargs)
 
         out, err = proc.communicate()
         if six.PY3:
