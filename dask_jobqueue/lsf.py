@@ -107,7 +107,7 @@ class LSFCluster(JobQueueCluster):
 
     def _submit_job(self, script_filename):
         piped_cmd = [self.submit_command + ' ' + script_filename + ' 2> /dev/null']
-        return self._call(piped_cmd, shell=True, cwd=self.log_directory)
+        return self._call(piped_cmd, shell=True)
 
 
 def lsf_format_bytes_ceil(n):
