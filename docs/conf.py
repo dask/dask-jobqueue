@@ -90,7 +90,7 @@ pygments_style = 'default'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'dask_sphinx_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -181,12 +181,8 @@ intersphinx_mapping = {
                'http://pandas.pydata.org/pandas-docs/stable/objects.inv'),
     'numpy': ('https://docs.scipy.org/doc/numpy/',
               'https://docs.scipy.org/doc/numpy/objects.inv'),
-    'dask': ('http://dask.pydata.org/en/latest',
-             'http://dask.pydata.org/en/latest/objects.inv'),
-    'distributed': ('https://distributed.readthedocs.io/en/stable/',
-                    'https://distributed.readthedocs.io/en/stable/objects.inv')
+    'dask': ('https://docs.dask.org/en/latest',
+             'https://docs.dask.org/en/latest/objects.inv'),
+    'distributed': ('https://distributed.dask.org/en/stable/',
+                    'https://distributed.dask.org/en/stable/objects.inv')
 }
-
-
-def setup(app):
-    app.add_stylesheet("https://dask.pydata.org/en/latest/_static/style.css")

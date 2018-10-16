@@ -52,32 +52,41 @@ class JobQueuePlugin(SchedulerPlugin):
 
     def add_worker(self, scheduler, worker=None, name=None, **kwargs):
         ''' Run when a new worker enters the cluster'''
-        logger.debug("adding worker %s" % worker)
+        logger.debug("adding worker %s", worker)
         w = scheduler.workers[worker]
         job_id = _job_id_from_worker_name(w.name)
-        logger.debug("job id for new worker: %s" % job_id)
+        logger.debug("job id for new worker: %s", job_id)
         self.all_workers[worker] = (w.name, job_id)
 
         # if this is the first worker for this job, move job to running
         if job_id not in self.running_jobs:
-            logger.debug("this is a new job")
-            self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
+            logger.debug("%s is a new job or restarting worker", job_id)
+            if job_id in self.pending_jobs:
+                logger.debug("%s is a new job, adding to running_jobs", job_id)
+                self.running_jobs[job_id] = self.pending_jobs.pop(job_id)
+            elif job_id in self.finished_jobs:
+                logger.warning('Worker %s restart in Job %s. '
+                               'This can be due to memory issue.', w, job_id)
+                self.running_jobs[job_id] = self.finished_jobs.pop(job_id)
+            else:
+                logger.error('Unknown job_id: %s for worker %s', job_id, w)
+                self.running_jobs[job_id] = {}
 
         # add worker to dict of workers in this job
         self.running_jobs[job_id][w.name] = w
 
     def remove_worker(self, scheduler=None, worker=None, **kwargs):
         ''' Run when a worker leaves the cluster'''
-        logger.debug("removing worker %s" % worker)
+        logger.debug("removing worker %s", worker)
         name, job_id = self.all_workers[worker]
-        logger.debug("removing worker name (%s) and job_id (%s)" % (name, job_id))
+        logger.debug("removing worker name (%s) and job_id (%s)", name, job_id)
 
         # remove worker from this job
-        del self.running_jobs[job_id][name]
+        self.running_jobs[job_id].pop(name, None)
 
         # once there are no more workers, move this job to finished_jobs
         if not self.running_jobs[job_id]:
-            logger.debug("that was the last worker for job %s" % job_id)
+            logger.debug("that was the last worker for job %s", job_id)
             self.finished_jobs[job_id] = self.running_jobs.pop(job_id)
 
 
@@ -104,10 +113,12 @@ class JobQueueCluster(Cluster):
         Seconds to wait for a scheduler before closing workers
     local_directory : str
         Dask worker local directory for file spilling.
-    extra : str
+    extra : list
         Additional arguments to pass to `dask-worker`
     env_extra : list
         Other commands to add to script before launching worker.
+    python : str
+        Python executable used to launch Dask workers.
     kwargs : dict
         Additional keyword arguments to pass to `LocalCluster`
 
@@ -115,15 +126,19 @@ class JobQueueCluster(Cluster):
     ----------
     submit_command: str
         Abstract attribute for job scheduler submit command,
-        should be overriden
+        should be overridden
     cancel_command: str
         Abstract attribute for job scheduler cancel command,
-        should be overriden
+        should be overridden
 
     See Also
     --------
     PBSCluster
     SLURMCluster
+    SGECluster
+    OARCluster
+    LSFCluster
+    MoabCluster
     """
 
     _script_template = """
@@ -136,7 +151,7 @@ class JobQueueCluster(Cluster):
 %(worker_command)s
 """.lstrip()
 
-    # Following class attributes should be overriden by extending classes.
+    # Following class attributes should be overridden by extending classes.
     submit_command = None
     cancel_command = None
     scheduler_name = ''
@@ -155,6 +170,7 @@ class JobQueueCluster(Cluster):
                  env_extra=None,
                  walltime=None,
                  threads=None,
+                 python=sys.executable,
                  **kwargs
                  ):
         """ """
@@ -195,11 +211,11 @@ class JobQueueCluster(Cluster):
         if memory is None:
             raise ValueError("You must specify how much memory to use per job like ``memory='24 GB'``")
 
-        # This attribute should be overriden
+        # This attribute should be overridden
         self.job_header = None
 
         if interface:
-            extra += ' --interface  %s ' % interface
+            extra += ['--interface', interface]
             kwargs.setdefault('ip', get_ip_interface(interface))
         else:
             kwargs.setdefault('ip', '')
@@ -209,8 +225,7 @@ class JobQueueCluster(Cluster):
         self.local_cluster = LocalCluster(n_workers=0, diagnostics_port=diagnostics_ip_and_port,
                                           **kwargs)
 
-        # Keep information on process, threads and memory, for use in
-        # subclasses
+        # Keep information on process, cores, and memory, for use in subclasses
         self.worker_memory = parse_bytes(memory) if memory is not None else None
         self.worker_processes = processes
         self.worker_cores = cores
@@ -225,26 +240,29 @@ class JobQueueCluster(Cluster):
         self._env_header = '\n'.join(env_extra)
 
         # dask-worker command line build
-        dask_worker_command = '%(python)s -m distributed.cli.dask_worker' % dict(python=sys.executable)
-        self._command_template = ' '.join([dask_worker_command, self.scheduler.address])
-        self._command_template += " --nthreads %d" % self.worker_threads
+        dask_worker_command = '%(python)s -m distributed.cli.dask_worker' % dict(python=python)
+        command_args = [dask_worker_command, self.scheduler.address]
+        command_args += ['--nthreads', self.worker_threads]
         if processes is not None and processes > 1:
-            self._command_template += " --nprocs %d" % processes
+            command_args += ['--nprocs', processes]
 
         mem = format_bytes(self.worker_memory / self.worker_processes)
-        mem = mem.replace(' ', '')
-        self._command_template += " --memory-limit %s" % mem
-        self._command_template += " --name %s--${JOB_ID}--" % name
+        command_args += ['--memory-limit', mem.replace(' ', '')]
+        command_args += ['--name', '%s--${JOB_ID}--' % name]
 
         if death_timeout is not None:
-            self._command_template += " --death-timeout %s" % death_timeout
+            command_args += ['--death-timeout', death_timeout]
         if local_directory is not None:
-            self._command_template += " --local-directory %s" % local_directory
+            command_args += ['--local-directory', local_directory]
         if extra is not None:
-            self._command_template += extra
+            command_args += extra
+
+        self._command_template = ' '.join(map(str, command_args))
+
+        self._target_scale = 0
 
     def __repr__(self):
-        running_workers = sum(len(value) for value in self.running_jobs.values())
+        running_workers = self._count_active_workers()
         running_cores = running_workers * self.worker_threads
         total_jobs = len(self.pending_jobs) + len(self.running_jobs)
         total_workers = total_jobs * self.worker_processes
@@ -287,7 +305,7 @@ class JobQueueCluster(Cluster):
         """ Write job submission script to temporary file """
         with tmpfile(extension='sh') as fn:
             with open(fn, 'w') as f:
-                logger.debug("writing job script: \n%s" % self.job_script())
+                logger.debug("writing job script: \n%s", self.job_script())
                 f.write(self.job_script())
             yield fn
 
@@ -296,13 +314,15 @@ class JobQueueCluster(Cluster):
 
     def start_workers(self, n=1):
         """ Start workers and point them to our local scheduler """
-        logger.debug('starting %s workers' % n)
-        num_jobs = math.ceil(n / self.worker_processes)
+        logger.debug('starting %s workers', n)
+        num_jobs = int(math.ceil(n / self.worker_processes))
         for _ in range(num_jobs):
             with self.job_file() as fn:
                 out = self._submit_job(fn)
                 job = self._job_id_from_submit_output(out)
-                logger.debug("started job: %s" % job)
+                if not job:
+                    raise ValueError('Unable to parse jobid from output of %s' % out)
+                logger.debug("started job: %s", job)
                 self.pending_jobs[job] = {}
 
     @property
@@ -356,7 +376,7 @@ class JobQueueCluster(Cluster):
 
     def stop_workers(self, workers):
         """ Stop a list of workers"""
-        logger.debug("Stopping workers: %s" % workers)
+        logger.debug("Stopping workers: %s", workers)
         if not workers:
             return
         jobs = self._del_pending_jobs()  # stop pending jobs too
@@ -365,33 +385,66 @@ class JobQueueCluster(Cluster):
                 jobs.append(_job_id_from_worker_name(w['name']))
             else:
                 jobs.append(_job_id_from_worker_name(w.name))
-        self.stop_jobs(set(jobs))
+        self.stop_jobs(jobs)
 
     def stop_jobs(self, jobs):
         """ Stop a list of jobs"""
-        logger.debug("Stopping jobs: %s" % jobs)
+        logger.debug("Stopping jobs: %s", jobs)
         if jobs:
             jobs = list(jobs)
             self._call([self.cancel_command] + list(set(jobs)))
 
+        # if any of these jobs were pending, we should remove those now
+        for job_id in jobs:
+            if job_id in self.pending_jobs:
+                del self.pending_jobs[job_id]
+
     def scale_up(self, n, **kwargs):
         """ Brings total worker count up to ``n`` """
-        logger.debug("Scaling up to %d workers." % n)
-        active_and_pending = sum([len(j) for j in self.running_jobs.values()])
-        active_and_pending += self.worker_processes * len(self.pending_jobs)
-        logger.debug("Found %d active/pending workers." % active_and_pending)
-        self.start_workers(n - active_and_pending)
+        active_and_pending = self._count_active_and_pending_workers()
+        if n >= active_and_pending:
+            logger.debug("Scaling up to %d workers.", n)
+            self.start_workers(n - self._count_active_and_pending_workers())
+        else:
+            n_to_close = active_and_pending - n
+            if n_to_close < self._count_pending_workers():
+                # We only need to kill some pending jobs, this is actually a
+                # scale down bu could not be handled upstream
+                to_kill = int(n_to_close / self.worker_processes)
+                jobs = list(self.pending_jobs.keys())[to_kill:]
+                self.stop_jobs(jobs)
+            else:
+                # We should not end here, a new scale call should not begin
+                # until a scale_up or scale_down has ended
+                raise RuntimeError('JobQueueCluster.scale_up was called with'
+                                   ' a number of worker lower than the '
+                                   'currently connected workers')
+
+    def _count_active_and_pending_workers(self):
+        active_and_pending = (self._count_active_workers() +
+                              self._count_pending_workers())
+        logger.debug("Found %d active/pending workers.", active_and_pending)
+        assert len(self.scheduler.workers) <= active_and_pending
+        return active_and_pending
+
+    def _count_active_workers(self):
+        active_workers = sum([len(j) for j in self.running_jobs.values()])
+        assert len(self.scheduler.workers) == active_workers
+        return active_workers
+
+    def _count_pending_workers(self):
+        return self.worker_processes * len(self.pending_jobs)
 
     def scale_down(self, workers):
         ''' Close the workers with the given addresses '''
-        logger.debug("Scaling down. Workers: %s" % workers)
+        logger.debug("Scaling down. Workers: %s", workers)
         worker_states = []
         for w in workers:
             try:
                 # Get the actual WorkerState
                 worker_states.append(self.scheduler.workers[w])
             except KeyError:
-                logger.debug('worker %s is already gone' % w)
+                logger.debug('worker %s is already gone', w)
         self.stop_workers(worker_states)
 
     def stop_all_jobs(self):

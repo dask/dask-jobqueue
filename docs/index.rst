@@ -55,7 +55,7 @@ depending on how your cluster is configured and which resources and queues you
 have access to: scheduler might hang on for a long time before having some
 connected workers, and you could end up with less computing power than you
 expected. Another good solution for batch processing on HPC system using dask
-is the `dask-mpi <http://dask.pydata.org/en/latest/setup/hpc.html#using-mpi>`_
+is the `dask-mpi <https://docs.dask.org/en/latest/setup/hpc.html#using-mpi>`_
 command.
 
 The following paragraphs describe how to have access to Jupyter notebook and
@@ -89,6 +89,9 @@ Once Jupyter is installed and configured, using a Jupyter notebook is done by:
 
    $ ssh -N -L 8888:x.x.x.x:8888 username@hpc_domain
 
+Now you can go to ``http://localhost:8888`` on your browser to access the
+notebook server.
+
 Viewing the Dask Dashboard
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -120,6 +123,46 @@ availaible below:
            src="https://www.youtube.com/embed/nH_AQo8WdKw?rel=0"
            frameborder="0" allow="autoplay; encrypted-media"
            allowfullscreen></iframe>
+
+
+Dask Dashboard with Jupyter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you are using dask-jobqueue within jupyter, one user friendly solution to
+see the Dashboard is to use `nbserverproxy
+<https://github.com/jupyterhub/nbserverproxy>`_. As Dashboard http end point is
+launched inside the same node as jupyter, this is a great solution for viewing
+it without having to do SSH tunneling. You just need to install
+``nbserverproxy`` in the python env you use for launching the notebook, and
+activate it as indicated in the docs:
+
+.. code-block:: bash
+
+   pip install nbserverproxy
+   jupyter serverextension enable --py nbserverproxy
+
+Then, once started, the Dashboard will be accessible from your notebook URL
+by just adding the path ``/proxy/8787/status``, replacing 8787 by any other
+port you use or the Dashboard is bind to if needed. Sor for example:
+
+ - ``http://localhost:8888/proxy/8787/status`` with the example above
+ - ``http://myjupyterhub.org/user/username/proxy/8787/status`` if using
+   jupyterhub
+
+Note that if using Jupyterhub, the service admin should deploy nbserverproxy
+on the environment used for starting singleuser notebook, but each user may
+have to activate the nbserverproxy extension.
+
+Finally, you may want to update the Dashboard link that is displayed in the
+notebook, shown from Cluster and Client objects. In order to do this, just
+edit dask config file, either ``~/.config/dask/jobqueue.yaml`` or
+``~/.config/dask/distributed.yaml``, and add the following:
+
+.. code-block:: yaml
+
+   distributed.dashboard.link: "/proxy/{port}/status" # for user launched notebook
+   distributed.dashboard.link: "/user/{JUPYTERHUB_USER}/proxy/{port}/status" # for jupyterhub launched notebook
+
 
 Configuration
 -------------
@@ -208,7 +251,7 @@ you can also place such a file in ``/etc/dask/`` and it will affect all people
 on the cluster automatically.
 
 For more information about configuring Dask, see the `Dask configuration
-documentation <http://dask.pydata.org/en/latest/configuration.html>`_
+documentation <https://docs.dask.org/en/latest/configuration.html>`_
 
 
 .. toctree::
@@ -218,10 +261,13 @@ documentation <http://dask.pydata.org/en/latest/configuration.html>`_
    index.rst
    install.rst
    examples.rst
-   configurations.rst
    configuration-setup.rst
+   configurations.rst
    history.rst
    api.rst
+   changelog.rst
+   develop.rst
+
 
 How this works
 --------------
