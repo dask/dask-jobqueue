@@ -23,8 +23,11 @@ class LSFCluster(JobQueueCluster):
         `#BSUB -P` option.
     ncpus : int
         Number of cpus. Passed to `#BSUB -n` option.
+    ncpus_per_host : int
+        Indicates the number of processors on each host that should be allocated to the job.
+        Passed to `-R "span[ptile=ncpus_per_host]"`.
     mem : int
-        Request memory in bytes. Passed to `#BSUB -M` option.
+        Request memory per job in bytes. Passed to `#BSUB -M` option.
     walltime : str
         Walltime for each worker job in HH:MM. Passed to `#BSUB -W` option.
     job_extra : list
@@ -60,10 +63,11 @@ class LSFCluster(JobQueueCluster):
         queue=None,
         project=None,
         ncpus=None,
+        ncpus_per_host=None,
         mem=None,
         walltime=None,
         job_extra=None,
-        **kwargs
+        **kwargs,
     ):
         if queue is None:
             queue = dask.config.get("jobqueue.%s.queue" % self.scheduler_name)
@@ -104,6 +108,8 @@ class LSFCluster(JobQueueCluster):
             )
         if ncpus is not None:
             header_lines.append("#BSUB -n %s" % ncpus)
+        if ncpus_per_host is not None:
+            header_lines.append(f'#BSUB -R "span[ptile={ncpus_per_host}]"')
         if mem is None:
             # Compute default memory specifications
             mem = self.worker_memory
