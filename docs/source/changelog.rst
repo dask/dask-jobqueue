@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.4.1 / 2018-10-??
+0.4.1 / 2018-10-18
 ------------------
 
 - Handle worker restart with clearer message (:pr:`138`)
@@ -12,6 +12,7 @@ Changelog
 - Add ability to override python used to start workers (:pr:`167`)
 - Internal improvements and edge cases handling (:pr:`97`)
 - Possibility to specify a folder to store every job logs file (:pr:`145`)
+- Require all cores on the same node for LSF (:pr:`177`)
 
 0.4.0 / 2018-09-06
 ------------------
