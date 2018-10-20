@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 import logging
 import math
+import os
 import re
 import shlex
 import subprocess
@@ -9,6 +10,8 @@ import sys
 import warnings
 from collections import OrderedDict
 from contextlib import contextmanager
+
+import six
 
 import dask
 import docrep
@@ -166,6 +169,7 @@ class JobQueueCluster(ClusterManager):
                  local_directory=None,
                  extra=None,
                  env_extra=None,
+                 log_directory=None,
                  walltime=None,
                  threads=None,
                  python=sys.executable,
@@ -201,6 +205,8 @@ class JobQueueCluster(ClusterManager):
             extra = dask.config.get('jobqueue.%s.extra' % self.scheduler_name)
         if env_extra is None:
             env_extra = dask.config.get('jobqueue.%s.env-extra' % self.scheduler_name)
+        if log_directory is None:
+            log_directory = dask.config.get('jobqueue.%s.log-directory' % self.scheduler_name)
 
         if dask.config.get('jobqueue.%s.threads', None):
             warnings.warn(threads_deprecation_message)
@@ -258,6 +264,11 @@ class JobQueueCluster(ClusterManager):
             command_args += extra
 
         self._command_template = ' '.join(map(str, command_args))
+
+        self.log_directory = log_directory
+        if self.log_directory is not None:
+            if not os.path.exists(self.log_directory):
+                os.makedirs(self.log_directory)
 
     def __repr__(self):
         running_workers = self._count_active_workers()
@@ -317,7 +328,7 @@ class JobQueueCluster(ClusterManager):
         for _ in range(num_jobs):
             with self.job_file() as fn:
                 out = self._submit_job(fn)
-                job = self._job_id_from_submit_output(out.decode())
+                job = self._job_id_from_submit_output(out)
                 if not job:
                     raise ValueError('Unable to parse jobid from output of %s' % out)
                 logger.debug("started job: %s", job)
@@ -328,43 +339,49 @@ class JobQueueCluster(ClusterManager):
         """ The scheduler of this cluster """
         return self.local_cluster.scheduler
 
-    def _calls(self, cmds, **kwargs):
-        """ Call a command using subprocess.communicate
+    def _call(self, cmd, **kwargs):
+        """ Call a command using subprocess.Popen.
 
-        This centralizes calls out to the command line, providing consistent outputs, logging, and an opportunity
-        to go asynchronous in the future
+        This centralizes calls out to the command line, providing consistent
+        outputs, logging, and an opportunity to go asynchronous in the future.
 
         Parameters
         ----------
-        cmd: List(List(str))
-            A list of commands, each of which is a list of strings to hand to subprocess.communicate
+        cmd: List(str))
+            A command, each of which is a list of strings to hand to
+            subprocess.Popen
 
         Examples
         --------
-        >>> self._calls([['ls'], ['ls', '/foo']])
+        >>> self._call(['ls', '/foo'])
 
         Returns
         -------
-        The stdout result as a string
-        Also logs any stderr information
+        The stdout produced by the command, as string.
+
+        Raises
+        ------
+        RuntimeError if the command exits with a non-zero exit code
         """
-        logger.debug("Submitting the following calls to command line")
-        procs = []
-        for cmd in cmds:
-            logger.debug(' '.join(cmd))
-            procs.append(subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs))
+        cmd_str = ' '.join(cmd)
+        logger.debug("Executing the following command to command line\n{}".format(cmd_str))
 
-        result = []
-        for proc in procs:
-            out, err = proc.communicate()
-            if err:
-                raise RuntimeError(err.decode())
-            result.append(out)
-        return result
+        proc = subprocess.Popen(cmd,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                **kwargs)
 
-    def _call(self, cmd, **kwargs):
-        """ Singular version of _calls """
-        return self._calls([cmd], **kwargs)[0]
+        out, err = proc.communicate()
+        if six.PY3:
+            out, err = out.decode(), err.decode()
+        if proc.returncode != 0:
+            raise RuntimeError('Command exited with non-zero exit code.\n'
+                               'Exit code: {}\n'
+                               'Command:\n{}\n'
+                               'stdout:\n{}\n'
+                               'stderr:\n{}\n'.format(proc.returncode,
+                                                      cmd_str, out, err))
+        return out
 
     def stop_workers(self, workers):
         """ Stop a list of workers"""
@@ -399,9 +416,9 @@ class JobQueueCluster(ClusterManager):
             self.start_workers(n - active_and_pending)
         else:
             # scale_up should not be called if n < active + pending jobs
-            raise RuntimeError('JobQueueCluster.scale_up was called with a'
-                               ' number of workers lower that what is already'
-                               ' running or pending')
+            logger.warning('JobQueueCluster.scale_up was called with a'
+                           ' number of workers lower that what is already'
+                           ' running or pending')
 
     def _count_active_and_pending_workers(self):
         active_and_pending = (self._count_active_workers() +
@@ -418,15 +435,19 @@ class JobQueueCluster(ClusterManager):
     def _count_pending_workers(self):
         return self.worker_processes * len(self.pending_jobs)
 
-    def scale_down(self, n, workers):
+    def scale_down(self, workers, n=None):
         ''' Close the workers with the given addresses '''
+        if n is None:
+            # Adaptive currently calls directly scale_down, we need to handle this
+            # Need to only keep active workers minus those adaptive wants to stop
+            n = self._count_active_workers() - len(workers)
         logger.debug("Scaling down to %d Workers: %s", n, workers)
         active_and_pending = self._count_active_and_pending_workers()
         n_to_close = active_and_pending - n
         if n_to_close < 0:
-            raise RuntimeError('JobQueueCluster.scale_down was called with'
-                               ' a number of worker greater than what is'
-                               ' already running or pending.')
+            logger.warning('JobQueueCluster.scale_down was called with'
+                           ' a number of worker greater than what is'
+                           ' already running or pending.')
         elif n_to_close <= self._count_pending_workers():
             # We only need to kill some pending jobs,
             to_kill = int(n_to_close / self.worker_processes)
