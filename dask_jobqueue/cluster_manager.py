@@ -31,6 +31,9 @@ class ClusterManager(Cluster):
             elif n > self._target_scale:
                 self.scale_up(n)
             else:
+                # TODO to_close may be empty if some workers are pending
+                # This may not be useful to call scheduler methods in this case
+                # Scheduler interface here may need to be modified
                 to_close = self.scheduler.workers_to_close(
                     n=len(self.scheduler.workers) - n)
                 logger.debug("Closing workers: %s", to_close)
@@ -38,7 +41,7 @@ class ClusterManager(Cluster):
                 yield self.scheduler.retire_workers(workers=to_close)
                 # To close may be empty if just asking to remove pending
                 # workers, so we should also give a target number
-                self.scale_down(n, to_close)
+                self.scale_down(to_close, n)
             self._target_scale = n
 
     def scale(self, n):
