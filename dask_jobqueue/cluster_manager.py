@@ -12,6 +12,54 @@ class ClusterManager(Cluster):
 
     This tries to improve upstream Cluster object and underlines needs for
     better decoupling between ClusterManager and Scheduler object
+
+    This currently expects a local Scheduler defined on the object, but should
+    eventually only rely on RPC calls on remote or local scheduler.
+    It provides common methods and an IPython widget display.
+
+    Clusters inheriting from this class should provide the following:
+
+    1.  A local ``Scheduler`` object at ``.scheduler``. In the future, just
+        a URL to local or remote scheduler.
+    2.  scale_up and scale_down methods as defined below::
+
+        def scale_up(self, n: int):
+            ''' Brings total worker count up to ``n`` '''
+
+        def scale_down(self, workers: List[str], n: int):
+            ''' Close the workers with the given addresses or remove pending
+                workers to match n running workers.
+            '''
+
+    This will provide a general ``scale`` method as well as an IPython widget
+    for display.
+
+    Things the will need to change for the complete Cluster Manager Design:
+    -   ClusterManager:
+        - Use it's own event loop, or the notebook one.
+        - Connect to a local or remote Scheduler through RPC, and then
+          communicate with it.
+        - Ability to start a local or remote scheduler.
+    -   Scheduler
+        - Provide some remote methods:
+          - retire_workers(n: int): close enough workers ot have only n
+            running at the end. Return the closed workers.
+
+    Examples
+    --------
+
+    >>> from distributed.deploy import Cluster
+    >>> class MyCluster(cluster):
+    ...     def scale_up(self, n):
+    ...         ''' Bring the total worker count up to n '''
+    ...         pass
+    ...     def scale_down(self, workers, n=None):
+    ...         ''' Close the workers with the given addresses '''
+    ...         pass
+
+    >>> cluster = MyCluster()
+    >>> cluster.scale(5)                       # scale manually
+    >>> cluster.adapt(minimum=1, maximum=100)  # scale automatically
     """
 
     def __init__(self):
