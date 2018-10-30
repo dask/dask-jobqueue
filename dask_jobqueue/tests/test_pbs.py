@@ -193,10 +193,14 @@ def test_scale_grouped(loop):
                     job_extra=['-V'], loop=loop) as cluster:
         with Client(cluster) as client:
 
-            cluster.scale(4)#Start 2 jobs
+            cluster.scale(4)  # Start 2 jobs
 
             start = time()
-            while not(cluster.pending_jobs or cluster.running_jobs):
+            while len(cluster.running_jobs) != 2:
+                sleep(0.100)
+                assert time() < start + QUEUE_WAIT
+
+            while len(list(client.scheduler_info()['workers'].values())) != 4:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 
@@ -208,8 +212,9 @@ def test_scale_grouped(loop):
             w = workers[0]
             assert w['memory_limit'] == 1e9
             assert w['ncores'] == 1
+            assert len(workers) == 4
 
-            cluster.scale(1)#Should leave 2 workers, 1 job
+            cluster.scale(1)  # Should leave 2 workers, 1 job
 
             start = time()
             while len(cluster.running_jobs) != 1:
