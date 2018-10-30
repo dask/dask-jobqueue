@@ -2,7 +2,6 @@ import logging
 import math
 
 from tornado import gen
-from weakref import ref
 
 from distributed.deploy.adaptive import Adaptive
 from distributed.deploy import Cluster
@@ -279,8 +278,6 @@ class ClusterManager(Cluster):
         scale.on_click(scale_cb(request, 'n'))
         scale_cores.on_click(scale_cb(request_cores, 'cores'))
         scale_memory.on_click(scale_cb(request_memory, 'memory'))
-
-        scheduler_ref = ref(self.scheduler)
 
         def update():
             status.value = self._widget_status()

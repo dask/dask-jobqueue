@@ -270,7 +270,7 @@ class JobQueueCluster(ClusterManager):
 
     def __repr__(self):
         running_workers = self._count_active_workers()
-        running_cores = running_workers * self.worker_threads
+        running_cores = running_workers * self.worker_process_threads
         total_jobs = len(self.pending_jobs) + len(self.running_jobs)
         total_workers = total_jobs * self.worker_processes
         running_memory = running_workers * self.worker_memory / self.worker_processes
