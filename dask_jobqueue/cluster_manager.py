@@ -120,8 +120,8 @@ class ClusterManager(Cluster):
         # own loop
         self.scheduler.loop.add_callback(self._scale, n)
 
-    def worker_key(self, ws):
+    def worker_key(self, worker_state):
         ''' Callable mapping a WorkerState object to a group, see
             Scheduler.workers_to_close
         '''
-        return ws
+        return worker_state

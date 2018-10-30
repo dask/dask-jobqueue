@@ -505,5 +505,5 @@ class JobQueueCluster(ClusterManager):
 
         return job_id
 
-    def worker_key(self, ws):
-        return _job_id_from_worker_name(ws.name)
+    def worker_key(self, worker_state):
+        return _job_id_from_worker_name(worker_state.name)
