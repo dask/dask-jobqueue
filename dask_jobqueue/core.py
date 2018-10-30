@@ -452,7 +452,7 @@ class JobQueueCluster(ClusterManager):
             # We only need to kill some pending jobs,
             to_kill = int(n_to_close / self.worker_processes)
             jobs = list(self.pending_jobs.keys())[-to_kill:]
-            logger.debug("%d jobs to stop, stoppubg jobs %s", to_kill, jobs)
+            logger.debug("%d jobs to stop, stopping jobs %s", to_kill, jobs)
             self.stop_jobs(jobs)
         else:
             worker_states = []
