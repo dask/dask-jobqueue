@@ -156,7 +156,6 @@ class JobQueueCluster(ClusterManager):
     submit_command = None
     cancel_command = None
     scheduler_name = ''
-    _adaptive_options = {'worker_key': lambda ws: _job_id_from_worker_name(ws.name)}
     job_id_regexp = r'(?P<job_id>\d+)'
 
     def __init__(self,
@@ -505,3 +504,6 @@ class JobQueueCluster(ClusterManager):
             raise ValueError(msg)
 
         return job_id
+
+    def worker_key(self, ws):
+        return _job_id_from_worker_name(ws.name)
