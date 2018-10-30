@@ -39,9 +39,9 @@ class ClusterManager(Cluster):
             ''' Callable mapping a WorkerState object to a group, see
                 Scheduler.workers_to_close
             '''
-    4.  worker_info dict attribute if scale(cores=...) or scale(memory=...)
+    4.  worker_spec dict attribute if scale(cores=...) or scale(memory=...)
         can be used by users.
-            worker_info = {'cores': 4, 'memory': '16 GB'}
+            worker_spec = {'cores': 4, 'memory': '16 GB'}
 
     This will provide a general ``scale`` method as well as an IPython widget
     for display.
@@ -87,7 +87,7 @@ class ClusterManager(Cluster):
         """ Turn on adaptivity
         For keyword arguments see dask.distributed.Adaptive
         Instead of minimum and maximum parameters which apply to the number of
-        worker, If Cluster object implements worker_info attribute, one can use
+        worker, If Cluster object implements worker_spec attribute, one can use
         the following parameters:
         Parameters
         ----------
@@ -165,7 +165,7 @@ class ClusterManager(Cluster):
         """ Scale cluster to n workers or to the given number of cores or
         memory
         number of cores and memory are converted into number of workers using
-        worker_info attribute.
+        worker_spec attribute.
         Parameters
         ----------
         n: int
@@ -183,7 +183,7 @@ class ClusterManager(Cluster):
         --------
         Cluster.scale_up
         Cluster.scale_down
-        Cluster.worker_info
+        Cluster.worker_spec
         """
         # TODO we should not rely on scheduler loop here, self should have its
         # own loop
@@ -231,7 +231,7 @@ class ClusterManager(Cluster):
 
         scale_hbox = [HBox([request, scale])]
         adapt_hbox = [HBox([minimum, maximum, adapt])]
-        if hasattr(self, 'worker_info'):
+        if hasattr(self, 'worker_spec'):
             scale_hbox.append(HBox([request_cores, scale_cores]))
             scale_hbox.append(HBox([request_memory, scale_memory]))
             adapt_hbox.append(HBox([minimum_cores, maximum_cores, adapt_cores]))
