@@ -38,9 +38,12 @@ class ClusterManager(Cluster):
             ''' Callable mapping a WorkerState object to a group, see
                 Scheduler.workers_to_close
             '''
+<<<<<<< HEAD
     4.  worker_spec dict attribute if scale(cores=...) or scale(memory=...)
         can be used by users.
             worker_spec = {'cores': 4, 'memory': '16 GB'}
+=======
+>>>>>>> master
 
     This will provide a general ``scale`` method as well as an IPython widget
     for display.
