@@ -14,6 +14,7 @@ object is instantiated:
    cluster = PBSCluster(  # <-- scheduler started here
         cores=24,
         memory='100GB',
+        shebang='#!/usr/bin/env bash',
         processes=6,
         local_directory='$TMPDIR',
         resource_spec='select=1:ncpus=24:mem=100GB',
@@ -38,7 +39,7 @@ generate as follows:
 
 .. code-block:: bash
 
-   #!/bin/bash
+   #!/usr/bin/env bash
 
    #PBS -N dask-worker
    #PBS -q regular

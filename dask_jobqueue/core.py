@@ -120,6 +120,8 @@ class JobQueueCluster(ClusterManager):
         Other commands to add to script before launching worker.
     python : str
         Python executable used to launch Dask workers.
+    shebang : str
+        Path to desired interpreter for your batch submission script.
     kwargs : dict
         Additional keyword arguments to pass to `LocalCluster`
 
@@ -218,6 +220,10 @@ class JobQueueCluster(ClusterManager):
 
         if memory is None:
             raise ValueError("You must specify how much memory to use per job like ``memory='24 GB'``")
+
+        if shebang is None:
+            raise ValueError("You must specify a batch script interpreter to use"
+                             " like ``#!/usr/bin/env bash``")
 
         # This attribute should be overridden
         self.job_header = None

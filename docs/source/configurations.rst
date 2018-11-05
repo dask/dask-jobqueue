@@ -33,6 +33,7 @@ Geyser/Caldera).
        name: dask-worker
        cores: 36                   # Total number of cores per job
        memory: '109 GB'            # Total amount of memory per job
+       shebang: '#!/usr/bin/env bash'  # Batch script interpreter
        processes: 9                # Number of Python processes per job
        interface: ib0              # Network interface to use like eth0 or ib0
 
@@ -85,6 +86,7 @@ Alternatively you may use the experimental `NERSC jupyterhub <https://jupyter-de
         slurm:
             cores: 64
             memory: 128GB
+            shebang: '#!/usr/bin/env bash'
             processes: 4
             queue: debug
             walltime: '00:10:00'
@@ -103,6 +105,7 @@ ARM Stratus
         name: dask-worker
         cores: 36
         memory: 270GB
+        shebang: '#!/usr/bin/env bash'
         processes: 6
         interface: ib0
         local-directory: $localscratch
