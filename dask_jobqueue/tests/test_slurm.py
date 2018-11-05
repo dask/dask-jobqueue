@@ -66,7 +66,7 @@ def test_job_script():
     with SLURMCluster(walltime='00:02:00', processes=4, cores=8, memory='28GB',
                       env_extra=['export LANG="en_US.utf8"',
                                  'export LANGUAGE="en_US.utf8"',
-                                 'export LC_ALL="en_US.utf8"'],
+                                 'export LC_ALL="en_US.utf8"']
                       ) as cluster:
         job_script = cluster.job_script()
         assert '#SBATCH' in job_script

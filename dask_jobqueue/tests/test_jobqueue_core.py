@@ -42,54 +42,16 @@ def test_command_template():
         assert ' --preload mymodule' in cluster._command_template
 
 
-def test_shebang_settings():
+@pytest.mark.parametrize('Cluster', [PBSCluster, MoabCluster, SLURMCluster,
+                                     SGECluster, LSFCluster, OARCluster])
+def test_shebang_settings(Cluster):
     default_shebang = "#!/usr/bin/env bash"
     python_shebang = "#!/usr/bin/python"
-    with PBSCluster(cores=2, memory='4GB', shebang=python_shebang) as cluster:
+    with Cluster(cores=2, memory='4GB', shebang=python_shebang) as cluster:
         job_script = cluster.job_script()
         assert job_script.startswith(python_shebang)
         assert 'bash' not in job_script
-    with PBSCluster(cores=2, memory='4GB') as cluster:
-        job_script = cluster.job_script()
-        assert job_script.startswith(default_shebang)
-
-    with SLURMCluster(cores=2, memory='4GB', shebang=python_shebang) as cluster:
-        job_script = cluster.job_script()
-        assert job_script.startswith(python_shebang)
-        assert 'bash' not in job_script
-    with SLURMCluster(cores=2, memory='4GB') as cluster:
-        job_script = cluster.job_script()
-        assert job_script.startswith(default_shebang)
-
-    with MoabCluster(cores=2, memory='4GB', shebang=python_shebang) as cluster:
-        job_script = cluster.job_script()
-        assert job_script.startswith(python_shebang)
-        assert 'bash' not in job_script
-    with MoabCluster(cores=2, memory='4GB') as cluster:
-        job_script = cluster.job_script()
-        assert job_script.startswith(default_shebang)
-
-    with LSFCluster(cores=2, memory='4GB', shebang=python_shebang) as cluster:
-        job_script = cluster.job_script()
-        assert job_script.startswith(python_shebang)
-        assert 'bash' not in job_script
-    with LSFCluster(cores=2, memory='4GB') as cluster:
-        job_script = cluster.job_script()
-        assert job_script.startswith(default_shebang)
-
-    with OARCluster(cores=2, memory='4GB', shebang=python_shebang) as cluster:
-        job_script = cluster.job_script()
-        assert job_script.startswith(python_shebang)
-        assert 'bash' not in job_script
-    with OARCluster(cores=2, memory='4GB') as cluster:
-        job_script = cluster.job_script()
-        assert job_script.startswith(default_shebang)
-
-    with SGECluster(cores=2, memory='4GB', shebang=python_shebang) as cluster:
-        job_script = cluster.job_script()
-        assert job_script.startswith(python_shebang)
-        assert 'bash' not in job_script
-    with SGECluster(cores=2, memory='4GB') as cluster:
+    with Cluster(cores=2, memory='4GB') as cluster:
         job_script = cluster.job_script()
         assert job_script.startswith(default_shebang)
 
