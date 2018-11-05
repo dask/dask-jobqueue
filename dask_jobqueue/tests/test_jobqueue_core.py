@@ -9,7 +9,7 @@ import re
 import pytest
 
 from dask_jobqueue import (JobQueueCluster, PBSCluster, MoabCluster,
-                           SLURMCluster, SGECluster, LSFCluster)
+                           SLURMCluster, SGECluster, LSFCluster, OARCluster)
 
 
 def test_errors():
@@ -40,6 +40,34 @@ def test_command_template():
         assert ' --death-timeout 60' in cluster._command_template
         assert ' --local-directory /scratch' in cluster._command_template
         assert ' --preload mymodule' in cluster._command_template
+
+
+def test_shebang_settings():
+    python_shebang = "#!/usr/bin/python"
+    with PBSCluster(cores=2, memory='4GB', shebang=python_shebang) as cluster:
+        job_script = cluster.job_script()
+        assert job_script.startswith(python_shebang)
+        assert 'bash' not in job_script
+    with SLURMCluster(shebang=python_shebang) as cluster:
+        job_script = cluster.job_script()
+        assert job_script.startswith(python_shebang)
+        assert 'bash' not in job_script
+    with MoabCluster(shebang=python_shebang) as cluster:
+        job_script = cluster.job_script()
+        assert job_script.startswith(python_shebang)
+        assert 'bash' not in job_script
+    with LSFCluster(shebang=python_shebang) as cluster:
+        job_script = cluster.job_script()
+        assert job_script.startswith(python_shebang)
+        assert 'bash' not in job_script
+    with OARCluster(shebang=python_shebang) as cluster:
+        job_script = cluster.job_script()
+        assert job_script.startswith(python_shebang)
+        assert 'bash' not in job_script
+    with SGECluster(shebang=python_shebang) as cluster:
+        job_script = cluster.job_script()
+        assert job_script.startswith(python_shebang)
+        assert 'bash' not in job_script
 
 
 @pytest.mark.parametrize('Cluster', [PBSCluster, MoabCluster, SLURMCluster,

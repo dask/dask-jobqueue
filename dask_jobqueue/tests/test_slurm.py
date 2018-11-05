@@ -48,7 +48,6 @@ def test_job_script():
     with SLURMCluster(walltime='00:02:00', processes=4, cores=8, memory='28GB') as cluster:
 
         job_script = cluster.job_script()
-        assert job_script.startswith("#!/bin/bash")
         assert '#SBATCH' in job_script
         assert '#SBATCH -J dask-worker' in job_script
         assert '--memory-limit 7.00GB ' in job_script
@@ -68,10 +67,8 @@ def test_job_script():
                       env_extra=['export LANG="en_US.utf8"',
                                  'export LANGUAGE="en_US.utf8"',
                                  'export LC_ALL="en_US.utf8"'],
-                      shebang="#!/bin/python") as cluster:
+                      ) as cluster:
         job_script = cluster.job_script()
-        assert job_script.startswith("#!/bin/python")
-        assert 'bash' not in job_script
         assert '#SBATCH' in job_script
         assert '#SBATCH -J dask-worker' in job_script
         assert '#SBATCH -n 1' in job_script
