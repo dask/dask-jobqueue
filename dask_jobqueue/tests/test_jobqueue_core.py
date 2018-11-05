@@ -48,23 +48,23 @@ def test_shebang_settings():
         job_script = cluster.job_script()
         assert job_script.startswith(python_shebang)
         assert 'bash' not in job_script
-    with SLURMCluster(shebang=python_shebang) as cluster:
+    with SLURMCluster(cores=2, memory='4GB', shebang=python_shebang) as cluster:
         job_script = cluster.job_script()
         assert job_script.startswith(python_shebang)
         assert 'bash' not in job_script
-    with MoabCluster(shebang=python_shebang) as cluster:
+    with MoabCluster(cores=2, memory='4GB', shebang=python_shebang) as cluster:
         job_script = cluster.job_script()
         assert job_script.startswith(python_shebang)
         assert 'bash' not in job_script
-    with LSFCluster(shebang=python_shebang) as cluster:
+    with LSFCluster(cores=2, memory='4GB', shebang=python_shebang) as cluster:
         job_script = cluster.job_script()
         assert job_script.startswith(python_shebang)
         assert 'bash' not in job_script
-    with OARCluster(shebang=python_shebang) as cluster:
+    with OARCluster(cores=2, memory='4GB', shebang=python_shebang) as cluster:
         job_script = cluster.job_script()
         assert job_script.startswith(python_shebang)
         assert 'bash' not in job_script
-    with SGECluster(shebang=python_shebang) as cluster:
+    with SGECluster(cores=2, memory='4GB', shebang=python_shebang) as cluster:
         job_script = cluster.job_script()
         assert job_script.startswith(python_shebang)
         assert 'bash' not in job_script
