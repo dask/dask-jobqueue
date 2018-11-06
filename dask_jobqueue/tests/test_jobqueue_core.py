@@ -5,7 +5,6 @@ import shutil
 import socket
 import sys
 import re
-import mock
 
 import pytest
 
@@ -56,16 +55,9 @@ def test_shebang_settings(Cluster):
     with Cluster(cores=2, memory='4GB') as cluster:
         job_script = cluster.job_script()
         assert job_script.startswith(default_shebang)
-    original_get = dask.config.get
-
-    def _mocked_dask_config_get(requested, default='__no_default__'):
-        if 'shebang' in requested:
-            return None
-        else:
-            return original_get(requested, default)
 
     with pytest.raises(ValueError, match="batch script interpreter"):
-        with mock.patch("dask.config.get", side_effect=_mocked_dask_config_get):
+        with (dask.config.set(shebang=None)):
             Cluster(cores=2, memory='4GB')
 
 
