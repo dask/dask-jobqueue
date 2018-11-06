@@ -8,7 +8,7 @@ You provide this information either as keyword arguments to the constructor:
 
 .. code-block:: python
 
-   cluster = PBSCluster(cores=36, memory='100GB', shebang,"#!/usr/bin/env bash", queue='regular', ...)
+   cluster = PBSCluster(cores=36, memory='100GB', shebang="#!/usr/bin/env bash", queue='regular', ...)
 
 Or as part of a configuration file:
 
