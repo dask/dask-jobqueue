@@ -24,6 +24,6 @@ setup(name='dask-jobqueue',
       packages=['dask_jobqueue'],
       include_package_data=True,
       install_requires=install_requires,
-      tests_require=['pytest >= 2.7.1'],
+      tests_require=['pytest >= 2.7.1', 'mock'],
       long_description=long_description,
       zip_safe=False)
