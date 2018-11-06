@@ -44,13 +44,6 @@ def test_command_template():
         assert ' --preload mymodule' in cluster._command_template
 
 
-def _mocked_dask_config_get(requested):
-    if 'shebang' in requested:
-        return None
-    else:
-        return dask.config.get(requested)
-
-
 @pytest.mark.parametrize('Cluster', [PBSCluster, MoabCluster, SLURMCluster,
                                      SGECluster, LSFCluster, OARCluster])
 def test_shebang_settings(Cluster):
@@ -63,9 +56,17 @@ def test_shebang_settings(Cluster):
     with Cluster(cores=2, memory='4GB') as cluster:
         job_script = cluster.job_script()
         assert job_script.startswith(default_shebang)
+    original_get = dask.config.get
+
+    def _mocked_dask_config_get(requested, default='__no_default__'):
+        if 'shebang' in requested:
+            return None
+        else:
+            return original_get(requested, default)
+
     with pytest.raises(ValueError, match="batch script interpreter"):
-        with mock.patch("dask.config.get", new=_mocked_dask_config_get):
-            cluster = Cluster(cores=2, memory='4GB')
+        with mock.patch("dask.config.get", side_effect=_mocked_dask_config_get):
+            Cluster(cores=2, memory='4GB')
 
 
 @pytest.mark.parametrize('Cluster', [PBSCluster, MoabCluster, SLURMCluster,
