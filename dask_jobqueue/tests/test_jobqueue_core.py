@@ -9,7 +9,7 @@ import mock
 
 import pytest
 
-import dask.config.get
+import dask
 from dask_jobqueue import (JobQueueCluster, PBSCluster, MoabCluster,
                            SLURMCluster, SGECluster, LSFCluster, OARCluster)
 
