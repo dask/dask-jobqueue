@@ -56,10 +56,6 @@ def test_shebang_settings(Cluster):
         job_script = cluster.job_script()
         assert job_script.startswith(default_shebang)
 
-    with pytest.raises(ValueError, match="batch script interpreter"):
-        with dask.config.set({'jobqueue.%s.shebang' % Cluster.scheduler_name: None}):
-            Cluster(cores=2, memory='4GB')
-
 
 @pytest.mark.parametrize('Cluster', [PBSCluster, MoabCluster, SLURMCluster,
                                      SGECluster, LSFCluster])
