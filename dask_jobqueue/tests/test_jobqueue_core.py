@@ -8,7 +8,6 @@ import re
 
 import pytest
 
-import dask
 from dask_jobqueue import (JobQueueCluster, PBSCluster, MoabCluster,
                            SLURMCluster, SGECluster, LSFCluster, OARCluster)
 
