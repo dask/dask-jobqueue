@@ -221,10 +221,6 @@ class JobQueueCluster(ClusterManager):
         if memory is None:
             raise ValueError("You must specify how much memory to use per job like ``memory='24 GB'``")
 
-        if shebang is None:
-            raise ValueError("You must specify a batch script interpreter to use"
-                             " like ``#!/usr/bin/env bash``")
-
         # This attribute should be overridden
         self.job_header = None
 

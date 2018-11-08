@@ -15,7 +15,6 @@ PBS Deployments
 
    cluster = PBSCluster(queue='regular',
                         project='DaskOnPBS',
-                        shebang='#!/usr/bin/env bash',
                         local_directory='$TMPDIR',
                         threads=4,
                         processes=6,
@@ -24,7 +23,7 @@ PBS Deployments
 
    cluster = PBSCluster(processes=18,
                         threads=4,
-                        shebang='#!/usr/bin/env bash',
+                        shebang='#!/usr/bin/env zsh',
                         memory="6GB",
                         project='P48500028',
                         queue='premium',
@@ -45,7 +44,6 @@ can be used, called ``MoabCluster``:
 
    cluster = MoabCluster(processes=6,
                          threads=1,
-                        shebang='#!/usr/bin/env bash',
                          project='gfdl_m',
                          memory='16G',
                          resource_spec='pmem=96G',
