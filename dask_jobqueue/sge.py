@@ -16,6 +16,9 @@ class SGECluster(JobQueueCluster):
     ----------
     queue : str
         Destination queue for each worker job. Passed to `#$ -q` option.
+    memory: str
+        The amount of memory requested per worker job. Passed to `#$ -l` option. Can be
+        specified in lieu of `resource_spec`.
     project : str
         Accounting string associated with each worker job. Passed to `#$ -A` option.
     resource_spec : str
