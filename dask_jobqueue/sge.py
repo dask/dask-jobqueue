@@ -62,8 +62,16 @@ class SGECluster(JobQueueCluster):
             header_lines.append('#$ -q %(queue)s')
         if project is not None:
             header_lines.append('#$ -P %(project)s')
+
+        # Define resource specifications. There are only two cases allowed in this
+        # implementation: either specify using resource_spec, or specify using the rest of the
+        # kwargs.
         if resource_spec is not None:
             header_lines.append('#$ -l %(resource_spec)s')
+        else:
+            header_lines.append('#$ -l m_mem_free=%s' % parse_memory(kwargs.get('memory')))
+            logger.info("Resource specification not set for SGE, initializing to %s")
+
         if walltime is not None:
             header_lines.append('#$ -l h_rt=%(walltime)s')
         if self.log_directory is not None:
@@ -82,3 +90,31 @@ class SGECluster(JobQueueCluster):
         self.job_header = header_template % config
 
         logger.debug("Job script: \n %s" % self.job_script())
+
+
+def parse_memory(memory: str):
+    """
+    Parses the memory string to format it correctly for SGE job scripts.
+
+    Simply uses a bunch of heuristics to parse the string.
+
+    :param memory: The amount of RAM requested per worker node.
+    :returns: memory, properly formatted
+    """
+    # Covering only the most common use cases here. The pattern should be obvious if we need to
+    # add more cases below.
+    mappings = {
+        'tb': 'T',
+        't': 'T',
+        'gb': 'G',
+        'g': 'G',
+        'mb': 'M',
+        'm': 'M',
+        'kb': 'K',
+        'k': 'K'
+    }
+    for ending, replacement in mappings.items():
+        if memory.lower().endswith(ending):
+            memory = memory.replace(ending, replacement)
+
+    return memory
