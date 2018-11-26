@@ -55,7 +55,9 @@ class PBSCluster(JobQueueCluster):
     cancel_command = 'qdel'
     scheduler_name = 'pbs'
 
-    def __init__(self, queue=None, project=None, resource_spec=None, walltime=None, job_extra=None, **kwargs):
+    def __init__(self, queue=None, project=None, resource_spec=None, walltime=None, job_extra=None,
+                 configuration='pbs', **kwargs):
+        self.scheduler_name = configuration
         if queue is None:
             queue = dask.config.get('jobqueue.%s.queue' % self.scheduler_name)
         if resource_spec is None:

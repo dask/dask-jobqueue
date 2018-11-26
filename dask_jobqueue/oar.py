@@ -44,10 +44,11 @@ class OARCluster(JobQueueCluster):
     # Override class variables
     submit_command = 'oarsub'
     cancel_command = 'oardel'
-    scheduler_name = 'oar'
     job_id_regexp = r'OAR_JOB_ID=(?P<job_id>\d+)'
 
-    def __init__(self, queue=None, project=None, resource_spec=None, walltime=None, job_extra=None, **kwargs):
+    def __init__(self, queue=None, project=None, resource_spec=None, walltime=None, job_extra=None,
+                 configuration='oar', **kwargs):
+        self.scheduler_name = configuration
         if queue is None:
             queue = dask.config.get('jobqueue.%s.queue' % self.scheduler_name)
         if project is None:

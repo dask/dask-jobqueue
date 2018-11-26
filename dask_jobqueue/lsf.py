@@ -50,9 +50,10 @@ class LSFCluster(JobQueueCluster):
     # Override class variables
     submit_command = 'bsub <'
     cancel_command = 'bkill'
-    scheduler_name = 'lsf'
 
-    def __init__(self, queue=None, project=None, ncpus=None, mem=None, walltime=None, job_extra=None, **kwargs):
+    def __init__(self, queue=None, project=None, ncpus=None, mem=None, walltime=None, job_extra=None,
+                 configuration='lsf', **kwargs):
+        self.scheduler_name = configuration
         if queue is None:
             queue = dask.config.get('jobqueue.%s.queue' % self.scheduler_name)
         if project is None:

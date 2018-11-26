@@ -41,9 +41,10 @@ class SGECluster(JobQueueCluster):
     # Override class variables
     submit_command = 'qsub -terse'
     cancel_command = 'qdel'
-    scheduler_name = 'sge'
 
-    def __init__(self, queue=None, project=None, resource_spec=None, walltime=None, **kwargs):
+    def __init__(self, queue=None, project=None, resource_spec=None, walltime=None,
+                 configuration ='sge', **kwargs):
+        self.scheduler_name = configuration
         if queue is None:
             queue = dask.config.get('jobqueue.%s.queue' % self.scheduler_name)
         if project is None:
