@@ -5,6 +5,7 @@ import sys
 from dask_jobqueue import OARCluster
 import dask
 
+
 def test_header():
     with OARCluster(walltime='00:02:00', processes=4, cores=8, memory='28GB') as cluster:
         assert '#OAR -n dask-worker' in cluster.job_header
