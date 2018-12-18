@@ -8,7 +8,7 @@ RUN yum install -y gcc make rpm-build libtool hwloc-devel libX11-devel \
 	postgresql-devel python-devel tcl-devel  tk-devel swig expat-devel \
     openssl-devel libXext libXft git
 # get known PBS Pro source code
-RUN git clone --branch v18.1.3 https://github.com/pbspro/pbspro.git /src/pbspro
+RUN git clone https://github.com/pbspro/pbspro.git /src/pbspro && cd /src/pbspro && git reset --hard 3f6f2352d2cc88922f09c06cae5cfdef5e410f5f  
 COPY build.sh /
 RUN bash /build.sh
 
