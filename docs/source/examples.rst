@@ -127,6 +127,7 @@ example GPUs. Below, an arbitrary resource "foo" is specified. Notice that the
 
 
     from dask_jobqueue import SLURMCluster
+    from distributed import Client
 
     cluster = SLURMCluster(queue='norm',
                            memory='8g',
@@ -135,3 +136,9 @@ example GPUs. Below, an arbitrary resource "foo" is specified. Notice that the
                            extra=['--resources foo=2'],
                            job_extra=['--time=03:00:00'],
                            env_extra=['export OMP_NUM_THREADS="8"'])
+    
+    client = Client(cluster)
+    futures = client.compute(reduced,
+                             resources={
+                                 tuple(processed): {'foo': 1},
+                                 reduced: {'foo': 2}})
