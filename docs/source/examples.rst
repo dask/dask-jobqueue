@@ -53,7 +53,7 @@ can be used, called ``MoabCluster``:
 SGE Deployments
 ---------------
 
-On systems which use SGE as the scheduler, ```SGECluster`` can be used:
+On systems which use SGE as the scheduler, ``SGECluster`` can be used:
 
 .. code-block:: python
 
@@ -110,3 +110,28 @@ SLURM Deployment: Low-priority node usage
                                       'export LANGUAGE="en_US.utf8"',
                                       'export LC_ALL="en_US.utf8"'],
                            job_extra=['--qos="savio_lowprio"'])
+
+
+
+SLURM Deployment: Providing additional arguments to the dask-workers
+-----------------------------------------
+
+Keyword arguments can be passed through to dask-workers. An example of such an
+argument is for the specification of abstract resources, described `here
+<http://distributed.dask.org/en/latest/resources.html>`_. This might be to
+specify special hardware availibility that the scheduler is not aware of, for
+example GPUs. Below, an arbitrary resource "foo" is specified. Notice that the
+``extra`` keyword is used to pass through these arguments to the dask-workers.
+
+.. code-block:: python
+
+
+    from dask_jobqueue import SLURMCluster
+
+    cluster = SLURMCluster(queue='norm',
+                           memory='8g',
+                           processes=1,
+                           cores=8,
+                           extra=['--resources foo=2'],
+                           job_extra=['--time=03:00:00'],
+                           env_extra=['export OMP_NUM_THREADS="8"'])
