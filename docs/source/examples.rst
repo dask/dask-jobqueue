@@ -128,17 +128,25 @@ example GPUs. Below, an arbitrary resource "foo" is specified. Notice that the
 
     from dask_jobqueue import SLURMCluster
     from distributed import Client
+    from dask import delayed
 
-    cluster = SLURMCluster(queue='norm',
-                           memory='8g',
+    cluster = SLURMCluster(memory='8g',
                            processes=1,
                            cores=8,
                            extra=['--resources foo=2'],
-                           job_extra=['--time=03:00:00'],
-                           env_extra=['export OMP_NUM_THREADS="8"'])
-    
+                           env_extra=['export OMP_NUM_THREADS="4"'])
+
+    cluster.start_workers(2)
     client = Client(cluster)
-    futures = client.compute(reduced,
-                             resources={
-                                 tuple(processed): {'foo': 1},
-                                 reduced: {'foo': 2}})
+
+The client can then be used as normal. Additionally, required resources can be
+specified for certain steps in the processing. For example:
+
+    def process(data):  # foo intensive
+        return "Result for: %s"% data
+
+
+    processed = [delayed(process)(i) for i in range(10)]
+    futures = client.compute(processed,
+                             resources={tuple(processed): {'foo': 1}})
+    output = [f.result() for f in futures]
