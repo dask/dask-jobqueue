@@ -118,13 +118,13 @@ SLURM Deployment: Providing additional arguments to the dask-workers
 
 Keyword arguments can be passed through to dask-workers. An example of such an
 argument is for the specification of abstract resources, described `here
-<http://distributed.dask.org/en/latest/resources.html>`_. This might be to
-specify special hardware availibility that the scheduler is not aware of, for
-example GPUs. Below, an arbitrary resource "foo" is specified. Notice that the
-``extra`` keyword is used to pass through these arguments to the dask-workers.
+<http://distributed.dask.org/en/latest/resources.html>`_. This could be used
+to specify special hardware availibility that the scheduler is not aware of,
+for example GPUs. Below, the arbitrary resources "ssdGB" and "GPU" are
+specified. Notice that the ``extra`` keyword is used to pass through arguments
+to the dask-workers.
 
 .. code-block:: python
-
 
     from dask_jobqueue import SLURMCluster
     from distributed import Client
@@ -132,21 +132,28 @@ example GPUs. Below, an arbitrary resource "foo" is specified. Notice that the
 
     cluster = SLURMCluster(memory='8g',
                            processes=1,
-                           cores=8,
-                           extra=['--resources foo=2'],
-                           env_extra=['export OMP_NUM_THREADS="4"'])
+                           cores=2,
+                           extra=['--resources ssdGB=200,GPU=2'])
 
     cluster.start_workers(2)
     client = Client(cluster)
 
 The client can then be used as normal. Additionally, required resources can be
 specified for certain steps in the processing. For example:
+    
+.. code-block:: python
 
-    def process(data):  # foo intensive
-        return "Result for: %s"% data
+    def step_1_w_single_GPU(data):
+        return "Step 1 done for: %s" % data
 
 
-    processed = [delayed(process)(i) for i in range(10)]
-    futures = client.compute(processed,
-                             resources={tuple(processed): {'foo': 1}})
-    output = [f.result() for f in futures]
+    def step_2_w_local_IO(data):
+        return "Step 2 done for: %s" % data
+
+
+    stage_1 = [delayed(step_1_w_single_GPU)(i) for i in range(10)]
+    stage_2 = [delayed(step_2_w_local_IO)(s2) for s2 in stage_1]
+
+    result_stage_2 = client.compute(stage_2,
+                                    resources={tuple(stage_1): {'GPU': 1},
+                                               tuple(stage_2): {'ssdGB': 100}})
