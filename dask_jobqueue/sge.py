@@ -85,9 +85,8 @@ class SGECluster(JobQueueCluster):
 
         logger.debug("Job script: \n %s" % self.job_script())
 
-
     def start_workers(self, n=1, ta=True):
-        """ Start workers as a task array and point each task to our local scheduler
+        __doc__ = docstrings.with_indents(""" Start workers as a task array
 
         Parameters
         ----------
@@ -95,7 +94,7 @@ class SGECluster(JobQueueCluster):
             Total number of workers to start
         ta : bool
             If true, try to use task arrays
-        """
+        """, 4)
         logger.debug('starting %s workers', n)
 
         # Check if Task arrays can be used
@@ -120,4 +119,4 @@ class SGECluster(JobQueueCluster):
             self.job_header = header_template
             self._command_template = _original_command_template
         else:
-            super().start_workers(n=n)
+            super(SGECluster, self).start_workers(n=n)

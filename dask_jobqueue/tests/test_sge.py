@@ -69,6 +69,7 @@ def test_config_name_sge_takes_custom_config():
         with SGECluster(config_name='sge-config-name') as cluster:
             assert cluster.name == 'myname'
 
+
 @pytest.mark.env("sge")  # noqa: F811
 def test_taskarrays(loop):  # noqa: F811
 
