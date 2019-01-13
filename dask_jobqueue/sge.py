@@ -1,6 +1,8 @@
 from __future__ import absolute_import, division, print_function
 
 import logging
+import os
+import math
 
 import dask
 
@@ -82,3 +84,40 @@ class SGECluster(JobQueueCluster):
         self.job_header = header_template % config
 
         logger.debug("Job script: \n %s" % self.job_script())
+
+
+    def start_workers(self, n=1, ta=True):
+        """ Start workers as a task array and point each task to our local scheduler
+
+        Parameters
+        ----------
+        n : int
+            Total number of workers to start
+        ta : bool
+            If true, try to use task arrays
+        """
+        logger.debug('starting %s workers', n)
+
+        # Check if Task arrays can be used
+        ta = ta and bool(os.getenv('SGE_TASK_ID', None))
+
+        if ta:
+            _original_command_template = self._command_template
+            self._command_template = self._command_template.replace('${JOB_ID}', '${JOB_ID}.${SGE_TASK_ID}')
+
+            num_jobs = int(math.ceil(n / self.worker_processes))
+            header_template = self.job_header
+            self.job_header = header_template + '\n#$ -t 1-{}'.format(num_jobs)
+            with self.job_file() as fn:
+                out = self._submit_job(fn)
+                job = self._job_id_from_submit_output(out)
+                if not job:
+                    raise ValueError('Unable to parse jobid from output of %s' % out)
+                logger.debug("started job: %s", job)
+            logger.debug("Adding tasks to list of pending jobs")
+            for task in range(1, num_jobs + 1):
+                self.pending_jobs['{}.{}'.format(job, task)] = {}
+            self.job_header = header_template
+            self._command_template = _original_command_template
+        else:
+            super().start_workers(n=n)
