@@ -86,7 +86,8 @@ class SGECluster(JobQueueCluster):
         logger.debug("Job script: \n %s" % self.job_script())
 
     def start_workers(self, n=1, ta=True):
-        __doc__ = docstrings.with_indents(""" Start workers as a task array
+        """
+        Start workers as a task array
 
         Parameters
         ----------
@@ -94,13 +95,14 @@ class SGECluster(JobQueueCluster):
             Total number of workers to start
         ta : bool
             If true, try to use task arrays
-        """, 4)
+        """
         logger.debug('starting %s workers', n)
 
         # Check if Task arrays can be used
         ta = ta and bool(os.getenv('SGE_TASK_ID', None))
 
         if ta:
+            logging.debug('Submission using task array')
             _original_command_template = self._command_template
             self._command_template = self._command_template.replace('${JOB_ID}', '${JOB_ID}.${SGE_TASK_ID}')
 
@@ -119,4 +121,5 @@ class SGECluster(JobQueueCluster):
             self.job_header = header_template
             self._command_template = _original_command_template
         else:
+            logging.debug('Submission using job ids')
             super(SGECluster, self).start_workers(n=n)
