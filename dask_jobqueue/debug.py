@@ -47,7 +47,7 @@ class DEBUGCluster(JobQueueCluster):
                                   "lf = open('logfile', 'a')\n"
                                   "print(subprocess.Popen(shlex.split(CMD), stderr=subprocess.STDOUT, stdout=lf).pid)")
                                   #"print(subprocess.Popen(shlex.split(CMD), stderr=subprocess.STDOUT, stdout=subprocess.DEVNULL).pid)"
-        self._command_template = self._command_template.replace("${JOB_ID}", "pid")
         self._command_template = self._command_template.replace('xxx', og_cmd_template)
+        self._command_template = self._command_template.replace("${JOB_ID}", "pid")
 
         self.job_header = ''
