@@ -53,7 +53,11 @@ can be used, called ``MoabCluster``:
 SGE Deployments
 ---------------
 
-On systems which use SGE as the scheduler, ``SGECluster`` can be used:
+On systems which use SGE as the scheduler, ``SGECluster`` can be used.
+
+SGE systems have a lot of flexibility in how they are configured, hence it is not possible to use the ``memory`` keyword argument to automatically specify the amount of RAM used. Instead, you must request for resources according to how your system is configured.
+
+In the example below, our system administrator has used the ``m_mem_free`` keyword argument to let us request for RAM. At the same time, we must also correctly specify the ``memory`` keyword argument, to enable Dask's memory management to do its work correctly.
 
 .. code-block:: python
 
@@ -62,7 +66,9 @@ On systems which use SGE as the scheduler, ``SGECluster`` can be used:
     cluster = SGECluster(queue='default.q',
                          walltime="1500000",
                          processes=10,
-                         memory='20GB')
+                         memory='20GB',  # this must be specified
+                         resource_spec='m_mem_free=20G',  # this also needs to be specified
+                         )
 
 LSF Deployments
 ---------------
@@ -140,7 +146,7 @@ to the dask-workers.
 
 The client can then be used as normal. Additionally, required resources can be
 specified for certain steps in the processing. For example:
-    
+
 .. code-block:: python
 
     def step_1_w_single_GPU(data):
