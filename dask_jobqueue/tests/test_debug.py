@@ -2,15 +2,10 @@ from __future__ import absolute_import, division, print_function
 
 import asyncio
 import subprocess
-import psutil
 import time
-import sys
-
-from tornado import gen
 
 from dask_jobqueue import DEBUGCluster
-from distributed import Client, as_completed, LocalCluster
-from distributed.scheduler import KilledWorker
+from distributed import Client, as_completed
 
 
 def sleep_abit(x):
@@ -18,7 +13,7 @@ def sleep_abit(x):
     return x+10
 
 
-def test_debug_gather():
+def test_sync_gather():
     """
     this test is now working
     """
@@ -36,7 +31,7 @@ def test_debug_gather():
     for k, v in c._scheduler_identity["workers"].items():
         pid = int(v['id'].split('--')[-2])
         old_pids.append(pid)
-        subprocess.call("kill -9 {}".format(pid), shell=True)
+        subprocess.call("kill -9 {}".format(pid).split())
     not_done_count = sum([1 for task in ret if task.status == 'pending'])
     assert not_done_count == 7
 
@@ -69,7 +64,7 @@ async def _a_g_main():
     for k, v in c._scheduler_identity["workers"].items():
         pid = int(v['id'].split('--')[-2])
         old_pids.append(pid)
-        subprocess.call("kill -9 {}".format(pid), shell=True)
+        subprocess.call("kill -9 {}".format(pid).split())
 
     not_done_count = sum([1 for task in ret if task.status == 'pending'])
     assert not_done_count == 7
@@ -93,7 +88,7 @@ def test_async_gather():
     loop.run_until_complete(_a_g_main())
 
 
-def test_debug_non_async():
+def test_sync_as_completed():
     d = DEBUGCluster(cores=1, memory="1gb", extra=["--no-nanny", "--no-bokeh"])
     d.adapt(minimum=3, maximum=3)
     # d.scale(3)
@@ -102,40 +97,27 @@ def test_debug_non_async():
     while len(c._scheduler_identity["workers"]) < 3:
         continue
 
-    print("finally")
-    print(c._scheduler_identity)
-
     ret = c.map(lambda x: sleep_abit(x), list(range(10)))
-    # proc = psutil.Process().pid
-    print("THIS IS", psutil.Process())
 
+    old_pids = []
+    new_pids = []
     count = 0
-    subprocess.run("ps -u $USER", shell=True)
     work_queue = as_completed(ret)
     for ret in work_queue:
         result = ret.result()
-        print("result", result)
         count += 1
         if count == 3:
             for k, v in c._scheduler_identity["workers"].items():
                 pid = int(v['id'].split('--')[-2])
-                subprocess.call("kill -15 {}".format(pid), shell=True)
-        # This still fails, but keep around just for checking
-        # try:
-        #     result = ret.result()
-        # except KilledWorker:
-        #     c.retry([ret])
-        #     work_queue.add(ret)
-        # else:
-        #     print("result", result)
-        #     count += 1
-        #     if count == 3:
-        #         for k, v in c._scheduler_identity["workers"].items():
-        #             pid = int(v['id'].split('--')[-2])
-        #             subprocess.call("kill -15 {}".format(pid), shell=True)
-
+                old_pids.append(pid)
+                subprocess.call("kill -9 {}".format(pid).split())
+        elif count == 7:
+            for k, v in c._scheduler_identity["workers"].items():
+                pid = int(v['id'].split('--')[-2])
+                new_pids.append(pid)
+    for pid in new_pids:
+        assert pid not in old_pids
     assert count == 10
-
     c.close()
 
 
@@ -148,23 +130,26 @@ async def _a_c_main():
     while len(c._scheduler_identity["workers"]) < 3:
         await asyncio.sleep(1)
 
-    print("finally")
-    print(c._scheduler_identity)
-
     ret = c.map(lambda x: sleep_abit(x), list(range(10)))
-    # proc = psutil.Process().pid
-    print("THIS IS", psutil.Process())
 
+    old_pids = []
+    new_pids = []
     count = 0
-    subprocess.run("ps -u $USER", shell=True)
     work_queue = as_completed(ret)
     async for ret in work_queue:
-        await ret
+        result = await ret
         count += 1
         if count == 3:
             for k, v in c._scheduler_identity["workers"].items():
                 pid = int(v['id'].split('--')[-2])
-                subprocess.call("kill -15 {}".format(pid), shell=True)
+                old_pids.append(pid)
+                subprocess.call("kill -9 {}".format(pid).split())
+        elif count == 7:
+            for k, v in c._scheduler_identity["workers"].items():
+                pid = int(v['id'].split('--')[-2])
+                new_pids.append(pid)
+    for pid in new_pids:
+        assert pid not in old_pids
     assert count == 10
 
     c.close()
