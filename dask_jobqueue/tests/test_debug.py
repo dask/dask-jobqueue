@@ -54,7 +54,7 @@ def test_debug_non_async():
             if count == 3:
                 for k, v in c._scheduler_identity["workers"].items():
                     pid = int(v['id'].split('--')[-2])
-                    subprocess.call(f"kill -15 {pid}", shell=True)
+                    subprocess.call("kill -15 {}".format(pid), shell=True)
 
     assert count == 10
 
@@ -92,7 +92,7 @@ async def _a_c_main():
             if count == 3:
                 for k, v in c._scheduler_identity["workers"].items():
                     pid = int(v['id'].split('--')[-2])
-                    subprocess.call(f"kill -15 {pid}", shell=True)
+                    subprocess.call("kill -15 {}".format(pid), shell=True)
     assert count == 10
 
     c.close()
@@ -126,7 +126,7 @@ async def _a_g_main():
     for k, v in c._scheduler_identity["workers"].items():
         pid = int(v['id'].split('--')[-2])
         print("killing pid", pid)
-        subprocess.call(f"kill -15 {pid}", shell=True)
+        subprocess.call("kill -15 {}".format(pid), shell=True)
 
     await asyncio.sleep(3)
 
