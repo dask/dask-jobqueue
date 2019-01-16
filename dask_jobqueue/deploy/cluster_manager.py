@@ -2,6 +2,7 @@ import dask
 import logging
 import math
 import os
+import time
 
 from tornado import gen
 
@@ -83,8 +84,14 @@ class ClusterManager(object):
         self._adaptive_options = adaptive_options
         self._adaptive_options.setdefault('worker_key', self.worker_key)
 
+    def sleep_until_n_workers(self, n):
+        '''Block by sleeping until we have n active workers'''
+        while self._count_active_workers() < n:
+            time.sleep(1)
+
     def adapt(self, minimum_cores=None, maximum_cores=None,
-              minimum_memory=None, maximum_memory=None, **kwargs):
+              minimum_memory=None, maximum_memory=None,
+              wait_until_n=0, **kwargs):
         """ Turn on adaptivity
         For keyword arguments see dask.distributed.Adaptive
         Instead of minimum and maximum parameters which apply to the number of
@@ -100,6 +107,8 @@ class ClusterManager(object):
             Minimum amount of memory for the cluster
         maximum_memory: str
             Maximum amount of memory for the cluster
+        wait_until_n: int
+            Blocking sleep until we have this many active workers
         Examples
         --------
         >>> cluster.adapt(minimum=0, maximum=10, interval='500ms')
@@ -122,6 +131,7 @@ class ClusterManager(object):
                 kwargs['maximum'] = self._get_nb_workers_from_memory(maximum_memory)
         self._adaptive_options.update(kwargs)
         self._adaptive = Adaptive(self.scheduler, self, **self._adaptive_options)
+        self.sleep_until_n_workers(wait_until_n)
         return self._adaptive
 
     @property
@@ -173,7 +183,7 @@ class ClusterManager(object):
                 self.scale_down(to_close, n)
             self._target_scale = n
 
-    def scale(self, n=None, cores=None, memory=None):
+    def scale(self, n=None, cores=None, memory=None, wait_until_n=0):
         """ Scale cluster to n workers or to the given number of cores or
         memory
         number of cores and memory are converted into number of workers using
@@ -186,6 +196,8 @@ class ClusterManager(object):
             Target number of cores
         memory: str
             Target amount of available memory
+        wait_until_n: int
+            Blocking sleep until we have this many active workers
         Example
         -------
         >>> cluster.scale(10)  # scale cluster to ten workers
@@ -200,6 +212,7 @@ class ClusterManager(object):
         # TODO we should not rely on scheduler loop here, self should have its
         # own loop
         self.scheduler.loop.add_callback(self._scale, n, cores, memory)
+        self.sleep_until_n_workers(wait_until_n)
 
     def _widget_status(self):
         workers = len(self.scheduler.workers)
