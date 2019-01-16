@@ -19,6 +19,9 @@ def sleep_abit(x):
 
 
 def test_debug_gather():
+    """
+    this test is now working
+    """
     d = DEBUGCluster(cores=1, memory="1gb", extra=["--no-nanny", "--no-bokeh"])
     d.adapt(minimum=3, maximum=3)
     # d.scale(3)
@@ -47,6 +50,47 @@ def test_debug_gather():
 
     assert len(final_ret) == 10
     c.close()
+
+
+async def _a_g_main():
+    d = DEBUGCluster(cores=1, memory="1gb", extra=["--no-nanny", "--no-bokeh"])
+    d.adapt(minimum=3, maximum=3)
+    # d.scale(3)
+    c = await Client(d, asynchronous=True)
+
+    while len(c._scheduler_identity["workers"]) < 3:
+        await asyncio.sleep(1)
+
+    ret = c.map(lambda x: sleep_abit(x), list(range(10)))
+
+    await asyncio.sleep(1.2)
+
+    old_pids = []
+    for k, v in c._scheduler_identity["workers"].items():
+        pid = int(v['id'].split('--')[-2])
+        old_pids.append(pid)
+        subprocess.call("kill -9 {}".format(pid), shell=True)
+
+    not_done_count = sum([1 for task in ret if task.status == 'pending'])
+    assert not_done_count == 7
+
+    final_ret = await asyncio.gather(*ret)
+    new_pids = []
+    for k, v in c._scheduler_identity["workers"].items():
+        pid = int(v['id'].split('--')[-2])
+        new_pids.append(pid)
+    for pid in new_pids:
+        assert pid not in old_pids
+    assert len(final_ret) == 10
+    c.close()
+
+
+def test_async_gather():
+    """
+    this test is now working
+    """
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(_a_g_main())
 
 
 def test_debug_non_async():
@@ -129,46 +173,6 @@ async def _a_c_main():
 def test_async_as_completed():
     loop = asyncio.get_event_loop()
     loop.run_until_complete(_a_c_main())
-
-
-async def _a_g_main():
-    d = DEBUGCluster(cores=1, memory="1gb", extra=["--no-nanny", "--no-bokeh"])
-    d.adapt(minimum=3, maximum=3)
-    # d.scale(3)
-    c = await Client(d, asynchronous=True)
-
-    while len(c._scheduler_identity["workers"]) < 3:
-        await asyncio.sleep(1)
-
-    print("finally")
-    print(c._scheduler_identity)
-
-    ret = c.map(lambda x: sleep_abit(x), list(range(10)))
-    # proc = psutil.Process().pid
-    print("THIS IS", psutil.Process())
-
-    subprocess.run("ps -u $USER", shell=True)
-    gather_task = asyncio.ensure_future(asyncio.gather(*ret))
-    await asyncio.sleep(1.2)
-
-    for k, v in c._scheduler_identity["workers"].items():
-        pid = int(v['id'].split('--')[-2])
-        print("killing pid", pid)
-        subprocess.call("kill -15 {}".format(pid), shell=True)
-
-    await asyncio.sleep(3)
-
-    print(c._scheduler_identity)
-
-    ret = await gather_task
-    print(ret)
-
-    c.close()
-
-
-def test_async_gather():
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(_a_g_main())
 
 
 # not sure
