@@ -15,6 +15,9 @@ from distributed.scheduler import KilledWorker
 
 
 class possible_async_as_completed:
+    """
+    I'm now not convinced this is necessary and was probably a waste of time :(
+    """
     def __init__(self, futures: typing.List['future or task'],
                  done: asyncio.Queue = None, todo: set = None,
                  loop: 'loop' = None, timeout: int = None):
@@ -107,6 +110,9 @@ def sleep_abit(x):
 
 
 def main():
+    """
+    this function currently doesn't work
+    """
     d = DEBUGCluster(cores=1, memory="1gb", extra=["--no-nanny", "--no-bokeh"])
     # d.adapt(minimum=3, maximum=3)
     d.scale(3)
@@ -138,12 +144,21 @@ def main():
                 for k, v in c._scheduler_identity["workers"].items():
                     pid = int(v['id'].split('--')[-2])
                     subprocess.call("kill -15 {}".format(pid), shell=True)
+        # result = ret.result()
+        # print("result", result)
+        # count += 1
+        # if count == 3:
+        #     for k, v in c._scheduler_identity["workers"].items():
+        #         pid = int(v['id'].split('--')[-2])
+        #         subprocess.call("kill -15 {}".format(pid), shell=True)
     assert count == 10
 
     c.close()
 
 
 async def a_c_main():
+    """I think this currently works... but i'm not convinced it's bulletproof
+    """
     d = DEBUGCluster(cores=1, memory="1gb", extra=["--no-nanny", "--no-bokeh"])
     d.adapt(minimum=3, maximum=3)
     # d.scale(3)
@@ -162,19 +177,29 @@ async def a_c_main():
     count = 0
     subprocess.run("ps -u $USER", shell=True)
     work_queue = as_completed(ret)
-    for ret in work_queue:
-        try:
-            result = await ret
-        except KilledWorker:
-            c.retry([ret])
-            work_queue.add(ret)
-        else:
-            print("result", result)
-            count += 1
-            if count == 3:
-                for k, v in c._scheduler_identity["workers"].items():
-                    pid = int(v['id'].split('--')[-2])
-                    subprocess.call("kill -15 {}".format(pid), shell=True)
+    # you must use async for for async functions
+    async for ret in work_queue:
+        result = await ret
+        print("result", result)
+        count += 1
+        if count == 3:
+            for k, v in c._scheduler_identity["workers"].items():
+                pid = int(v['id'].split('--')[-2])
+                subprocess.call("kill -15 {}".format(pid), shell=True)
+                print("killing worker", pid)
+        # try:
+        #     result = await ret
+        # except KilledWorker:
+        #     c.retry([ret])
+        #     work_queue.add(ret)
+        # else:
+        #     print("result", result)
+        #     count += 1
+        #     if count == 3:
+        #         for k, v in c._scheduler_identity["workers"].items():
+        #             pid = int(v['id'].split('--')[-2])
+        #             subprocess.call("kill -15 {}".format(pid), shell=True)
+        #             print("killing worker", pid)
     assert count == 10
 
     c.close()

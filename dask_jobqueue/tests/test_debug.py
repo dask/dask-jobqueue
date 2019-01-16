@@ -13,14 +13,40 @@ from distributed import Client, as_completed, LocalCluster
 from distributed.scheduler import KilledWorker
 
 
-@gen.coroutine
-def sleepy():
-    yield gen.sleep(1)
-
-
 def sleep_abit(x):
     time.sleep(1)
     return x+10
+
+
+def test_debug_gather():
+    d = DEBUGCluster(cores=1, memory="1gb", extra=["--no-nanny", "--no-bokeh"])
+    d.adapt(minimum=3, maximum=3)
+    # d.scale(3)
+    c = Client(d)
+
+    while len(c._scheduler_identity["workers"]) < 3:
+        continue
+
+    ret = c.map(lambda x: sleep_abit(x), list(range(10)))
+    time.sleep(1.2)
+    old_pids = []
+    for k, v in c._scheduler_identity["workers"].items():
+        pid = int(v['id'].split('--')[-2])
+        old_pids.append(pid)
+        subprocess.call("kill -9 {}".format(pid), shell=True)
+    not_done_count = sum([1 for task in ret if task.status == 'pending'])
+    assert not_done_count == 7
+
+    final_ret = c.gather(ret)
+    new_pids = []
+    for k, v in c._scheduler_identity["workers"].items():
+        pid = int(v['id'].split('--')[-2])
+        new_pids.append(pid)
+    for pid in new_pids:
+        assert pid not in old_pids
+
+    assert len(final_ret) == 10
+    c.close()
 
 
 def test_debug_non_async():
@@ -30,7 +56,7 @@ def test_debug_non_async():
     c = Client(d)
 
     while len(c._scheduler_identity["workers"]) < 3:
-        sleepy()
+        continue
 
     print("finally")
     print(c._scheduler_identity)
@@ -43,18 +69,26 @@ def test_debug_non_async():
     subprocess.run("ps -u $USER", shell=True)
     work_queue = as_completed(ret)
     for ret in work_queue:
-        try:
-            result = ret.result()
-        except KilledWorker:
-            c.retry([ret])
-            work_queue.add(ret)
-        else:
-            print("result", result)
-            count += 1
-            if count == 3:
-                for k, v in c._scheduler_identity["workers"].items():
-                    pid = int(v['id'].split('--')[-2])
-                    subprocess.call("kill -15 {}".format(pid), shell=True)
+        result = ret.result()
+        print("result", result)
+        count += 1
+        if count == 3:
+            for k, v in c._scheduler_identity["workers"].items():
+                pid = int(v['id'].split('--')[-2])
+                subprocess.call("kill -15 {}".format(pid), shell=True)
+        # This still fails, but keep around just for checking
+        # try:
+        #     result = ret.result()
+        # except KilledWorker:
+        #     c.retry([ret])
+        #     work_queue.add(ret)
+        # else:
+        #     print("result", result)
+        #     count += 1
+        #     if count == 3:
+        #         for k, v in c._scheduler_identity["workers"].items():
+        #             pid = int(v['id'].split('--')[-2])
+        #             subprocess.call("kill -15 {}".format(pid), shell=True)
 
     assert count == 10
 
@@ -80,19 +114,13 @@ async def _a_c_main():
     count = 0
     subprocess.run("ps -u $USER", shell=True)
     work_queue = as_completed(ret)
-    for ret in work_queue:
-        try:
-            result = await ret
-        except KilledWorker:
-            c.retry([ret])
-            work_queue.add(ret)
-        else:
-            print("result", result)
-            count += 1
-            if count == 3:
-                for k, v in c._scheduler_identity["workers"].items():
-                    pid = int(v['id'].split('--')[-2])
-                    subprocess.call("kill -15 {}".format(pid), shell=True)
+    async for ret in work_queue:
+        await ret
+        count += 1
+        if count == 3:
+            for k, v in c._scheduler_identity["workers"].items():
+                pid = int(v['id'].split('--')[-2])
+                subprocess.call("kill -15 {}".format(pid), shell=True)
     assert count == 10
 
     c.close()
