@@ -34,10 +34,9 @@ class DEBUGCluster(JobQueueCluster):
     # Override class variables
     submit_command = 'python '
     cancel_command = 'kill '
-    scheduler_name = 'debug'
 
-    def __init__(self, **kwargs):
-        super(DEBUGCluster, self).__init__(**kwargs)
+    def __init__(self, config_name='debug', **kwargs):
+        super(DEBUGCluster, self).__init__(config_name=config_name, **kwargs)
         if "python" not in self.shebang:
             self.shebang = "#!/usr/bin/env python"
         og_cmd_template = self._command_template
