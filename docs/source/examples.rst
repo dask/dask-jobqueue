@@ -57,7 +57,7 @@ On systems which use SGE as the scheduler, ``SGECluster`` can be used.
 
 SGE systems have a lot of flexibility in how they are configured, hence it is not possible to use the ``memory`` keyword argument to automatically specify the amount of RAM requested. Instead, you specify the resources desired according to how your system is configured, using the ``resource_spec`` keyword argument, in addition to the ``memory`` keyword argument (which is used by Dask internally for memory management).
 
-In the example below, our system administrator has used the ``m_mem_free`` keyword argument to let us request for RAM. At the same time, we must also correctly specify the ``memory`` keyword argument, to enable Dask's memory management to do its work correctly.
+In the example below, our system administrator has used the ``m_mem_free`` keyword argument to let us request for RAM. Other known keywords may include ``h_vmem`` and ``mem_free``. We had to check with our cluster documentation and/or system administrator for this. At the same time, we must also correctly specify the ``memory`` keyword argument, to enable Dask's memory management to do its work correctly.
 
 .. code-block:: python
 
