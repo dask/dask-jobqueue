@@ -45,7 +45,7 @@ class SGECluster(JobQueueCluster):
     cancel_command = 'qdel'
 
     def __init__(self, queue=None, project=None, resource_spec=None, walltime=None,
-                 config_name='sge', **kwargs):
+                 config_name='sge', use_job_arrays=True, **kwargs):
         if queue is None:
             queue = dask.config.get('jobqueue.%s.queue' % config_name)
         if project is None:
@@ -56,6 +56,10 @@ class SGECluster(JobQueueCluster):
             walltime = dask.config.get('jobqueue.%s.walltime' % config_name)
 
         super(SGECluster, self).__init__(config_name=config_name, **kwargs)
+
+        # Use job arrays?
+        # Revert to separate jobs if 'SGE_TASK_ID' is not defined
+        self.use_job_arrays = use_job_arrays and bool(os.getenv('SGE_TASK_ID', None))
 
         header_lines = []
         if self.name is not None:
@@ -71,6 +75,9 @@ class SGECluster(JobQueueCluster):
         if self.log_directory is not None:
             header_lines.append('#$ -e %(log_directory)s/')
             header_lines.append('#$ -o %(log_directory)s/')
+        if self.use_job_arrays:
+            header_lines.append('JOB_ID=${JOB_ID}.${SGE_TASK_ID}')
+            header_lines.append('#$ -t 1-%(num_jobs_placeholder)s')
         header_lines.extend(['#$ -cwd', '#$ -j y'])
         header_template = '\n'.join(header_lines)
 
@@ -80,12 +87,13 @@ class SGECluster(JobQueueCluster):
                   'processes': self.worker_processes,
                   'walltime': walltime,
                   'resource_spec': resource_spec,
-                  'log_directory': self.log_directory}
+                  'log_directory': self.log_directory,
+                  'num_jobs_placeholder': '%(num_jobs)d'}
         self.job_header = header_template % config
 
         logger.debug("Job script: \n %s" % self.job_script())
 
-    def start_workers(self, n=1, ta=True):
+    def start_workers(self, n=1):
         """
         Start workers as a task array
 
@@ -93,33 +101,25 @@ class SGECluster(JobQueueCluster):
         ----------
         n : int
             Total number of workers to start
-        ta : bool
-            If true, try to use task arrays
         """
+
+        if not self.use_job_arrays:
+            logging.debug('submission using job ids')
+            return super(SGECluster, self).start_workers(n=n)
+
+        logging.debug('submission using task array')
         logger.debug('starting %s workers', n)
 
-        # Check if Task arrays can be used
-        ta = ta and bool(os.getenv('SGE_TASK_ID', None))
-
-        if ta:
-            logging.debug('Submission using task array')
-            _original_command_template = self._command_template
-            self._command_template = self._command_template.replace('${JOB_ID}', '${JOB_ID}.${SGE_TASK_ID}')
-
-            num_jobs = int(math.ceil(n / self.worker_processes))
-            header_template = self.job_header
-            self.job_header = header_template + '\n#$ -t 1-{}'.format(num_jobs)
-            with self.job_file() as fn:
-                out = self._submit_job(fn)
-                job = self._job_id_from_submit_output(out)
-                if not job:
-                    raise ValueError('Unable to parse jobid from output of %s' % out)
-                logger.debug("started job: %s", job)
-            logger.debug("Adding tasks to list of pending jobs")
-            for task in range(1, num_jobs + 1):
-                self.pending_jobs['{}.{}'.format(job, task)] = {}
-            self.job_header = header_template
-            self._command_template = _original_command_template
-        else:
-            logging.debug('Submission using job ids')
-            super(SGECluster, self).start_workers(n=n)
+        num_jobs = int(math.ceil(n / self.worker_processes))
+        old_job_header = self.job_header
+        self.job_header = old_job_header % {'num_jobs': num_jobs}
+        with self.job_file() as fn:
+            out = self._submit_job(fn)
+            job = self._job_id_from_submit_output(out)
+            if not job:
+                raise ValueError('Unable to parse jobid from output of %s' % out)
+            logger.debug("started job: %s", job)
+        logger.debug("Adding tasks to list of pending jobs")
+        for task in range(1, num_jobs + 1):
+            self.pending_jobs['{}.{}'.format(job, task)] = {}
+        self.job_header = old_job_header
