@@ -18,7 +18,7 @@ from . import QUEUE_WAIT
 
 @pytest.mark.env("sge")  # noqa: F811
 def test_basic(loop):  # noqa: F811
-    with SGECluster(walltime=QUEUE_WAIT * 2, cores=8, processes=4, memory='2GB', loop=loop) as cluster:
+    with SGECluster(walltime=QUEUE_WAIT, cores=8, processes=4, memory='2GB', loop=loop) as cluster:
         print(cluster.job_script())
         with Client(cluster, loop=loop) as client:
 
@@ -87,6 +87,7 @@ def check_cluster_status(cluster):
     logging.info('Scheduler workers: %s' % scheduler_workers)
     len_scheduler_workers = len(scheduler_workers)
 
+    logging.debug('Expected values: %d %d %d' % (len_expected_jids, len_unique_jids, len_scheduler_workers))
     return len_expected_jids, len_unique_jids, len_scheduler_workers
 
 
@@ -94,114 +95,104 @@ def check_cluster_status(cluster):
 def test_taskarrays_setup(loop):  # noqa: F811
     # Test starting up one single core
 
-    with SGECluster(walltime=QUEUE_WAIT * 4, cores=1, processes=1, memory='2GB',
+    with SGECluster(walltime=QUEUE_WAIT, cores=1, processes=1, memory='2GB',
                     loop=loop, use_job_arrays=True) as cluster:
-        if os.getenv('SGE_TASK_ID', None):
 
-            cluster.scale(2)
+        cluster.scale(2)
 
-            start = time()
-            while not(cluster.pending_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+        start = time()
+        while not(cluster.pending_jobs):
+            sleep(0.100)
+            assert time() < start + QUEUE_WAIT
 
-            while cluster.pending_jobs:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+        while cluster.pending_jobs:
+            sleep(0.100)
+            assert time() < start + QUEUE_WAIT
 
-            len_expected_jobs, len_unique_jids, len_scheduler_workers = check_cluster_status(cluster)
-            assert len_expected_jobs == 1, \
-                'There should be one unique job registered in the dask cluster.' + \
-                ' Found {}'.format(len_expected_jobs)
-            assert len_scheduler_workers == 2, \
-                'There should be two workers registered in the scheduler.' + \
-                ' Found {}'.format(len_scheduler_workers)
-            assert len_unique_jids == 1, \
-                'There should be one unique job running on SGE.' + \
-                ' Found {}'.format(len_unique_jids)
-
-        else:
-            logging.info('Submission without task array. Skipped')
+        len_expected_jobs, len_unique_jids, len_scheduler_workers = check_cluster_status(cluster)
+        assert len_expected_jobs == 2, \
+            'There should be two independent jobs registered in the dask cluster.' + \
+            ' Found {}'.format(len_expected_jobs)
+        assert len_scheduler_workers == 2, \
+            'There should be two workers registered in the scheduler.' + \
+            ' Found {}'.format(len_scheduler_workers)
+        assert len_unique_jids == 1, \
+            'There should be one unique job running on SGE.' + \
+            ' Found {}'.format(len_unique_jids)
 
 
 @pytest.mark.env("sge")  # noqa: F811
 def test_taskarrays_scaleup(loop):  # noqa: F811
     # Test adding 5 more job arrays to a cluster with one job running
 
-    with SGECluster(walltime=QUEUE_WAIT * 4, cores=1, processes=1, memory='2GB',
+    with SGECluster(walltime=QUEUE_WAIT, cores=1, processes=1, memory='2GB',
                     loop=loop, use_job_arrays=True) as cluster:
-        if os.getenv('SGE_TASK_ID', None):
 
-            cluster.scale(1)
+        cluster.scale(1)
 
-            start = time()
-            while not(cluster.pending_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+        start = time()
+        while not(cluster.pending_jobs):
+            sleep(0.100)
+            assert time() < start + QUEUE_WAIT
 
-            while cluster.pending_jobs:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+        while cluster.pending_jobs:
+            sleep(0.100)
+            assert time() < start + QUEUE_WAIT
 
-            cluster.scale(6)
+        cluster.scale(6)
 
-            while not(cluster.pending_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+        while not(cluster.pending_jobs):
+            sleep(0.100)
+            assert time() < start + QUEUE_WAIT
 
-            while cluster.pending_jobs:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+        while cluster.pending_jobs:
+            sleep(0.100)
+            assert time() < start + QUEUE_WAIT
 
-            len_expected_jobs, len_unique_jids, len_scheduler_workers = check_cluster_status(cluster)
-            assert len_expected_jobs == 6, \
-                'There should be six unique jobs registered in the dask cluster.' + \
-                ' Found {}'.format(len_expected_jobs)
-            assert len_scheduler_workers == 6, \
-                'There should be six workers registered in the scheduler.' + \
-                ' Found {}'.format(len_scheduler_workers)
-            assert len_unique_jids == 2, \
-                'There should be two unique jobs running on SGE.' + \
-                ' Found {}'.format(len_unique_jids)
-        else:
-            logging.info('Submission without task array. Skipped')
+        len_expected_jobs, len_unique_jids, len_scheduler_workers = check_cluster_status(cluster)
+        assert len_expected_jobs == 6, \
+            'There should be six unique jobs registered in the dask cluster.' + \
+            ' Found {}'.format(len_expected_jobs)
+        assert len_scheduler_workers == 6, \
+            'There should be six workers registered in the scheduler.' + \
+            ' Found {}'.format(len_scheduler_workers)
+        assert len_unique_jids == 2, \
+            'There should be two unique jobs running on SGE.' + \
+            ' Found {}'.format(len_unique_jids)
 
 
 @pytest.mark.env("sge")  # noqa: F811
 def test_taskarrays_scaledown(loop):  # noqa: F811
     # Test scaling down and closing all task arrays
-    with SGECluster(walltime=QUEUE_WAIT * 4, cores=1, processes=1, memory='2GB',
+    with SGECluster(walltime=QUEUE_WAIT, cores=1, processes=1, memory='2GB',
                     loop=loop, use_job_arrays=True) as cluster:
-        if os.getenv('SGE_TASK_ID', None):
 
-            cluster.scale(1)
+        cluster.scale(1)
 
-            start = time()
-            while not(cluster.pending_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+        start = time()
+        while not(cluster.pending_jobs):
+            sleep(0.100)
+            assert time() < start + QUEUE_WAIT
 
-            while cluster.pending_jobs:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+        while cluster.pending_jobs:
+            sleep(0.100)
+            assert time() < start + QUEUE_WAIT
 
-            cluster.scale(0)
+        cluster.scale(0)
 
-            while cluster.running_jobs:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-            # Wait for SGE to delete the job from its queue
-            sleep(2)
+        while cluster.running_jobs:
+            sleep(0.100)
+            assert time() < start + QUEUE_WAIT
+        # Wait for SGE to delete the job from its queue
+        sleep(2)
 
-            len_expected_jobs, len_unique_jids, len_scheduler_workers = check_cluster_status(cluster)
-            assert len_expected_jobs == 0, \
-                'There should be no more unique jobs registered in the dask cluster.' + \
-                ' Found {}'.format(len_expected_jobs)
-            assert len_scheduler_workers == 0, \
-                'There should be no more workers registered in the scheduler.' + \
-                ' Found {}'.format(len_scheduler_workers)
-            assert len_unique_jids == 0, \
-                'There should be no more jobs running on SGE.' + \
-                ' Found {}'.format(len_unique_jids)
-        else:
-            logging.info('Submission without task array. Skipped')
+        len_expected_jobs, len_unique_jids, len_scheduler_workers = check_cluster_status(cluster)
+        assert len_expected_jobs == 0, \
+            'There should be no more unique jobs registered in the dask cluster.' + \
+            ' Found {}'.format(len_expected_jobs)
+        assert len_scheduler_workers == 0, \
+            'There should be no more workers registered in the scheduler.' + \
+            ' Found {}'.format(len_scheduler_workers)
+        assert len_unique_jids == 0, \
+            'There should be no more jobs running on SGE.' + \
+            ' Found {}'.format(len_unique_jids)

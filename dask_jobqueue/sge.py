@@ -57,9 +57,7 @@ class SGECluster(JobQueueCluster):
 
         super(SGECluster, self).__init__(config_name=config_name, **kwargs)
 
-        # Use job arrays?
-        # Revert to separate jobs if 'SGE_TASK_ID' is not defined
-        self.use_job_arrays = use_job_arrays and bool(os.getenv('SGE_TASK_ID', None))
+        self.use_job_arrays = use_job_arrays
 
         header_lines = []
         if self.name is not None:
