@@ -18,7 +18,7 @@ from . import QUEUE_WAIT
 
 @pytest.mark.env("sge")  # noqa: F811
 def test_basic(loop):  # noqa: F811
-    with SGECluster(walltime=QUEUE_WAIT, cores=8, processes=4, memory='2GB', loop=loop) as cluster:
+    with SGECluster(walltime=QUEUE_WAIT * 2, cores=8, processes=4, memory='2GB', loop=loop) as cluster:
         print(cluster.job_script())
         with Client(cluster, loop=loop) as client:
 
@@ -95,7 +95,7 @@ def check_cluster_status(cluster):
 def test_taskarrays_setup(loop):  # noqa: F811
     # Test starting up one single core
 
-    with SGECluster(walltime=QUEUE_WAIT, cores=1, processes=1, memory='2GB',
+    with SGECluster(walltime=QUEUE_WAIT * 2, cores=1, processes=1, memory='2GB',
                     loop=loop, use_job_arrays=True) as cluster:
 
         cluster.scale(2)
@@ -125,7 +125,7 @@ def test_taskarrays_setup(loop):  # noqa: F811
 def test_taskarrays_scaleup(loop):  # noqa: F811
     # Test adding 5 more job arrays to a cluster with one job running
 
-    with SGECluster(walltime=QUEUE_WAIT, cores=1, processes=1, memory='2GB',
+    with SGECluster(walltime=QUEUE_WAIT * 2, cores=1, processes=1, memory='2GB',
                     loop=loop, use_job_arrays=True) as cluster:
 
         cluster.scale(1)
@@ -164,7 +164,7 @@ def test_taskarrays_scaleup(loop):  # noqa: F811
 @pytest.mark.env("sge")  # noqa: F811
 def test_taskarrays_scaledown(loop):  # noqa: F811
     # Test scaling down and closing all task arrays
-    with SGECluster(walltime=QUEUE_WAIT, cores=1, processes=1, memory='2GB',
+    with SGECluster(walltime=QUEUE_WAIT * 2, cores=1, processes=1, memory='2GB',
                     loop=loop, use_job_arrays=True) as cluster:
 
         cluster.scale(1)
