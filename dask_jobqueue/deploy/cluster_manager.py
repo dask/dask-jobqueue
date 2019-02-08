@@ -84,9 +84,9 @@ class ClusterManager(object):
         self._adaptive_options = adaptive_options
         self._adaptive_options.setdefault('worker_key', self.worker_key)
 
-    def sleep_until_n_workers(self, n):
+    def wait_until_n_workers(self, n):
         '''Block by sleeping until we have n active workers'''
-        while self._count_active_workers() < n:
+        while len(self.scheduler.workers) < n:
             time.sleep(1)
 
     def adapt(self, minimum_cores=None, maximum_cores=None,
@@ -131,7 +131,7 @@ class ClusterManager(object):
                 kwargs['maximum'] = self._get_nb_workers_from_memory(maximum_memory)
         self._adaptive_options.update(kwargs)
         self._adaptive = Adaptive(self.scheduler, self, **self._adaptive_options)
-        self.sleep_until_n_workers(wait_until_n)
+        self.wait_until_n_workers(wait_until_n)
         return self._adaptive
 
     @property
@@ -212,7 +212,7 @@ class ClusterManager(object):
         # TODO we should not rely on scheduler loop here, self should have its
         # own loop
         self.scheduler.loop.add_callback(self._scale, n, cores, memory)
-        self.sleep_until_n_workers(wait_until_n)
+        self.wait_until_n_workers(wait_until_n)
 
     def _widget_status(self):
         workers = len(self.scheduler.workers)
