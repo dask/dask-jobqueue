@@ -119,6 +119,19 @@ def test_basic(loop):
 
 
 @pytest.mark.env("slurm")  # noqa: F811
+def test_wait_until_n(loop):
+    with SLURMCluster(walltime='00:02:00', cores=2, processes=1, memory='2GB',
+                      job_extra=['-D /'], loop=loop) as cluster:
+        cluster.adapt(minimum=2, wait_until_n=2)
+        assert len(cluster.scheduler.workers) == 2
+
+    with SLURMCluster(walltime='00:02:00', cores=2, processes=1, memory='2GB',
+                      job_extra=['-D /'], loop=loop) as cluster:
+        cluster.scale(2, wait_until_n=2)
+        assert len(cluster.scheduler.workers) == 2
+
+
+@pytest.mark.env("slurm")  # noqa: F811
 def test_adaptive(loop):
     with SLURMCluster(walltime='00:02:00', cores=2, processes=1, memory='2GB',
                       job_extra=['-D /'], loop=loop) as cluster:
