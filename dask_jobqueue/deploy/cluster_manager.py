@@ -86,7 +86,7 @@ class ClusterManager(object):
 
     def wait_until_n_workers(self, n):
         '''Block by sleeping until we have n active workers'''
-        while len(self.scheduler.workers) < n:
+        while n and len(self.scheduler.workers) < n:
             time.sleep(1)
 
     def adapt(self, minimum_cores=None, maximum_cores=None,
