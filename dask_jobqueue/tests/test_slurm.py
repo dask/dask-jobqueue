@@ -118,22 +118,6 @@ def test_basic(loop):
 
 
 @pytest.mark.env("slurm")  # noqa: F811
-def test_wait_until_n_adaptive(loop):
-    with SLURMCluster(walltime='00:02:00', cores=2, processes=1, memory='2GB',
-                      job_extra=['-D /'], loop=loop) as cluster:
-        cluster.adapt(minimum=2, wait_until_n=2)
-        assert len(cluster.scheduler.workers) == 2
-
-
-@pytest.mark.env("slurm")  # noqa: F811
-def test_wait_until_n_scale(loop):
-    with SLURMCluster(walltime='00:02:00', cores=2, processes=1, memory='2GB',
-                      job_extra=['-D /'], loop=loop) as cluster:
-        cluster.scale(2, wait_until_n=2)
-        assert len(cluster.scheduler.workers) == 2
-
-
-@pytest.mark.env("slurm")  # noqa: F811
 def test_adaptive(loop):
     with SLURMCluster(walltime='00:02:00', cores=2, processes=1, memory='2GB',
                       job_extra=['-D /'], loop=loop) as cluster:
@@ -162,6 +146,22 @@ def test_adaptive(loop):
                 assert time() < start + QUEUE_WAIT
 
             assert cluster.finished_jobs
+
+
+@pytest.mark.env("slurm")  # noqa: F811
+def test_wait_until_n_adaptive(loop):
+    with SLURMCluster(walltime='00:02:00', cores=2, processes=1, memory='2GB',
+                      job_extra=['-D /'], loop=loop) as cluster:
+        cluster.adapt(minimum=2, wait_until_n=2)
+        assert len(cluster.scheduler.workers) == 2
+
+
+@pytest.mark.env("slurm")  # noqa: F811
+def test_wait_until_n_scale(loop):
+    with SLURMCluster(walltime='00:02:00', cores=2, processes=1, memory='2GB',
+                      job_extra=['-D /'], loop=loop) as cluster:
+        cluster.scale(2, wait_until_n=2)
+        assert len(cluster.scheduler.workers) == 2
 
 
 def test_config_name_slurm_takes_custom_config():
