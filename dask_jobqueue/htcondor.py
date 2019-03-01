@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function
 
 import logging
-import math
 import re
 import shlex
 from collections import OrderedDict
@@ -52,6 +51,8 @@ class HTCondorCluster(JobQueueCluster):
 Arguments = "-c %(worker_command)s"
 
 Executable = /bin/sh
+
+Queue 1
 """
 
     submit_command = "condor_submit"
@@ -119,29 +120,7 @@ Executable = /bin/sh
 
         self._command_template = quote_arguments([self._command_template])
 
-    def _submit_job(self, script_filename, n=1):
-        # -queue n needs to be after the script
-        return self._call(shlex.split(self.submit_command) + [script_filename, "-queue", str(n)])
-
-    def start_workers(self, n=1):
-        """ Start workers and point them to our local scheduler """
-        logger.debug("starting %d workers", n)
-        num_jobs = int(math.ceil(n / self.worker_processes))
-
-        with self.job_file() as fn:
-            out = self._submit_job(fn, num_jobs)
-            clusterid = self._cluster_id_from_submit_output(out)
-            if not clusterid:
-                raise ValueError("Unable to parse clusterid from output of %s" % out)
-            for procid in range(num_jobs):
-                job = "%s.%s" % (clusterid, procid)
-                logger.debug("started job: %s" % job)
-                self.pending_jobs[job] = {}
-
     def _job_id_from_submit_output(self, out):
-        raise NotImplementedError("Submit output does not contain job ids")
-
-    def _cluster_id_from_submit_output(self, out):
         cluster_id_regexp = r"submitted to cluster (\d+)"
         match = re.search(cluster_id_regexp, out)
         if match is None:
@@ -149,7 +128,7 @@ Executable = /bin/sh
                    "Cluster id regexp is {!r}\n"
                    "Submission command output is:\n{}".format(cluster_id_regexp, out))
             raise ValueError(msg)
-        return match.group(1)
+        return "%s.0" % match.group(1)
 
 
 def _double_up_quotes(instr):
