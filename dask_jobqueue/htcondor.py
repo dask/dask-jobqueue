@@ -39,25 +39,23 @@ class HTCondorCluster(JobQueueCluster):
     >>> cluster.adapt(minimum=5, startup_cost='60s')
     """, 4)
 
-    # Executable = /bin/sh because condor changes argv[0] to "condor_exec.exe"
-    # and Python does not handle that well (wrong sys.prefix, wrong paths...)
-    _script_template = """\
+    _script_template = """
 %(shebang)s
 
 %(job_header)s
 
-%(env_header)s
+Environment = "%(quoted_environment)s"
+Arguments = "%(quoted_arguments)s"
+Executable = %(executable)s
+""".lstrip()
 
-Arguments = "-c %(worker_command)s"
-
-Executable = /bin/sh
-
-Queue 1
-"""
-
-    submit_command = "condor_submit"
+    submit_command = "condor_submit -queue 1 -file"
     cancel_command = "condor_rm"
     job_id_regexp = r'(?P<job_id>\d+\.\d+)'
+
+    # condor sets argv[0] of the executable to "condor_exec.exe", which confuses
+    # Python (can't find its libs), so we have to go through the shell.
+    executable = "/bin/sh"
 
     def __init__(self, disk=None, job_extra=None,
                  config_name='htcondor', **kwargs):
@@ -87,9 +85,9 @@ Queue 1
                 if '=' in item:
                     k, v = item.split('=', 1)
                     self.env_dict[k] = v
+        self.env_dict["JOB_ID"] = "$F(MY.JobId)"
 
-        job_header_dict = {
-            "MY.DaskWorkerName": "htcondor--$F(MY.JobId)--",
+        self.job_header_dict = {
             "MY.DaskWorkerName": '"htcondor--$F(MY.JobId)--"',
             "RequestCpus": "MY.DaskWorkerCores",
             "RequestMemory": "floor(MY.DaskWorkerMemory / 1048576)",
@@ -100,7 +98,7 @@ Queue 1
             "MY.DaskWorkerDisk": self.worker_disk,
         }
         if self.log_directory:
-            job_header_dict.update({
+            self.job_header_dict.update({
                 "LogDirectory": self.log_directory,
                 # $F(...) strips quotes
                 "Output": "$(LogDirectory)/worker-$F(MY.JobId).out",
@@ -112,13 +110,25 @@ Queue 1
                 "Stream_Error": True,
             })
         if self.job_extra:
-            job_header_dict.update(self.job_extra)
+            self.job_header_dict.update(self.job_extra)
 
-        self.job_header = "\n".join("%s = %s" % (k, v) for k, v in job_header_dict.items())
+        self.make_job_header()
 
-        self._env_header = 'Environment = "JOB_ID=$F(MY.JobId) %s"' % quote_environment(self.env_dict)
+    def make_job_header(self):
+        """ The string version of the submit file attributes """
+        self.job_header = "\n".join("%s = %s" % (k, v) for k, v in self.job_header_dict.items())
 
-        self._command_template = quote_arguments([self._command_template])
+    def job_script(self):
+        """ Construct a job submission script """
+        quoted_arguments = quote_arguments(["-c", self._command_template])
+        quoted_environment = quote_environment(self.env_dict)
+        return self._script_template % {
+            'shebang': self.shebang,
+            'job_header': self.job_header,
+            'quoted_environment': quoted_environment,
+            'quoted_arguments': quoted_arguments,
+            'executable': self.executable,
+        }
 
     def _job_id_from_submit_output(self, out):
         cluster_id_regexp = r"submitted to cluster (\d+)"
