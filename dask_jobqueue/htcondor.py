@@ -75,16 +75,7 @@ Executable = %(executable)s
         env_extra = kwargs.get("env_extra", None)
         if env_extra is None:
             env_extra = dask.config.get("jobqueue.%s.env-extra" % config_name, default=[])
-        # env_extra is an array of export statements -- turn it into a dict
-        self.env_dict = {}
-        for env_line in env_extra:
-            split_env_line = shlex.split(env_line)
-            if split_env_line[0] == "export":
-                split_env_line = split_env_line[1:]
-            for item in split_env_line:
-                if '=' in item:
-                    k, v = item.split('=', 1)
-                    self.env_dict[k] = v
+        self.env_dict = self.env_lines_to_dict(env_extra)
         self.env_dict["JOB_ID"] = "$F(MY.JobId)"
 
         self.job_header_dict = {
@@ -112,6 +103,18 @@ Executable = %(executable)s
         if self.job_extra:
             self.job_header_dict.update(self.job_extra)
 
+    def env_lines_to_dict(self, env_lines):
+        """ Convert an array of export statements (what we get from env-extra
+        in the config) into a dict """
+        env_dict = {}
+        for env_line in env_lines:
+            split_env_line = shlex.split(env_line)
+            if split_env_line[0] == "export":
+                split_env_line = split_env_line[1:]
+            for item in split_env_line:
+                if '=' in item:
+                    k, v = item.split('=', 1)
+                    env_dict[k] = v
         self.make_job_header()
 
     def make_job_header(self):
