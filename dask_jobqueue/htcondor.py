@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function
 import logging
 import re
 import shlex
-from collections import OrderedDict
 
 import dask
 from distributed.utils import parse_bytes
@@ -195,6 +194,7 @@ def quote_environment(env):
 
     Examples
     --------
+    >>> from collections import OrderedDict
     >>> quote_environment(OrderedDict([("one", 1), ("two", '"2"'), ("three", "spacey 'quoted' value")]))
     'one=1 two=""2"" three=\'spacey \'\'quoted\'\' value\''
     """
