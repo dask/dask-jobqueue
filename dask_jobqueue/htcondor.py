@@ -115,19 +115,15 @@ Executable = %(executable)s
                 if '=' in item:
                     k, v = item.split('=', 1)
                     env_dict[k] = v
-        self.make_job_header()
-
-    def make_job_header(self):
-        """ The string version of the submit file attributes """
-        self.job_header = "\n".join("%s = %s" % (k, v) for k, v in self.job_header_dict.items())
 
     def job_script(self):
         """ Construct a job submission script """
         quoted_arguments = quote_arguments(["-c", self._command_template])
         quoted_environment = quote_environment(self.env_dict)
+        job_header_lines = "\n".join("%s = %s" % (k, v) for k, v in self.job_header_dict.items())
         return self._script_template % {
             'shebang': self.shebang,
-            'job_header': self.job_header,
+            'job_header': job_header_lines,
             'quoted_environment': quoted_environment,
             'quoted_arguments': quoted_arguments,
             'executable': self.executable,
