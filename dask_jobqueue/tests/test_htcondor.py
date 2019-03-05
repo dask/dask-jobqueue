@@ -15,14 +15,9 @@ QUEUE_WAIT = 30  # seconds
 
 def test_header():
     with HTCondorCluster(cores=1, memory='100MB', disk='100MB') as cluster:
-        job_header = cluster.job_header
-        assert 'RequestCpus = MY.DaskWorkerCores' in job_header
-        assert 'RequestDisk = floor(MY.DaskWorkerDisk / 1024)' in job_header
-        assert 'RequestMemory = floor(MY.DaskWorkerMemory / 1048576)' in job_header
-        assert 'MY.DaskWorkerCores = 1' in job_header
-        assert 'MY.DaskWorkerDisk = 100000000' in job_header
-        assert 'MY.DaskWorkerMemory = 100000000' in job_header
-        assert 'MY.JobId = "$(ClusterId).$(ProcId)"' in job_header
+        assert cluster.job_header_dict['MY.DaskWorkerCores'] == 1
+        assert cluster.job_header_dict['MY.DaskWorkerDisk'] == 100000000
+        assert cluster.job_header_dict['MY.DaskWorkerMemory'] == 100000000
 
 
 def test_job_script():
@@ -31,6 +26,13 @@ def test_job_script():
                                     'export LC_ALL="en_US.utf8"'],
                          job_extra={'+Extra': "True"}) as cluster:
         job_script = cluster.job_script()
+        assert 'RequestCpus = MY.DaskWorkerCores' in job_script
+        assert 'RequestDisk = floor(MY.DaskWorkerDisk / 1024)' in job_script
+        assert 'RequestMemory = floor(MY.DaskWorkerMemory / 1048576)' in job_script
+        assert 'MY.DaskWorkerCores = 4' in job_script
+        assert 'MY.DaskWorkerDisk = 100000000' in job_script
+        assert 'MY.DaskWorkerMemory = 100000000' in job_script
+        assert 'MY.JobId = "$(ClusterId).$(ProcId)"' in job_script
         assert 'LANG=en_US.utf8' in job_script
         assert 'LC_ALL=en_US.utf8' in job_script
         assert 'JOB_ID=$F(MY.JobId)' in job_script
