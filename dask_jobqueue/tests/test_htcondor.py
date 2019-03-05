@@ -63,7 +63,7 @@ def test_basic(loop):
 
             workers = list(client.scheduler_info()['workers'].values())
             w = workers[0]
-            assert w['memory_limit'] == 1e6
+            assert w['memory_limit'] == 1e8
             assert w['ncores'] == 1
 
             cluster.scale(0)
