@@ -114,6 +114,7 @@ Executable = %(executable)s
                 if '=' in item:
                     k, v = item.split('=', 1)
                     env_dict[k] = v
+        return env_dict
 
     def job_script(self):
         """ Construct a job submission script """
