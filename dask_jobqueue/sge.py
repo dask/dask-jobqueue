@@ -31,7 +31,7 @@ class SGECluster(JobQueueCluster):
     walltime : str
         Walltime for each worker job.
     job_extra : list
-        List of other SGE options, for example -2. Each option will be
+        List of other SGE options, for example -w. Each option will be
         prepended with the #$ prefix.
     %(JobQueueCluster.parameters)s
 
