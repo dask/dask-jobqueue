@@ -124,7 +124,7 @@ San Diego Supercomputer Center's `Comet cluster <https://www.sdsc.edu/support/us
 
        # Dask worker options
        cores: 24                   # Total number of cores per job
-       memory: 125GB               # Total amount of memory per job (total 128GB per node)
+       memory: 120GB               # Total amount of memory per job (total 128GB per node)
        processes: 1                # Number of Python processes per job
 
        interface: ib0              # Network interface to use like eth0 or ib0
@@ -135,3 +135,4 @@ San Diego Supercomputer Center's `Comet cluster <https://www.sdsc.edu/support/us
        queue: compute
        # project: xxxxxxx # choose project other than default
        walltime: '00:30:00'
+       job-mem: 120GB              # Max memory that can be requested to SLURM
