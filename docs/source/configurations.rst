@@ -115,7 +115,7 @@ SDSC Comet
 ----------
 
 San Diego Supercomputer Center's `Comet cluster <https://www.sdsc.edu/support/user_guides/comet.html>`_, available to US scientists via `XSEDE <https://www.xsede.org/>`_.
-Also, note that port 8787 is open both on login and computing nodes, so you can directly access the `dask` dashboard.
+Also, note that port 8787 is open both on login and computing nodes, so you can directly access Dask's dashboard.
 
 .. code-block:: yaml
 
