@@ -14,9 +14,10 @@ function jobqueue_install {
 
 function jobqueue_script {
   flake8 -j auto dask_jobqueue
+  black --check dask_jobqueue
   py.test --verbose
 }
 
 function jobqueue_after_script {
-    echo "Done."
+  echo "Done."
 }
