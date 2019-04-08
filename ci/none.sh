@@ -5,8 +5,9 @@ function jobqueue_before_install {
   ./ci/conda_setup.sh
   export PATH="$HOME/miniconda/bin:$PATH"
   conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION dask distributed flake8 pytest docrep
-  if [[ "$TRAVIS_PYTHON_VERSION" =~ "^3" ]]; then
-     pip install black
+  # black only available for python 3
+  if [[ "$TRAVIS_PYTHON_VERSION" =~ ^[3-9].+ ]]; then
+    pip install black
   fi
 }
 
@@ -17,7 +18,7 @@ function jobqueue_install {
 
 function jobqueue_script {
   flake8 -j auto dask_jobqueue
-  if [[ "$TRAVIS_PYTHON_VERSION" =~ "^3" ]]; then
+  if [[ "$TRAVIS_PYTHON_VERSION" =~ ^[3-9].+ ]]; then
      black --exclude versioneer.py --check .
   fi
   py.test --verbose
