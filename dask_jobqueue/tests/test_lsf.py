@@ -230,6 +230,7 @@ def test_config_name_lsf_takes_custom_config():
         "memory": "2 GB",
         "walltime": "00:02",
         "job-extra": [],
+        "lsf-units": "TB",
         "name": "myname",
         "processes": 1,
         "interface": None,
