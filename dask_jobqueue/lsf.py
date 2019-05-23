@@ -33,7 +33,7 @@ class LSFCluster(JobQueueCluster):
         prepended with the #LSF prefix.
     lsf_units : str
         Unit system for large units in resource usage set by the 
-        LSF_UNIT_FOR_LIMTS in the lsf.conf file of a cluster.
+        LSF_UNIT_FOR_LIMITS in the lsf.conf file of a cluster.
     %(JobQueueCluster.parameters)s
 
     Examples
