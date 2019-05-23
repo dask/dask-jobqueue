@@ -83,7 +83,7 @@ class LSFCluster(JobQueueCluster):
         if job_extra is None:
             job_extra = dask.config.get("jobqueue.%s.job-extra" % config_name)
         if lsf_units is None:
-            job_extra = dask.config.get("jobqueue.%s.lsf-units" % config_name)
+            lsf_units = dask.config.get("jobqueue.%s.lsf-units" % config_name)
 
         # Instantiate args and parameters from parent abstract class
         super(LSFCluster, self).__init__(config_name=config_name, **kwargs)
@@ -197,6 +197,6 @@ def lsf_detect_units():
             unit = line.split("=")[1].lower()[:2]
             break
     # Trap the lsf.conf does not exist, and the conf file not setup right (i.e. "$VAR=xxx^" regex-form)
-    except (FileNotFoundError, IndexError):
+    except (EnvironmentError, IndexError):
         pass
     return unit
