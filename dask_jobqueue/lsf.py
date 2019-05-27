@@ -32,7 +32,7 @@ class LSFCluster(JobQueueCluster):
         List of other LSF options, for example -u. Each option will be
         prepended with the #LSF prefix.
     lsf_units : str
-        Unit system for large units in resource usage set by the 
+        Unit system for large units in resource usage set by the
         LSF_UNIT_FOR_LIMITS in the lsf.conf file of a cluster.
     %(JobQueueCluster.parameters)s
 
@@ -157,16 +157,8 @@ def lsf_format_bytes_ceil(n, lsf_units="mb"):
     >>> lsf_format_bytes_ceil(1234567890)
     '1235'
     """
-    lsf_units = lsf_units.lower()
-    converter = {
-        "b": 0,
-        "kb": 1,
-        "mb": 2,
-        "gb": 3,
-        "tb": 4,
-        "pb": 5,
-        "eb": 6
-    }
+    lsf_units = lsf_units.lower()[0]
+    converter = {"k": 1, "m": 2, "g": 3, "t": 4, "p": 5, "e": 6, "z": 7}
     return "%d" % math.ceil(n / (1000 ** converter[lsf_units]))
 
 
@@ -185,8 +177,8 @@ def lsf_detect_units():
             if conf_search is not None:
                 conf_dir = conf_search
                 break
-        conf_path = os.path.join(conf_dir, 'lsf.conf')
-        conf_file = open(conf_path, 'r').readlines()
+        conf_path = os.path.join(conf_dir, "lsf.conf")
+        conf_file = open(conf_path, "r").readlines()
         # Reverse order search (in case defined twice, get the one which will actually be processed)
         for line in conf_file[::-1]:
             # Look for very specific line
@@ -194,9 +186,15 @@ def lsf_detect_units():
             if not line.strip().startswith("LSF_UNIT_FOR_LIMITS"):
                 continue
             # Found the line, infer the unit, only first 2 chars after "="
-            unit = line.split("=")[1].lower()[:2]
+            unit = line.split("=")[1].lower()[0]
             break
+        logger.debug(
+            "Setting units to %s from the LSF config file at %s" % (unit, conf_file)
+        )
     # Trap the lsf.conf does not exist, and the conf file not setup right (i.e. "$VAR=xxx^" regex-form)
     except (EnvironmentError, IndexError):
-        pass
+        logger.debug(
+            "Could not find LSF config or config file did not have LSF_UNIT_FOR_LIMITS set. Falling back to "
+            "default unit of %s." % unit
+        )
     return unit
