@@ -337,7 +337,7 @@ class JobQueueCluster(ClusterManager):
         return mem
 
     @property
-    def worker_spec(self):
+    def jobqueue_worker_spec(self):
         """ single worker process info needed for scaling on cores or memory """
         return {
             "cores": self.worker_process_threads,
