@@ -373,7 +373,9 @@ class ClusterManager(object):
         return math.ceil(cores / self.jobqueue_worker_spec["cores"])
 
     def _get_nb_workers_from_memory(self, memory):
-        return math.ceil(parse_bytes(memory) / parse_bytes(self.jobqueue_worker_spec["memory"]))
+        return math.ceil(
+            parse_bytes(memory) / parse_bytes(self.jobqueue_worker_spec["memory"])
+        )
 
     @property
     def jobqueue_worker_spec(self):
