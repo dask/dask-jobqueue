@@ -344,6 +344,11 @@ class JobQueueCluster(ClusterManager):
             "memory": self.worker_process_memory,
         }
 
+    @property
+    def workers(self):
+        """ workers currently connected to the scheduler """
+        return self.scheduler.workers
+
     def job_script(self):
         """ Construct a job submission script """
         pieces = {
