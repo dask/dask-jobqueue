@@ -32,7 +32,12 @@ def test_basic(loop):
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
             assert w["memory_limit"] == 2e9 / 4
-            assert w["nthreads"] == 2
+            if "nthreads" in w:
+                nthreads = "nthreads"
+            else:
+                # for python2
+                nthreads = "ncores"
+            assert w[nthreads] == 2
 
             cluster.scale(0)
 
