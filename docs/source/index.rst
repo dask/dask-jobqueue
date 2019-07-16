@@ -46,7 +46,7 @@ save resources when not actively computing.
 
 More details
 ------------
-A good entry point to know more about how to use ``dask-jobqueue`` is the
+A good entry point to know more about how to use ``dask-jobqueue`` is
 :ref:`talks-and-tutorials`.
 
 .. toctree::
