@@ -6,6 +6,11 @@ Deploy Dask on Job Queueing systems
 Easy deployment of Dask Distributed on job queuing systems such as PBS, Slurm,
 or SGE.  See documentation_ for more information.
 
+A 4 hour ``dask`` and ``dask-jobqueue`` tutorial was presented in July 2019 by
+`@willirath <https://github.com/willirath>`_. Have a look at the `material
+<https://github.com/willirath/dask_jobqueue_workshop_materials>`_ and the
+videos: `part 1 <https://training.e-cam2020.eu/files/5d244ed9e4b0920ffce61cd4>`_
+and `part 2 <https://training.e-cam2020.eu/files/5d244edde4b0920ffce62116>`_.
 
 LICENSE
 -------
