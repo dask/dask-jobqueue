@@ -148,7 +148,7 @@ See `this <https://wwz.ifremer.fr/pcdm/Equipement>`_ (French) or `this
 cluster.
 
 See `this <https://github.com/dask/dask-jobqueue/issues/292>`_ for more details
-about the ``dask-jobqueue`` config.
+about this ``dask-jobqueue`` config.
 
 .. code-block:: yaml
 
@@ -167,19 +167,16 @@ about the ``dask-jobqueue`` config.
        # cores and processes above
        memory: 120GB
        interface: ib0
-       # this may need to be large if many workers are launched to give them time
-       # to connect to the scheduler
-       death_timeout: 900
        # This should be a local disk attach to your worker node and not a network
        # mounted disk. See
        # https://jobqueue.dask.org/en/latest/configuration-setup.html#local-storage
        # for more details.
-       local_directory: $TMPDIR
+       local-directory: $TMPDIR
 
        # PBS resource manager options
        queue: mpi_1
        project: myPROJ
        walltime: '48:00:00'
-       resource_spec: select=1:ncpus=28:mem=120GB
+       resource-spec: select=1:ncpus=28:mem=120GB
        # disable email
-       job_extra: ['-m n']
+       job-extra: ['-m n']
