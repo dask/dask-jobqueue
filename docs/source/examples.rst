@@ -31,6 +31,46 @@ PBS Deployments
                         walltime='02:00:00',
                         interface='ib0')
 
+An example config at Ifremer cluster (see `this
+<https://github.com/dask/dask-jobqueue/issues/292>`_ for more details):
+
+.. code-block:: python
+
+   cluster = PBSCluster(
+       # number of processes and core have to be equal to avoid using multiple
+       # threads in a single dask worker. Using threads can generate netcdf file
+       # access errors.
+       cores=28,
+       processes=28,
+       # this is using all the memory of a single node and corresponds to about
+       # 4GB / dask worker. If you need more memory than this you have to decrease
+       # cores and processes above
+       memory="120GB",
+       interface="ib0",
+       # this may need to be large if many workers are launched to give them time
+       # to connect to the scheduler
+       death_timeout=900,
+       # This should be a local disk attach to your worker node and not a network
+       # mounted disk. See
+       # https://jobqueue.dask.org/en/latest/configuration-setup.html#local-storage
+       # for more details.
+       local_directory="$TMPDIR",
+       # PBS resource manager options
+       queue="mpi_1",
+       project="myPROJ",
+       walltime="48:00:00",
+       resource_spec="select=1:ncpus=28:mem=120GB",
+       # disable email
+       job_extra=["-m n"],
+       # load additional user functions in workers ('extra' arguments get passed
+       # to the dask-worker command running inside each job)
+       extra=[
+           "--preload /home1/datahome/username/mydir/myfile1.py",
+           "--preload /home1/datahome/username/mydir/myfile2.py",
+       ],
+   )
+
+
 Moab Deployments
 ~~~~~~~~~~~~~~~~
 
