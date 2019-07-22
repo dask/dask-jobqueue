@@ -1,3 +1,4 @@
 dask>=1.2.0
-distributed
+distributed>=1.27
 docrep
+pre-commit
