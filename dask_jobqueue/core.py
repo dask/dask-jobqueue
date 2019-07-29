@@ -550,3 +550,7 @@ class JobQueueCluster(ClusterManager):
 
     def worker_key(self, worker_state):
         return _job_id_from_worker_name(worker_state.name)
+
+    @property
+    def scheduler_comm(self):
+        return self.local_cluster.scheduler_comm
