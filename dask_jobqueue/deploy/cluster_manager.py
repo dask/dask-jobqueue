@@ -386,3 +386,7 @@ class ClusterManager(object):
             "attribute, needed for scaling with "
             "cores or memory kwargs.".format(self.__class__.__name__)
         )
+
+    @property
+    def loop(self):
+        return self.scheduler.loop
