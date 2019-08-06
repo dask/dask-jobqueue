@@ -2,7 +2,8 @@ import sys
 from contextlib import contextmanager
 
 import dask
-from distributed.deploy.spec import ProcessInterface
+from distributed.deploy.spec import ProcessInterface, SpecCluster
+from distributed.scheduler import Scheduler
 
 import logging
 import os
@@ -318,3 +319,43 @@ class Job(ProcessInterface):
                 "stderr:\n{}\n".format(proc.returncode, cmd_str, out, err)
             )
         return out
+
+
+def JobQueueCluster(
+        *args,
+        Job : Job = None,
+        n_workers=0,
+        # Cluster keywords
+        loop=None,
+        security=None,
+        silence_logs=False,
+        name=None,
+        asynchronous=False,
+        # Scheduler keywords
+        interface=None,
+        protocol="tcp://",
+        dashboard_address=":8787",
+        # Job keywords
+        **kwargs
+    ):
+    if Job is None:
+        raise ValueError("You must provide a Job type like PBSJob, SLURMJob, "
+                          "or SGEJob with the Job= argument.")
+
+    scheduler = {
+        "cls": Scheduler,  # Use local scheduler for now
+        "options": {
+            "protocol" : protocol,
+            "interface": interface,
+            "dashboard_address": dashboard_address,
+            "security": security,
+        }
+    }
+    kwargs["interface"] = interface
+    kwargs["protocol"] = protocol
+    kwargs["security"] = security
+    worker = {"cls": Job, "options": kwargs}
+
+    return SpecCluster(scheduler=scheduler, worker=worker, loop=loop,
+            silence_logs=silence_logs,
+            asynchronous=asynchronous, name=name)
