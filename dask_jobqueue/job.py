@@ -322,9 +322,8 @@ class Job(ProcessInterface):
 
 
 def JobQueueCluster(
-    *args,
-    Job: Job = None,
     n_workers=0,
+    Job: Job = None,
     # Cluster keywords
     loop=None,
     security=None,
@@ -358,7 +357,7 @@ def JobQueueCluster(
     kwargs["security"] = security
     worker = {"cls": Job, "options": kwargs}
 
-    return SpecCluster(
+    cluster = SpecCluster(
         scheduler=scheduler,
         worker=worker,
         loop=loop,
@@ -366,3 +365,8 @@ def JobQueueCluster(
         asynchronous=asynchronous,
         name=name,
     )
+
+    if n_workers:
+        cluster.scale(n_workers)
+
+    return cluster
