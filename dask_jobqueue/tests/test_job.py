@@ -5,7 +5,7 @@ import pytest
 
 
 def test_basic():
-    job = PBSJob(scheduler="127.0.0.1:12345")
+    job = PBSJob(scheduler="127.0.0.1:12345", cores=1, memory="1 GB")
     assert "127.0.0.1:12345" in job.job_script()
 
 

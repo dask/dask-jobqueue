@@ -4,7 +4,7 @@ function jobqueue_before_install {
   # Install miniconda
   ./ci/conda_setup.sh
   export PATH="$HOME/miniconda/bin:$PATH"
-  conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION dask distributed flake8 pytest docrep
+  conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION dask distributed flake8 pytest docrep pytest-asyncio
   # black only available for python 3
   if [[ "$TRAVIS_PYTHON_VERSION" =~ ^[3-9].+ ]]; then
     pip install black
