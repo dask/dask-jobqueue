@@ -12,25 +12,23 @@ def test_basic():
 @pytest.mark.asyncio
 async def test_live():
     async with Scheduler(port=0) as s:
-        async with PBSJob(
-            scheduler=s.address, name="foo", cores=1, memory="1GB"
-        ) as job:
-            async with Client(s.address, asynchronous=True) as client:
-                await client.wait_for_workers(1)
-                worker_name = list(s.workers.values())[0].name
-                assert worker_name.startswith("foo")
-                assert job.job_id in worker_name
+        job = PBSJob(scheduler=s.address, name="foo", cores=1, memory="1GB")
+        job = await job
+        async with Client(s.address, asynchronous=True) as client:
+            await client.wait_for_workers(1)
+            worker_name = list(s.workers.values())[0].name
+            assert worker_name.startswith("foo")
+            assert job.job_id in worker_name
 
 
 @pytest.mark.env("sge")
 @pytest.mark.asyncio
 async def test_live_sge():
     async with Scheduler(port=0) as s:
-        async with SGEJob(
-            scheduler=s.address, name="foo", cores=1, memory="1GB"
-        ) as job:
-            async with Client(s.address, asynchronous=True) as client:
-                await client.wait_for_workers(1)
-                worker_name = list(s.workers.values())[0].name
-                assert worker_name.startswith("foo")
-                assert job.job_id in worker_name
+        job = SGEJob(scheduler=s.address, name="foo", cores=1, memory="1GB")
+        job = await job
+        async with Client(s.address, asynchronous=True) as client:
+            await client.wait_for_workers(1)
+            worker_name = list(s.workers.values())[0].name
+            assert worker_name.startswith("foo")
+            assert job.job_id in worker_name
