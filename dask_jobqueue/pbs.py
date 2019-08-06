@@ -150,7 +150,6 @@ class PBSJob(Job):
     cancel_command = "qdel"
     config_name = "pbs"
 
-
     def __init__(
         self,
         *args,
@@ -212,4 +211,3 @@ class PBSJob(Job):
         self.job_header = "\n".join(header_lines)
 
         logger.debug("Job script: \n %s" % self.job_script())
-

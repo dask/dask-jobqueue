@@ -5,21 +5,12 @@ import dask
 from distributed.deploy.spec import ProcessInterface
 
 import logging
-import math
 import os
 import re
 import shlex
 import subprocess
-import sys
-from collections import OrderedDict
-from contextlib import contextmanager
-
 import six
 
-import dask
-import docrep
-from .deploy import ClusterManager
-from distributed import LocalCluster
 from distributed.utils import format_bytes, parse_bytes, tmpfile, get_ip_interface
 
 logger = logging.getLogger(__name__)
@@ -327,4 +318,3 @@ class Job(ProcessInterface):
                 "stderr:\n{}\n".format(proc.returncode, cmd_str, out, err)
             )
         return out
-

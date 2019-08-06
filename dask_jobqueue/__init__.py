@@ -5,7 +5,7 @@ from .job import Job
 from .moab import MoabCluster
 from .pbs import PBSCluster, PBSJob
 from .slurm import SLURMCluster
-from .sge import SGECluster
+from .sge import SGECluster, SGEJob
 from .lsf import LSFCluster
 from .oar import OARCluster
 from .htcondor import HTCondorCluster
