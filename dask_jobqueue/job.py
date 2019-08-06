@@ -92,7 +92,6 @@ class Job(ProcessInterface):
         self,
         scheduler=None,
         name=None,
-        job_name=None,
         cores=None,
         memory=None,
         processes=None,
@@ -122,8 +121,8 @@ class Job(ProcessInterface):
                 "JobQueueCluster is an abstract class that should not be instantiated."
             )
 
-        if job_name is None:
-            job_name = dask.config.get("jobqueue.%s.name" % config_name)
+        if name is None:
+            name = dask.config.get("jobqueue.%s.name" % config_name)
         if cores is None:
             cores = dask.config.get("jobqueue.%s.cores" % config_name)
         if memory is None:
