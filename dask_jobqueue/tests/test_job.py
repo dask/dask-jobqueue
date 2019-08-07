@@ -26,7 +26,7 @@ async def test_live():
 @pytest.mark.asyncio
 async def test_pbs_cluster():
     async with JobQueueCluster(
-            1, cores=1, memory="1GB", Job=PBSJob, asynchronous=True, name="foo",
+        1, cores=1, memory="1GB", Job=PBSJob, asynchronous=True, name="foo"
     ) as cluster:
         assert len(cluster.workers) == 1
         cluster.scale(2)
@@ -53,7 +53,7 @@ async def test_sge():
 @pytest.mark.asyncio
 async def test_sge_cluster():
     async with JobQueueCluster(
-        1, cores=1, memory="1GB", Job=SGEJob, asynchronous=True, name="foo",
+        1, cores=1, memory="1GB", Job=SGEJob, asynchronous=True, name="foo"
     ) as cluster:
         assert len(cluster.workers) == 1
         cluster.scale(2)
