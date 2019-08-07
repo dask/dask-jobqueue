@@ -26,7 +26,7 @@ class Job(ProcessInterface):
     Parameters
     ----------
     name : str
-        Name of Dask workers.
+        Name of Dask worker.
     cores : int
         Total number of cores per job
     memory: str
@@ -80,13 +80,15 @@ class Job(ProcessInterface):
 
 %(env_header)s
 
+echo "Job ID: $JOB_ID"
+
 %(worker_command)s
 """.lstrip()
 
     # Following class attributes should be overridden by extending classes.
     submit_command = None
     cancel_command = None
-    job_id_regexp = r"(?P<job_id>\d+)"
+    job_id_regexp = r"Job ID:\s*(?P<job_id>.*)"
 
     def __init__(
         self,
@@ -185,7 +187,7 @@ class Job(ProcessInterface):
             command_args += ["--nprocs", processes]
 
         command_args += ["--memory-limit", self.worker_process_memory]
-        command_args += ["--name", "%s--${JOB_ID}--" % name]
+        command_args += ["--name", str(name)]
 
         if death_timeout is not None:
             command_args += ["--death-timeout", death_timeout]

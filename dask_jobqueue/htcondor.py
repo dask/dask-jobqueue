@@ -53,7 +53,6 @@ Executable = %(executable)s
 
     submit_command = "condor_submit -queue 1 -file"
     cancel_command = "condor_rm"
-    job_id_regexp = r"(?P<job_id>\d+\.\d+)"
 
     # condor sets argv[0] of the executable to "condor_exec.exe", which confuses
     # Python (can't find its libs), so we have to go through the shell.
@@ -138,18 +137,6 @@ Executable = %(executable)s
             "quoted_arguments": quoted_arguments,
             "executable": self.executable,
         }
-
-    def _job_id_from_submit_output(self, out):
-        cluster_id_regexp = r"submitted to cluster (\d+)"
-        match = re.search(cluster_id_regexp, out)
-        if match is None:
-            msg = (
-                "Could not parse cluster id from submission command output.\n"
-                "Cluster id regexp is {!r}\n"
-                "Submission command output is:\n{}".format(cluster_id_regexp, out)
-            )
-            raise ValueError(msg)
-        return "%s.0" % match.group(1)
 
 
 def _double_up_quotes(instr):
