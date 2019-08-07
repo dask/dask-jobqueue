@@ -9,47 +9,28 @@ def test_basic():
     assert "127.0.0.1:12345" in job.job_script()
 
 
-@pytest.mark.env("pbs")
+job_params = [
+    pytest.param(SGEJob, marks=[pytest.mark.env("sge")]),
+    pytest.param(PBSJob, marks=[pytest.mark.env("pbs")]),
+]
+
+
+@pytest.mark.parametrize("Job", job_params)
 @pytest.mark.asyncio
-async def test_pbs_job():
+async def test_job(Job):
     async with Scheduler(port=0) as s:
-        job = PBSJob(scheduler=s.address, name="foo", cores=1, memory="1GB")
+        job = Job(scheduler=s.address, name="foo", cores=1, memory="1GB")
         job = await job
         async with Client(s.address, asynchronous=True) as client:
             await client.wait_for_workers(1)
             assert list(s.workers.values())[0].name == "foo"
 
 
-@pytest.mark.env("pbs")
+@pytest.mark.parametrize("Job", job_params)
 @pytest.mark.asyncio
-async def test_pbs_cluster():
+async def test_cluster(Job):
     async with JobQueueCluster(
-        1, cores=1, memory="1GB", Job=PBSJob, asynchronous=True, name="foo"
-    ) as cluster:
-        assert len(cluster.workers) == 1
-        cluster.scale(2)
-        await cluster
-        assert len(cluster.workers) == 2
-        assert all(isinstance(w, PBSJob) for w in cluster.workers.values())
-        assert all(w.status == "running" for w in cluster.workers.values())
-
-
-@pytest.mark.env("sge")
-@pytest.mark.asyncio
-async def test_sge_job():
-    async with Scheduler(port=0) as s:
-        job = SGEJob(scheduler=s.address, name="foo", cores=1, memory="1GB")
-        job = await job
-        async with Client(s.address, asynchronous=True) as client:
-            await client.wait_for_workers(1)
-            assert list(s.workers.values())[0].name == "foo"
-
-
-@pytest.mark.env("sge")
-@pytest.mark.asyncio
-async def test_sge_cluster():
-    async with JobQueueCluster(
-        1, cores=1, memory="1GB", Job=SGEJob, asynchronous=True, name="foo"
+        1, cores=1, memory="1GB", Job=Job, asynchronous=True, name="foo"
     ) as cluster:
         assert len(cluster.workers) == 1
         cluster.scale(2)
