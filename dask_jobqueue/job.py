@@ -1,16 +1,16 @@
-import sys
 from contextlib import contextmanager
-
-import dask
-from distributed.deploy.spec import ProcessInterface, SpecCluster
-from distributed.scheduler import Scheduler
-
 import logging
 import os
 import re
 import shlex
 import subprocess
 import six
+import sys
+import weakref
+
+import dask
+from distributed.deploy.spec import ProcessInterface, SpecCluster
+from distributed.scheduler import Scheduler
 
 from distributed.utils import format_bytes, parse_bytes, tmpfile, get_ip_interface
 
@@ -247,6 +247,8 @@ class Job(ProcessInterface):
                 raise ValueError("Unable to parse jobid from output of %s" % out)
             self.job_id = job
 
+        weakref.finalize(self, self._close_job, job)
+
         logger.debug("Starting job: %s", self.job_id)
         await super().start()
 
@@ -273,10 +275,15 @@ class Job(ProcessInterface):
 
     async def close(self):
         logger.debug("Stopping worker: %s job: %s", self.name, self.job_id)
-        if self.job_id:
-            self._call(shlex.split(self.cancel_command) + [self.job_id])
+        self._close_job(self.job_id)
 
-    def _call(self, cmd, **kwargs):
+    @classmethod
+    def _close_job(cls, job_id):
+        if job_id:
+            cls._call(shlex.split(cls.cancel_command) + [job_id])
+
+    @staticmethod
+    def _call(cmd, **kwargs):
         """ Call a command using subprocess.Popen.
 
         This centralizes calls out to the command line, providing consistent
