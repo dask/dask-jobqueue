@@ -182,8 +182,8 @@ class PBSJob(Job):
 
         header_lines = []
         # PBS header build
-        if self.name is not None:
-            header_lines.append("#PBS -N %s" % self.name)
+        if self.job_name is not None:
+            header_lines.append("#PBS -N %s" % self.job_name)
         if queue is not None:
             header_lines.append("#PBS -q %s" % queue)
         if project is not None:

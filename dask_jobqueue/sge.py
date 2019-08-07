@@ -140,8 +140,8 @@ class SGEJob(Job):
         super().__init__(config_name=config_name, **kwargs)
 
         header_lines = []
-        if self.name is not None:
-            header_lines.append("#$ -N %(name)s")
+        if self.job_name is not None:
+            header_lines.append("#$ -N %(job-name)s")
         if queue is not None:
             header_lines.append("#$ -q %(queue)s")
         if project is not None:
@@ -158,7 +158,7 @@ class SGEJob(Job):
         header_template = "\n".join(header_lines)
 
         config = {
-            "name": self.name,
+            "job-name": self.job_name,
             "queue": queue,
             "project": project,
             "processes": self.worker_processes,

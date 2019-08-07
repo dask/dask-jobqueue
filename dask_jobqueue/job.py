@@ -103,6 +103,7 @@ class Job(ProcessInterface):
         log_directory=None,
         shebang=None,
         python=sys.executable,
+        job_name="dask-worker",
         config_name=None,
         **kwargs
     ):
@@ -121,8 +122,8 @@ class Job(ProcessInterface):
                 "JobQueueCluster is an abstract class that should not be instantiated."
             )
 
-        if name is None:
-            name = dask.config.get("jobqueue.%s.name" % config_name)
+        if job_name is None:
+            job_name = dask.config.get("jobqueue.%s.name" % config_name)
         if cores is None:
             cores = dask.config.get("jobqueue.%s.cores" % config_name)
         if memory is None:
@@ -170,6 +171,7 @@ class Job(ProcessInterface):
         self.worker_processes = processes
         self.worker_cores = cores
         self.name = name
+        self.job_name = job_name
 
         self.shebang = shebang
 
@@ -185,7 +187,7 @@ class Job(ProcessInterface):
             command_args += ["--nprocs", processes]
 
         command_args += ["--memory-limit", self.worker_process_memory]
-        command_args += ["--name", "%s--${JOB_ID}--" % name]
+        command_args += ["--name", str(name)]
 
         if death_timeout is not None:
             command_args += ["--death-timeout", death_timeout]
@@ -236,7 +238,7 @@ class Job(ProcessInterface):
 
     async def start(self):
         """ Start workers and point them to our local scheduler """
-        logger.debug("Starting job: %s", self.name)
+        logger.debug("Starting worker: %s", self.name)
 
         with self.job_file() as fn:
             out = self._submit_job(fn)
@@ -245,6 +247,7 @@ class Job(ProcessInterface):
                 raise ValueError("Unable to parse jobid from output of %s" % out)
             self.job_id = job
 
+        logger.debug("Starting job: %s", self.job_id)
         await super().start()
 
     def _job_id_from_submit_output(self, out):
@@ -269,7 +272,7 @@ class Job(ProcessInterface):
         return job_id
 
     async def close(self):
-        logger.debug("Stopping job: %s", self.name)
+        logger.debug("Stopping worker: %s job: %s", self.name, self.job_id)
         if self.job_id:
             self._call(shlex.split(self.cancel_command) + [self.job_id])
 
