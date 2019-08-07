@@ -137,7 +137,7 @@ class SGEJob(Job):
         if job_extra is None:
             job_extra = dask.config.get("jobqueue.%s.job-extra" % config_name)
 
-        super().__init__(config_name=config_name, **kwargs)
+        super().__init__(*args, config_name=config_name, **kwargs)
 
         header_lines = []
         if self.job_name is not None:
