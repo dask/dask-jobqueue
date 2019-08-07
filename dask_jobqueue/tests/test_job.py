@@ -1,6 +1,9 @@
+from time import time
+
 from dask_jobqueue import PBSJob, SGEJob
 from dask_jobqueue.job import JobQueueCluster
 from dask.distributed import Scheduler, Client
+
 import pytest
 
 
@@ -36,12 +39,11 @@ async def test_cluster(Job):
         cluster.scale(2)
         await cluster
         assert len(cluster.workers) == 2
-        assert all(isinstance(w, SGEJob) for w in cluster.workers.values())
+        assert all(isinstance(w, Job) for w in cluster.workers.values())
         assert all(w.status == "running" for w in cluster.workers.values())
 
         cluster.scale(1)
         await cluster
-        start = time()
         while len(cluster.scheduler.workers) != 1:
             await asyncio.sleep(0.1)
             assert time() < start + 5
