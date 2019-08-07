@@ -11,7 +11,7 @@ def test_basic():
 
 @pytest.mark.env("pbs")
 @pytest.mark.asyncio
-async def test_live():
+async def test_pbs_job():
     async with Scheduler(port=0) as s:
         job = PBSJob(scheduler=s.address, name="foo", cores=1, memory="1GB")
         job = await job
@@ -36,15 +36,13 @@ async def test_pbs_cluster():
 
 @pytest.mark.env("sge")
 @pytest.mark.asyncio
-async def test_sge():
+async def test_sge_job():
     async with Scheduler(port=0) as s:
         job = SGEJob(scheduler=s.address, name="foo", cores=1, memory="1GB")
         job = await job
         async with Client(s.address, asynchronous=True) as client:
             await client.wait_for_workers(1)
-            worker_name = list(s.workers.values())[0].name
-            assert worker_name.startswith("foo")
-            assert job.job_id in worker_name
+            assert list(s.workers.values())[0].name == "foo"
 
 
 @pytest.mark.env("sge")
