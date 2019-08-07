@@ -17,9 +17,7 @@ async def test_live():
         job = await job
         async with Client(s.address, asynchronous=True) as client:
             await client.wait_for_workers(1)
-            worker_name = list(s.workers.values())[0].name
-            assert worker_name.startswith("foo")
-            assert job.job_id in worker_name
+            assert list(s.workers.values())[0].name == "foo"
 
 
 @pytest.mark.env("pbs")

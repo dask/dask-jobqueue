@@ -103,7 +103,7 @@ class Job(ProcessInterface):
         log_directory=None,
         shebang=None,
         python=sys.executable,
-        job_name="dask-worker",
+        job_name=None,
         config_name=None,
         **kwargs
     ):
