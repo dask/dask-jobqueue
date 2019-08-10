@@ -50,3 +50,28 @@ async def test_cluster(Job):
         while len(cluster.scheduler.workers) != 1:
             await asyncio.sleep(0.1)
             assert time() < start + 5
+
+
+@pytest.mark.parametrize("Job", job_params)
+@pytest.mark.asyncio
+async def test_adapt(Job):
+    async with JobQueueCluster(
+        1, cores=1, memory="1GB", Job=Job, asynchronous=True, name="foo"
+    ) as cluster:
+        cluster.adapt(minimum=0, maximum=4, interval="10ms")
+
+        start = time()
+        while len(cluster.scheduler.workers):
+            await asyncio.sleep(0.050)
+            assert time() < start + 5
+
+        async with Client(cluster, asynchronous=True) as client:
+            future = client.submit(lambda: 0)
+            await client.wait_for_workers(1)
+
+            del future
+
+            start = time()
+            while len(cluster.scheduler.workers):
+                await asyncio.sleep(0.050)
+                assert time() < start + 5
