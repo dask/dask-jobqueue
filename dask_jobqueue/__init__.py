@@ -4,7 +4,7 @@ from .core import JobQueueCluster
 from .job import Job
 from .moab import MoabCluster
 from .pbs import PBSCluster, PBSJob
-from .slurm import SLURMCluster
+from .slurm import SLURMCluster, SLURMJob
 from .sge import SGECluster, SGEJob
 from .lsf import LSFCluster
 from .oar import OARCluster

@@ -1,6 +1,7 @@
+import asyncio
 from time import time
 
-from dask_jobqueue import PBSJob, SGEJob
+from dask_jobqueue import PBSJob, SGEJob, SLURMJob
 from dask_jobqueue.job import JobQueueCluster
 from dask.distributed import Scheduler, Client
 
@@ -15,6 +16,7 @@ def test_basic():
 job_params = [
     pytest.param(SGEJob, marks=[pytest.mark.env("sge")]),
     pytest.param(PBSJob, marks=[pytest.mark.env("pbs")]),
+    pytest.param(SLURMJob, marks=[pytest.mark.env("slurm")]),
 ]
 
 
@@ -43,6 +45,7 @@ async def test_cluster(Job):
         assert all(w.status == "running" for w in cluster.workers.values())
 
         cluster.scale(1)
+        start = time()
         await cluster
         while len(cluster.scheduler.workers) != 1:
             await asyncio.sleep(0.1)
