@@ -30,6 +30,13 @@ async def test_job(Job):
             await client.wait_for_workers(1)
             assert list(s.workers.values())[0].name == "foo"
 
+        await job.close()
+
+        start = time()
+        while len(s.workers):
+            await asyncio.sleep(0.1)
+            assert time() < start + 5
+
 
 @pytest.mark.parametrize("Job", job_params)
 @pytest.mark.asyncio
