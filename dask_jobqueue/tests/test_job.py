@@ -70,7 +70,7 @@ async def test_adapt(Job):
             cluster.adapt(minimum=0, maximum=4, interval="10ms")
 
             start = time()
-            while len(cluster.scheduler.workers):
+            while len(cluster.scheduler.workers) or cluster.workers:
                 await asyncio.sleep(0.050)
                 assert time() < start + 10
             assert not cluster.worker_spec
@@ -82,7 +82,7 @@ async def test_adapt(Job):
             del future
 
             start = time()
-            while len(cluster.scheduler.workers):
+            while len(cluster.scheduler.workers) or cluster.workers:
                 await asyncio.sleep(0.050)
                 assert time() < start + 10
             assert not cluster.worker_spec
