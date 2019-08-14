@@ -72,7 +72,7 @@ def test_job_script(Cluster):
         assert "#PBS -A" not in job_script
 
         assert (
-            "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
+            f"{sys.executable} -m distributed.cli.dask_worker tcp://"
             in job_script
         )
         assert "--nthreads 2 --nprocs 4 --memory-limit 7.00GB" in job_script
@@ -95,7 +95,7 @@ def test_job_script(Cluster):
         assert "#PBS -A DaskOnPBS" in job_script
 
         assert (
-            "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
+            f"{sys.executable} -m distributed.cli.dask_worker tcp://"
             in job_script
         )
         assert "--nthreads 2 --nprocs 4 --memory-limit 7.00GB" in job_script

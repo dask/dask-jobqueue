@@ -95,8 +95,8 @@ def test_job_script(tmpdir):
             "export MY_VAR=my_var",
             "#$ -w e",
             "#$ -m e",
-            "#$ -e {}".format(log_directory),
-            "#$ -o {}".format(log_directory),
+            f"#$ -e {log_directory}",
+            f"#$ -o {log_directory}",
             "-l h_vmem=12G,mem_req=12G",
             "#$ -cwd",
             "#$ -j y",
@@ -110,7 +110,7 @@ def test_complex_cancel_command(loop):
         walltime="00:02:00", cores=1, processes=1, memory="2GB", loop=loop
     ) as cluster:
         username = "root"
-        cluster.cancel_command = "qdel -u {}".format(username)
+        cluster.cancel_command = f"qdel -u {username}"
 
         cluster.scale(2)
 

@@ -129,7 +129,7 @@ Executable = %(executable)s
         quoted_arguments = quote_arguments(["-c", self._command_template])
         quoted_environment = quote_environment(self.env_dict)
         job_header_lines = "\n".join(
-            "%s = %s" % (k, v) for k, v in self.job_header_dict.items()
+            f"{k} = {v}" for k, v in self.job_header_dict.items()
         )
         return self._script_template % {
             "shebang": self.shebang,
@@ -219,6 +219,6 @@ def quote_environment(env):
         qv = _double_up_quotes(str(v))
         if " " in qv or "'" in qv:
             qv = "'" + qv + "'"
-        entries.append("%s=%s" % (k, qv))
+        entries.append(f"{k}={qv}")
 
     return " ".join(entries)

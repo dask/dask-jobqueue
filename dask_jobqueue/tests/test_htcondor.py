@@ -44,7 +44,7 @@ def test_job_script():
         assert "+Extra = True" in job_script
 
         assert (
-            "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
+            f"{sys.executable} -m distributed.cli.dask_worker tcp://"
             in job_script
         )
         assert "--memory-limit 50.00MB" in job_script

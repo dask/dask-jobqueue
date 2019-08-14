@@ -394,7 +394,7 @@ class JobQueueCluster(ClusterManager):
         """
         cmd_str = " ".join(cmd)
         logger.debug(
-            "Executing the following command to command line\n{}".format(cmd_str)
+            f"Executing the following command to command line\n{cmd_str}"
         )
 
         proc = subprocess.Popen(

@@ -94,10 +94,10 @@ class LSFCluster(JobQueueCluster):
             header_lines.append("#BSUB -J %s" % self.name)
         if self.log_directory is not None:
             header_lines.append(
-                "#BSUB -e %s/%s-%%J.err" % (self.log_directory, self.name or "worker")
+                "#BSUB -e {}/{}-%J.err".format(self.log_directory, self.name or "worker")
             )
             header_lines.append(
-                "#BSUB -o %s/%s-%%J.out" % (self.log_directory, self.name or "worker")
+                "#BSUB -o {}/{}-%J.out".format(self.log_directory, self.name or "worker")
             )
         if queue is not None:
             header_lines.append("#BSUB -q %s" % queue)
@@ -189,7 +189,7 @@ def lsf_detect_units():
             unit = line.split("=")[1].lower()[0]
             break
         logger.debug(
-            "Setting units to %s from the LSF config file at %s" % (unit, conf_file)
+            f"Setting units to {unit} from the LSF config file at {conf_file}"
         )
     # Trap the lsf.conf does not exist, and the conf file not setup right (i.e. "$VAR=xxx^" regex-form)
     except (EnvironmentError, IndexError):
