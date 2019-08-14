@@ -271,8 +271,7 @@ class ClusterManager:
         if "dashboard" in self.scheduler.services:
             link = self.dashboard_link
             link = '<p><b>Dashboard: </b><a href="{}" target="_blank">{}</a></p>\n'.format(
-                link,
-                link,
+                link, link
             )
         else:
             link = ""

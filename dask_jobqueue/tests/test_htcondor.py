@@ -43,10 +43,7 @@ def test_job_script():
         assert "export" not in job_script
         assert "+Extra = True" in job_script
 
-        assert (
-            f"{sys.executable} -m distributed.cli.dask_worker tcp://"
-            in job_script
-        )
+        assert f"{sys.executable} -m distributed.cli.dask_worker tcp://" in job_script
         assert "--memory-limit 50.00MB" in job_script
         assert "--nthreads 2" in job_script
         assert "--nprocs 2" in job_script

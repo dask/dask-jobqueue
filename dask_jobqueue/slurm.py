@@ -87,10 +87,14 @@ class SLURMCluster(JobQueueCluster):
             header_lines.append("#SBATCH -J %s" % self.name)
         if self.log_directory is not None:
             header_lines.append(
-                "#SBATCH -e {}/{}-%J.err".format(self.log_directory, self.name or "worker")
+                "#SBATCH -e {}/{}-%J.err".format(
+                    self.log_directory, self.name or "worker"
+                )
             )
             header_lines.append(
-                "#SBATCH -o {}/{}-%J.out".format(self.log_directory, self.name or "worker")
+                "#SBATCH -o {}/{}-%J.out".format(
+                    self.log_directory, self.name or "worker"
+                )
             )
         if queue is not None:
             header_lines.append("#SBATCH -p %s" % queue)

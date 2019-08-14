@@ -167,7 +167,7 @@ class JobQueueCluster(ClusterManager):
         shebang=None,
         python=sys.executable,
         config_name=None,
-        **kwargs
+        **kwargs,
     ):
         """ """
         # """
@@ -393,9 +393,7 @@ class JobQueueCluster(ClusterManager):
         RuntimeError if the command exits with a non-zero exit code
         """
         cmd_str = " ".join(cmd)
-        logger.debug(
-            f"Executing the following command to command line\n{cmd_str}"
-        )
+        logger.debug(f"Executing the following command to command line\n{cmd_str}")
 
         proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs

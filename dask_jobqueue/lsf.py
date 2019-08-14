@@ -68,7 +68,7 @@ class LSFCluster(JobQueueCluster):
         job_extra=None,
         lsf_units=None,
         config_name="lsf",
-        **kwargs
+        **kwargs,
     ):
         if queue is None:
             queue = dask.config.get("jobqueue.%s.queue" % config_name)
@@ -94,10 +94,14 @@ class LSFCluster(JobQueueCluster):
             header_lines.append("#BSUB -J %s" % self.name)
         if self.log_directory is not None:
             header_lines.append(
-                "#BSUB -e {}/{}-%J.err".format(self.log_directory, self.name or "worker")
+                "#BSUB -e {}/{}-%J.err".format(
+                    self.log_directory, self.name or "worker"
+                )
             )
             header_lines.append(
-                "#BSUB -o {}/{}-%J.out".format(self.log_directory, self.name or "worker")
+                "#BSUB -o {}/{}-%J.out".format(
+                    self.log_directory, self.name or "worker"
+                )
             )
         if queue is not None:
             header_lines.append("#BSUB -q %s" % queue)
@@ -188,9 +192,7 @@ def lsf_detect_units():
             # Found the line, infer the unit, only first 2 chars after "="
             unit = line.split("=")[1].lower()[0]
             break
-        logger.debug(
-            f"Setting units to {unit} from the LSF config file at {conf_file}"
-        )
+        logger.debug(f"Setting units to {unit} from the LSF config file at {conf_file}")
     # Trap the lsf.conf does not exist, and the conf file not setup right (i.e. "$VAR=xxx^" regex-form)
     except (EnvironmentError, IndexError):
         logger.debug(

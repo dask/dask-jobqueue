@@ -78,10 +78,7 @@ def test_job_script():
         assert "#BSUB -q" not in cluster.job_header
         assert "#BSUB -P" not in cluster.job_header
 
-        assert (
-            f"{sys.executable} -m distributed.cli.dask_worker tcp://"
-            in job_script
-        )
+        assert f"{sys.executable} -m distributed.cli.dask_worker tcp://" in job_script
         assert "--nthreads 2 --nprocs 4 --memory-limit 7.00GB" in job_script
 
     with LSFCluster(
@@ -104,10 +101,7 @@ def test_job_script():
         assert "#BSUB -W" in cluster.job_header
         assert "#BSUB -P DaskOnLSF" in cluster.job_header
 
-        assert (
-            f"{sys.executable} -m distributed.cli.dask_worker tcp://"
-            in job_script
-        )
+        assert f"{sys.executable} -m distributed.cli.dask_worker tcp://" in job_script
         assert "--nthreads 2 --nprocs 4 --memory-limit 7.00GB" in job_script
 
 
