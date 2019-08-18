@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import logging
 
 import dask
@@ -77,7 +75,7 @@ class SGECluster(JobQueueCluster):
         if job_extra is None:
             job_extra = dask.config.get("jobqueue.%s.job-extra" % config_name)
 
-        super(SGECluster, self).__init__(config_name=config_name, **kwargs)
+        super().__init__(config_name=config_name, **kwargs)
 
         header_lines = []
         if self.name is not None:

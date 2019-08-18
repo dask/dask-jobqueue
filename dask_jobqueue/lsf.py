@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import logging
 import math
 import os
@@ -86,7 +84,7 @@ class LSFCluster(JobQueueCluster):
             lsf_units = dask.config.get("jobqueue.%s.lsf-units" % config_name)
 
         # Instantiate args and parameters from parent abstract class
-        super(LSFCluster, self).__init__(config_name=config_name, **kwargs)
+        super().__init__(config_name=config_name, **kwargs)
 
         header_lines = []
         # LSF header build

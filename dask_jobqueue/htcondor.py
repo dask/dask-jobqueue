@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import logging
 import re
 import shlex
@@ -73,7 +71,7 @@ Executable = %(executable)s
             self.job_extra = job_extra
 
         # Instantiate args and parameters from parent abstract class
-        super(HTCondorCluster, self).__init__(config_name=config_name, **kwargs)
+        super().__init__(config_name=config_name, **kwargs)
 
         env_extra = kwargs.get("env_extra", None)
         if env_extra is None:

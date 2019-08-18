@@ -1,5 +1,3 @@
-from __future__ import absolute_import, division, print_function
-
 import logging
 import math
 import os
@@ -9,8 +7,6 @@ import subprocess
 import sys
 from collections import OrderedDict
 from contextlib import contextmanager
-
-import six
 
 import dask
 import docrep
@@ -175,7 +171,7 @@ class JobQueueCluster(ClusterManager):
         # """
         # This initializer should be considered as Abstract, and never used directly.
         # """
-        super(JobQueueCluster, self).__init__()
+        super().__init__()
 
         if config_name is None:
             raise NotImplementedError(
@@ -404,8 +400,7 @@ class JobQueueCluster(ClusterManager):
         )
 
         out, err = proc.communicate()
-        if six.PY3:
-            out, err = out.decode(), err.decode()
+        out, err = out.decode(), err.decode()
         if proc.returncode != 0:
             raise RuntimeError(
                 "Command exited with non-zero exit code.\n"
@@ -555,3 +550,7 @@ class JobQueueCluster(ClusterManager):
     @property
     def scheduler_comm(self):
         return self.local_cluster.scheduler_comm
+
+    @property
+    def scheduler_info(self):
+        return self.local_cluster.scheduler_info
