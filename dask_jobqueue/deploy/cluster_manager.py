@@ -269,9 +269,8 @@ class ClusterManager(object):
 
         if "bokeh" in self.scheduler.services:
             link = self.dashboard_link
-            link = '<p><b>Dashboard: </b><a href="%s" target="_blank">%s</a></p>\n' % (
-                link,
-                link,
+            link = '<p><b>Dashboard: </b><a href="{}" target="_blank">{}</a></p>\n'.format(
+                link, link
             )
         else:
             link = ""
