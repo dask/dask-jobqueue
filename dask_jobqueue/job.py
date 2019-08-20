@@ -355,7 +355,6 @@ class JobQueueCluster(SpecCluster):
                 "or SGEJob with the Job= argument."
             )
 
-
         scheduler = {
             "cls": Scheduler,  # Use local scheduler for now
             "options": {
@@ -391,5 +390,5 @@ class JobQueueCluster(SpecCluster):
         return self.example_job.job_script()
 
     @property
-    def name(self):
+    def job_name(self):
         return self.example_job.job_name

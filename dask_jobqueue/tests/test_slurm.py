@@ -192,4 +192,4 @@ def test_config_name_slurm_takes_custom_config():
 
     with dask.config.set({"jobqueue.slurm-config-name": conf}):
         with SLURMCluster(config_name="slurm-config-name") as cluster:
-            assert cluster.name == "myname"
+            assert cluster.job_name == "myname"

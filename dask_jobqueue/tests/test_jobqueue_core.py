@@ -104,7 +104,7 @@ def test_forward_ip():
 
 
 @pytest.mark.parametrize(
-    "Cluster", [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster]
+    "Cluster", [PBSCluster, MoabCluster, SGECluster, LSFCluster]
 )
 @pytest.mark.parametrize(
     "qsub_return_string",
@@ -125,7 +125,7 @@ def test_job_id_from_qsub(Cluster, qsub_return_string):
 
 
 @pytest.mark.parametrize(
-    "Cluster", [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster]
+    "Cluster", [PBSCluster, MoabCluster, SGECluster, LSFCluster]
 )
 def test_job_id_error_handling(Cluster):
     # non-matching regexp
