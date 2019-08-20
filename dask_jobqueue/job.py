@@ -330,52 +330,66 @@ class Job(ProcessInterface):
         return out
 
 
-def JobQueueCluster(
-    n_workers=0,
-    Job: Job = None,
-    # Cluster keywords
-    loop=None,
-    security=None,
-    silence_logs=False,
-    name=None,
-    asynchronous=False,
-    # Scheduler keywords
-    interface=None,
-    protocol="tcp://",
-    dashboard_address=":8787",
-    # Job keywords
-    **kwargs
-):
-    if Job is None:
-        raise ValueError(
-            "You must provide a Job type like PBSJob, SLURMJob, "
-            "or SGEJob with the Job= argument."
+class JobQueueCluster(SpecCluster):
+
+    def __init__(
+        self,
+        n_workers=0,
+        Job: Job = None,
+        # Cluster keywords
+        loop=None,
+        security=None,
+        silence_logs=False,
+        name=None,
+        asynchronous=False,
+        # Scheduler keywords
+        interface=None,
+        protocol="tcp://",
+        dashboard_address=":8787",
+        # Job keywords
+        **kwargs
+    ):
+        if Job is None:
+            raise ValueError(
+                "You must provide a Job type like PBSJob, SLURMJob, "
+                "or SGEJob with the Job= argument."
+            )
+
+
+        scheduler = {
+            "cls": Scheduler,  # Use local scheduler for now
+            "options": {
+                "protocol": protocol,
+                "interface": interface,
+                "dashboard_address": dashboard_address,
+                "security": security,
+            },
+        }
+        kwargs["interface"] = interface
+        kwargs["protocol"] = protocol
+        kwargs["security"] = security
+        worker = {"cls": Job, "options": kwargs}
+        self.example_job = Job("tcp://scheduler:8786", name="name", **kwargs)
+
+        super().__init__(
+            scheduler=scheduler,
+            worker=worker,
+            loop=loop,
+            silence_logs=silence_logs,
+            asynchronous=asynchronous,
+            name=name,
         )
 
-    scheduler = {
-        "cls": Scheduler,  # Use local scheduler for now
-        "options": {
-            "protocol": protocol,
-            "interface": interface,
-            "dashboard_address": dashboard_address,
-            "security": security,
-        },
-    }
-    kwargs["interface"] = interface
-    kwargs["protocol"] = protocol
-    kwargs["security"] = security
-    worker = {"cls": Job, "options": kwargs}
+        if n_workers:
+            self.scale(n_workers)
 
-    cluster = SpecCluster(
-        scheduler=scheduler,
-        worker=worker,
-        loop=loop,
-        silence_logs=silence_logs,
-        asynchronous=asynchronous,
-        name=name,
-    )
+    @property
+    def job_header(self):
+        return self.example_job.job_header
 
-    if n_workers:
-        cluster.scale(n_workers)
+    def job_script(self):
+        return self.example_job.job_script()
 
-    return cluster
+    @property
+    def name(self):
+        return self.example_job.job_name

@@ -117,7 +117,7 @@ def test_basic(loop):
         cores=2,
         processes=1,
         memory="2GB",
-        job_extra=["-D /"],
+        # job_extra=["-D /"],
         loop=loop,
     ) as cluster:
         with Client(cluster) as client:
@@ -150,7 +150,7 @@ def test_adaptive(loop):
         cores=2,
         processes=1,
         memory="2GB",
-        job_extra=["-D /"],
+        # job_extra=["-D /"],
         loop=loop,
     ) as cluster:
         cluster.adapt()

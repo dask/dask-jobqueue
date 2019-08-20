@@ -44,19 +44,21 @@ async def test_cluster(Job):
     async with JobQueueCluster(
         1, cores=1, memory="1GB", Job=Job, asynchronous=True, name="foo"
     ) as cluster:
-        assert len(cluster.workers) == 1
-        cluster.scale(2)
-        await cluster
-        assert len(cluster.workers) == 2
-        assert all(isinstance(w, Job) for w in cluster.workers.values())
-        assert all(w.status == "running" for w in cluster.workers.values())
+        async with Client(cluster, asynchronous=True) as client:
+            assert len(cluster.workers) == 1
+            cluster.scale(2)
+            await cluster
+            assert len(cluster.workers) == 2
+            assert all(isinstance(w, Job) for w in cluster.workers.values())
+            assert all(w.status == "running" for w in cluster.workers.values())
+            await client.wait_for_workers(2)
 
-        cluster.scale(1)
-        start = time()
-        await cluster
-        while len(cluster.scheduler.workers) != 1:
-            await asyncio.sleep(0.1)
-            assert time() < start + 5
+            cluster.scale(1)
+            start = time()
+            await cluster
+            while len(cluster.scheduler.workers) > 1:
+                await asyncio.sleep(0.1)
+                assert time() < start + 10
 
 
 @pytest.mark.parametrize("Job", job_params)
