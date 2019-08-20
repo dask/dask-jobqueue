@@ -18,6 +18,8 @@ class HTCondorCluster(JobQueueCluster):
     ----------
     disk : str
         Total amount of disk per job
+    schedd : str
+       Submit to the specified condor_schedd
     job_extra : dict
         Extra submit file attributes for the job
     %(JobQueueCluster.parameters)s
@@ -57,7 +59,7 @@ Executable = %(executable)s
     # Python (can't find its libs), so we have to go through the shell.
     executable = "/bin/sh"
 
-    def __init__(self, disk=None, job_extra=None, config_name="htcondor", **kwargs):
+    def __init__(self, disk=None, job_extra=None, schedd=None, config_name="htcondor", **kwargs):
         if disk is None:
             disk = dask.config.get("jobqueue.%s.disk" % config_name)
         if disk is None:
@@ -69,6 +71,8 @@ Executable = %(executable)s
             self.job_extra = dask.config.get("jobqueue.%s.job-extra" % config_name, {})
         else:
             self.job_extra = job_extra
+        if schedd is None:
+            schedd = dask.config.get("jobqueue.%s.schedd" % config_name)
 
         # Instantiate args and parameters from parent abstract class
         super().__init__(config_name=config_name, **kwargs)
@@ -107,6 +111,9 @@ Executable = %(executable)s
             )
         if self.job_extra:
             self.job_header_dict.update(self.job_extra)
+        if schedd:
+            self.submit_command += " -name "+schedd
+            self.cancel_command += " -name "+schedd
 
     def env_lines_to_dict(self, env_lines):
         """ Convert an array of export statements (what we get from env-extra
