@@ -155,6 +155,7 @@ jobqueue:
 
     # HTCondor Resource Manager options
     disk: null                  # Total amount of disk per job
+    schedd: null                # Submit to the specified condor_schedd
     extra: []
     env-extra: []
     job-extra: {}               # Extra submit attributes
