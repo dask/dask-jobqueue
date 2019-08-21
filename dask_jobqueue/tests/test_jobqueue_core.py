@@ -63,7 +63,7 @@ def test_shebang_settings(Cluster):
 
 
 @pytest.mark.parametrize(
-    "Cluster", [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster]
+    "Cluster", [PBSCluster, MoabCluster, SGECluster, LSFCluster]
 )
 def test_repr(Cluster):
     with Cluster(
