@@ -10,31 +10,6 @@ from .job import Job, JobQueueCluster
 logger = logging.getLogger(__name__)
 
 
-def slurm_format_bytes_ceil(n):
-    """ Format bytes as text.
-
-    SLURM expects KiB, MiB or Gib, but names it KB, MB, GB. SLURM does not handle Bytes, only starts at KB.
-
-    >>> slurm_format_bytes_ceil(1)
-    '1K'
-    >>> slurm_format_bytes_ceil(1234)
-    '2K'
-    >>> slurm_format_bytes_ceil(12345678)
-    '13M'
-    >>> slurm_format_bytes_ceil(1234567890)
-    '2G'
-    >>> slurm_format_bytes_ceil(15000000000)
-    '14G'
-    """
-    if n >= (1024 ** 3):
-        return "%dG" % math.ceil(n / (1024 ** 3))
-    if n >= (1024 ** 2):
-        return "%dM" % math.ceil(n / (1024 ** 2))
-    if n >= 1024:
-        return "%dK" % math.ceil(n / 1024)
-    return "1K" % n
-
-
 class SLURMJob(Job):
     __doc__ = docstrings.with_indents(
         """ Launch Dask on a SLURM cluster
@@ -136,3 +111,28 @@ class SLURMJob(Job):
 
 
 SLURMCluster = functools.partial(JobQueueCluster, Job=SLURMJob)
+
+
+def slurm_format_bytes_ceil(n):
+    """ Format bytes as text.
+
+    SLURM expects KiB, MiB or Gib, but names it KB, MB, GB. SLURM does not handle Bytes, only starts at KB.
+
+    >>> slurm_format_bytes_ceil(1)
+    '1K'
+    >>> slurm_format_bytes_ceil(1234)
+    '2K'
+    >>> slurm_format_bytes_ceil(12345678)
+    '13M'
+    >>> slurm_format_bytes_ceil(1234567890)
+    '2G'
+    >>> slurm_format_bytes_ceil(15000000000)
+    '14G'
+    """
+    if n >= (1024 ** 3):
+        return "%dG" % math.ceil(n / (1024 ** 3))
+    if n >= (1024 ** 2):
+        return "%dM" % math.ceil(n / (1024 ** 2))
+    if n >= 1024:
+        return "%dK" % math.ceil(n / 1024)
+    return "1K" % n
