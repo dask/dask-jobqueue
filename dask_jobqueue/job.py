@@ -339,7 +339,7 @@ class JobQueueCluster(SpecCluster):
         # Cluster keywords
         loop=None,
         security=None,
-        silence_logs=False,
+        silence_logs="error",
         name=None,
         asynchronous=False,
         # Scheduler keywords
