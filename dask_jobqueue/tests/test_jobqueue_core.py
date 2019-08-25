@@ -64,23 +64,6 @@ def test_shebang_settings(Cluster):
         assert job_script.startswith(default_shebang)
 
 
-@pytest.mark.parametrize("Cluster", [PBSCluster, MoabCluster, SGECluster, LSFCluster])
-def test_repr(Cluster):
-    with Cluster(
-        # TODO name -> job_name could be a problem ...
-        walltime="00:02:00",
-        processes=4,
-        cores=8,
-        memory="28GB",
-        job_name="dask-worker",
-    ) as cluster:
-        cluster_repr = repr(cluster)
-        assert cluster.__class__.__name__ in cluster_repr
-        assert "cores=0" in cluster_repr
-        assert "memory=0 B" in cluster_repr
-        assert "workers=0" in cluster_repr
-
-
 @pytest.mark.parametrize(
     "Cluster", [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster]
 )
