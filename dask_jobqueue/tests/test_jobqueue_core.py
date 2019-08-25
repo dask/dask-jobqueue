@@ -91,7 +91,7 @@ def test_forward_ip():
         assert cluster.scheduler.ip == default_ip
 
 
-@pytest.mark.parametrize("Cluster", [LSFCluster])
+@pytest.mark.parametrize("Cluster", [])
 @pytest.mark.parametrize(
     "qsub_return_string",
     [
@@ -129,7 +129,7 @@ def test_job_id_from_qsub(Job, qsub_return_string):
     assert original_job_id == job._job_id_from_submit_output(qsub_return_string)
 
 
-@pytest.mark.parametrize("Cluster", [LSFCluster])
+@pytest.mark.parametrize("Cluster", [])
 def test_job_id_error_handling_legacy(Cluster):
     # non-matching regexp
     with Cluster(cores=1, memory="1GB") as cluster:

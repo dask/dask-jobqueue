@@ -1,15 +1,17 @@
+import functools
 import logging
 import math
 import os
 
 import dask
 
-from .core import JobQueueCluster, docstrings
+from .core import docstrings
+from .job import Job, JobQueueCluster
 
 logger = logging.getLogger(__name__)
 
 
-class LSFCluster(JobQueueCluster):
+class LSFJob(Job):
     __doc__ = docstrings.with_indents(
         """ Launch Dask on a LSF cluster
 
@@ -32,12 +34,12 @@ class LSFCluster(JobQueueCluster):
     lsf_units : str
         Unit system for large units in resource usage set by the
         LSF_UNIT_FOR_LIMITS in the lsf.conf file of a cluster.
-    %(JobQueueCluster.parameters)s
+    %(Job.parameters)s
 
     Examples
     --------
     >>> from dask_jobqueue import LSFCluster
-    >>> cluster = LSFcluster(queue='general', project='DaskonLSF',
+    >>> cluster = LSFCluster(queue='general', project='DaskonLSF',
     ...                      cores=15, memory='25GB')
     >>> cluster.scale(10)  # this may take a few seconds to launch
 
@@ -51,13 +53,12 @@ class LSFCluster(JobQueueCluster):
     """,
         4,
     )
-
-    # Override class variables
     submit_command = "bsub <"
     cancel_command = "bkill"
 
     def __init__(
         self,
+        *args,
         queue=None,
         project=None,
         ncpus=None,
@@ -84,12 +85,12 @@ class LSFCluster(JobQueueCluster):
             lsf_units = dask.config.get("jobqueue.%s.lsf-units" % config_name)
 
         # Instantiate args and parameters from parent abstract class
-        super().__init__(config_name=config_name, **kwargs)
+        super().__init__(*args, config_name=config_name, **kwargs)
 
         header_lines = []
         # LSF header build
         if self.name is not None:
-            header_lines.append("#BSUB -J %s" % self.name)
+            header_lines.append("#BSUB -J %s" % self.job_name)
         if self.log_directory is not None:
             header_lines.append(
                 "#BSUB -e %s/%s-%%J.err" % (self.log_directory, self.name or "worker")
@@ -196,3 +197,6 @@ def lsf_detect_units():
             "default unit of %s." % unit
         )
     return unit
+
+
+LSFCluster = functools.partial(JobQueueCluster, Job=LSFJob, config_name="lsf")
