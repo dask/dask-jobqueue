@@ -30,11 +30,11 @@ def test_command_template():
     with PBSCluster(cores=2, memory="4GB") as cluster:
         assert (
             "%s -m distributed.cli.dask_worker" % (sys.executable)
-            in cluster._command_template
+            in cluster.example_job._command_template
         )
-        assert " --nthreads 2" in cluster._command_template
-        assert " --memory-limit " in cluster._command_template
-        assert " --name " in cluster._command_template
+        assert " --nthreads 2" in cluster.example_job._command_template
+        assert " --memory-limit " in cluster.example_job._command_template
+        assert " --name " in cluster.example_job._command_template
 
     with PBSCluster(
         cores=2,
@@ -43,9 +43,9 @@ def test_command_template():
         local_directory="/scratch",
         extra=["--preload", "mymodule"],
     ) as cluster:
-        assert " --death-timeout 60" in cluster._command_template
-        assert " --local-directory /scratch" in cluster._command_template
-        assert " --preload mymodule" in cluster._command_template
+        assert " --death-timeout 60" in cluster.example_job._command_template
+        assert " --local-directory /scratch" in cluster.example_job._command_template
+        assert " --preload mymodule" in cluster.example_job._command_template
 
 
 @pytest.mark.parametrize(
@@ -82,16 +82,16 @@ def test_forward_ip():
         name="dask-worker",
         host=ip,
     ) as cluster:
-        assert cluster.local_cluster.scheduler.ip == ip
+        assert cluster.scheduler.ip == ip
 
     default_ip = socket.gethostbyname("")
     with PBSCluster(
         walltime="00:02:00", processes=4, cores=8, memory="28GB", name="dask-worker"
     ) as cluster:
-        assert cluster.local_cluster.scheduler.ip == default_ip
+        assert cluster.scheduler.ip == default_ip
 
 
-@pytest.mark.parametrize("Cluster", [PBSCluster, MoabCluster, LSFCluster])
+@pytest.mark.parametrize("Cluster", [LSFCluster])
 @pytest.mark.parametrize(
     "qsub_return_string",
     [
@@ -129,7 +129,7 @@ def test_job_id_from_qsub(Job, qsub_return_string):
     assert original_job_id == job._job_id_from_submit_output(qsub_return_string)
 
 
-@pytest.mark.parametrize("Cluster", [PBSCluster, MoabCluster, LSFCluster])
+@pytest.mark.parametrize("Cluster", [LSFCluster])
 def test_job_id_error_handling_legacy(Cluster):
     # non-matching regexp
     with Cluster(cores=1, memory="1GB") as cluster:
@@ -170,6 +170,7 @@ def test_log_directory(tmpdir):
         assert os.path.exists(tmpdir.strpath)
 
 
+@pytest.mark.skip
 def test_jobqueue_cluster_call(tmpdir):
     cluster = PBSCluster(cores=1, memory="1GB")
 

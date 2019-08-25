@@ -22,7 +22,6 @@ def test_header(Cluster):
         assert "#PBS -l walltime=00:02:00" in cluster.job_header
         assert "#PBS -q" not in cluster.job_header
         assert "#PBS -A" not in cluster.job_header
-        assert "--name dask-worker--${JOB_ID}--" in cluster.job_script()
 
     with Cluster(
         queue="regular",
@@ -388,7 +387,7 @@ def test_config_name_pbs_takes_custom_config():
 
     with dask.config.set({"jobqueue.pbs-config-name": conf}):
         with PBSCluster(config_name="pbs-config-name") as cluster:
-            assert cluster.name == "myname"
+            assert cluster.job_name == "myname"
 
 
 def test_informative_errors():
@@ -401,6 +400,7 @@ def test_informative_errors():
     assert "cores" in str(info.value)
 
 
-def test_adapt(loop):
-    with PBSCluster(loop, cores=1, memory="1 GB") as cluster:
+@pytest.mark.asyncio
+async def test_adapt(loop):
+    async with PBSCluster(cores=1, memory="1 GB", asynchronous=True) as cluster:
         cluster.adapt()

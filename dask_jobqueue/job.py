@@ -344,6 +344,7 @@ class JobQueueCluster(SpecCluster):
         asynchronous=False,
         # Scheduler keywords
         interface=None,
+        host=None,
         protocol="tcp://",
         dashboard_address=":8787",
         config_name=None,
@@ -365,6 +366,7 @@ class JobQueueCluster(SpecCluster):
             "options": {
                 "protocol": protocol,
                 "interface": interface,
+                "host": host,
                 "dashboard_address": dashboard_address,
                 "security": security,
             },
