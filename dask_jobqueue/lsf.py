@@ -53,7 +53,7 @@ class LSFJob(Job):
     """,
         4,
     )
-    submit_command = "bsub <"
+    submit_command = "bsub"
     cancel_command = "bkill"
 
     def __init__(
@@ -133,10 +133,6 @@ class LSFJob(Job):
         self.job_header = "\n".join(header_lines)
 
         logger.debug("Job script: \n %s" % self.job_script())
-
-    def _submit_job(self, script_filename):
-        piped_cmd = [self.submit_command + " " + script_filename + " 2> /dev/null"]
-        return self._call(piped_cmd, shell=True)
 
 
 def lsf_format_bytes_ceil(n, lsf_units="mb"):
