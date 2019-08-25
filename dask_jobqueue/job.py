@@ -43,6 +43,9 @@ class Job(ProcessInterface):
         Additional arguments to pass to `dask-worker`
     env_extra : list
         Other commands to add to script before launching worker.
+    header_skip : list
+        Lines to skip in the header.
+        Header lines matching this text will be removed
     log_directory : str
         Directory to use for job scheduler logs.
     shebang : str
@@ -100,6 +103,7 @@ class Job(ProcessInterface):
         local_directory=None,
         extra=None,
         env_extra=None,
+        header_skip=None,
         log_directory=None,
         shebang=None,
         python=sys.executable,
@@ -142,6 +146,8 @@ class Job(ProcessInterface):
             extra = dask.config.get("jobqueue.%s.extra" % config_name)
         if env_extra is None:
             env_extra = dask.config.get("jobqueue.%s.env-extra" % config_name)
+        if header_skip is None:
+            header_skip = dask.config.get("jobqueue.%s.header-skip" % config_name, ())
         if log_directory is None:
             log_directory = dask.config.get("jobqueue.%s.log-directory" % config_name)
         if shebang is None:
@@ -176,6 +182,7 @@ class Job(ProcessInterface):
         self.shebang = shebang
 
         self._env_header = "\n".join(env_extra)
+        self.header_skip = set(header_skip)
 
         # dask-worker command line build
         dask_worker_command = "%(python)s -m distributed.cli.dask_worker" % dict(
@@ -205,9 +212,11 @@ class Job(ProcessInterface):
 
     def job_script(self):
         """ Construct a job submission script """
+        header = "\n".join([line for line in self.job_header.split("\n") if not any(skip
+            in line for skip in self.header_skip)])
         pieces = {
             "shebang": self.shebang,
-            "job_header": self.job_header,
+            "job_header": header,
             "env_header": self._env_header,
             "worker_command": self._command_template,
         }

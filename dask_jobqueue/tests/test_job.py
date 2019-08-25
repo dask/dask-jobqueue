@@ -1,7 +1,7 @@
 import asyncio
 from time import time
 
-from dask_jobqueue import PBSJob, SGEJob, SLURMJob
+from dask_jobqueue import PBSJob, SGEJob, SLURMJob, LSFJob
 from dask_jobqueue.job import JobQueueCluster
 from dask.distributed import Scheduler, Client
 
@@ -17,6 +17,7 @@ job_params = [
     pytest.param(SGEJob, marks=[pytest.mark.env("sge")]),
     pytest.param(PBSJob, marks=[pytest.mark.env("pbs")]),
     pytest.param(SLURMJob, marks=[pytest.mark.env("slurm")]),
+    pytest.param(LSFJob, marks=[pytest.mark.env("lsf")]),
 ]
 
 
@@ -89,3 +90,11 @@ async def test_adapt(Job):
                 assert time() < start + 10
             assert not cluster.worker_spec
             assert not cluster.workers
+
+
+def test_header_lines_skip():
+    job = PBSJob(cores=1, memory="1GB", job_name="foobar")
+    assert "foobar" in job.job_script()
+
+    job = PBSJob(cores=1, memory="1GB", job_name="foobar", header_skip=["-N"])
+    assert "foobar" not in job.job_script()

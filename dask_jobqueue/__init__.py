@@ -2,11 +2,11 @@
 from . import config
 from .core import JobQueueCluster
 from .job import Job
-from .moab import MoabCluster
+from .moab import MoabCluster, MoabJob
 from .pbs import PBSCluster, PBSJob
 from .slurm import SLURMCluster, SLURMJob
 from .sge import SGECluster, SGEJob
-from .lsf import LSFCluster
+from .lsf import LSFCluster, LSFJob
 from .oar import OARCluster
 from .htcondor import HTCondorCluster
 
