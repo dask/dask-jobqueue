@@ -110,7 +110,7 @@ class SLURMJob(Job):
         self.job_header = "\n".join(header_lines)
 
 
-SLURMCluster = functools.partial(JobQueueCluster, Job=SLURMJob)
+SLURMCluster = functools.partial(JobQueueCluster, Job=SLURMJob, config_name="slurm")
 
 
 def slurm_format_bytes_ceil(n):

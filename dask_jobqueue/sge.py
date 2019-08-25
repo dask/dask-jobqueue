@@ -68,4 +68,4 @@ class SGEJob(Job):
         logger.debug("Job script: \n %s" % self.job_script())
 
 
-SGECluster = functools.partial(JobQueueCluster, Job=SGEJob)
+SGECluster = functools.partial(JobQueueCluster, Job=SGEJob, config_name="sge")

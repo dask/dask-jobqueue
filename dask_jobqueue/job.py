@@ -346,6 +346,7 @@ class JobQueueCluster(SpecCluster):
         interface=None,
         protocol="tcp://",
         dashboard_address=":8787",
+        config_name=None,
         # Job keywords
         **kwargs
     ):
@@ -354,6 +355,10 @@ class JobQueueCluster(SpecCluster):
                 "You must provide a Job type like PBSJob, SLURMJob, "
                 "or SGEJob with the Job= argument."
             )
+
+        if config_name:
+            if interface is None:
+                interface = dask.config.get("jobqueue.%s.interface" % config_name)
 
         scheduler = {
             "cls": Scheduler,  # Use local scheduler for now
@@ -364,6 +369,8 @@ class JobQueueCluster(SpecCluster):
                 "security": security,
             },
         }
+        if config_name:
+            kwargs["config_name"] = config_name
         kwargs["interface"] = interface
         kwargs["protocol"] = protocol
         kwargs["security"] = security
