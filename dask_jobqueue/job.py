@@ -394,6 +394,7 @@ class JobQueueCluster(SpecCluster):
         self._kwargs = kwargs
         self._Job = Job
         worker = {"cls": Job, "options": kwargs}
+        self.example_job
 
         super().__init__(
             scheduler=scheduler,
@@ -409,7 +410,11 @@ class JobQueueCluster(SpecCluster):
 
     @property
     def example_job(self):
-        return self._Job(self.scheduler.address or "tcp://scheduler:8786", name="name", **self._kwargs)
+        try:
+            address = self.scheduler.address
+        except AttributeError:
+            address = "tcp://scheduler:8786"
+        return self._Job(address or "tcp://scheduler:8786", name="name", **self._kwargs)
 
     @property
     def job_header(self):
