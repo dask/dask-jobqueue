@@ -391,8 +391,9 @@ class JobQueueCluster(SpecCluster):
         kwargs["interface"] = interface
         kwargs["protocol"] = protocol
         kwargs["security"] = security
+        self._kwargs = kwargs
+        self._Job = Job
         worker = {"cls": Job, "options": kwargs}
-        self.example_job = Job("tcp://scheduler:8786", name="name", **kwargs)
 
         super().__init__(
             scheduler=scheduler,
@@ -405,6 +406,10 @@ class JobQueueCluster(SpecCluster):
 
         if n_workers:
             self.scale(n_workers)
+
+    @property
+    def example_job(self):
+        return self._Job(self.scheduler.address or "tcp://scheduler:8786", name="name", **self._kwargs)
 
     @property
     def job_header(self):
