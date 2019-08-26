@@ -147,7 +147,7 @@ def test_scale_cores_memory(loop):
         with Client(cluster) as client:
 
             cluster.scale(cores=2)
-            client.wait_for_workers(2)
+            client.wait_for_workers(1)
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
