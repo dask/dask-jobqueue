@@ -25,18 +25,26 @@ job_params = [
 @pytest.mark.asyncio
 async def test_job(Job):
     async with Scheduler(port=0) as s:
+        print(1)
         job = Job(scheduler=s.address, name="foo", cores=1, memory="1GB")
+        print(2)
         job = await job
+        print(3)
         async with Client(s.address, asynchronous=True) as client:
+            print(4)
             await client.wait_for_workers(1)
+            print(5)
             assert list(s.workers.values())[0].name == "foo"
 
+        print(6)
         await job.close()
+        print(7)
 
         start = time()
         while len(s.workers):
             await asyncio.sleep(0.1)
             assert time() < start + 5
+        print(8)
 
 
 @pytest.mark.parametrize("Job", job_params)
