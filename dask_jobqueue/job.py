@@ -214,8 +214,13 @@ class Job(ProcessInterface):
 
     def job_script(self):
         """ Construct a job submission script """
-        header = "\n".join([line for line in self.job_header.split("\n") if not any(skip
-            in line for skip in self.header_skip)])
+        header = "\n".join(
+            [
+                line
+                for line in self.job_header.split("\n")
+                if not any(skip in line for skip in self.header_skip)
+            ]
+        )
         pieces = {
             "shebang": self.shebang,
             "job_header": header,
@@ -342,7 +347,6 @@ class Job(ProcessInterface):
 
 
 class JobQueueCluster(SpecCluster):
-
     def __init__(
         self,
         n_workers=0,

@@ -103,4 +103,4 @@ class PBSJob(Job):
         logger.debug("Job script: \n %s" % self.job_script())
 
 
-PBSCluster = functools.partial(JobQueueCluster, Job=PBSJob, config_name='pbs')
+PBSCluster = functools.partial(JobQueueCluster, Job=PBSJob, config_name="pbs")

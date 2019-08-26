@@ -5,7 +5,6 @@ import os
 
 import dask
 
-from .core import docstrings
 from .job import Job, JobQueueCluster
 
 logger = logging.getLogger(__name__)
@@ -51,6 +50,7 @@ class LSFJob(Job):
 
     >>> cluster.adapt()
     """
+
     submit_command = "bsub"
     cancel_command = "bkill"
 
