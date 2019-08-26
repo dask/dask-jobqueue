@@ -12,8 +12,9 @@ logger = logging.getLogger(__name__)
 
 
 class LSFJob(Job):
-    __doc__ = docstrings.with_indents(
-        """ Launch Dask on a LSF cluster
+    """ Launch Dask on a LSF cluster
+
+    See also the docstring for Job for more parameters
 
     Parameters
     ----------
@@ -34,7 +35,6 @@ class LSFJob(Job):
     lsf_units : str
         Unit system for large units in resource usage set by the
         LSF_UNIT_FOR_LIMITS in the lsf.conf file of a cluster.
-    %(Job.parameters)s
 
     Examples
     --------
@@ -50,9 +50,7 @@ class LSFJob(Job):
     kill workers based on load.
 
     >>> cluster.adapt()
-    """,
-        4,
-    )
+    """
     submit_command = "bsub"
     cancel_command = "bkill"
 
