@@ -112,11 +112,7 @@ def test_basic(loop):
         with Client(cluster) as client:
 
             cluster.scale(2)
-
-            start = time()
-            while not (cluster.pending_jobs or cluster.running_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+            client.wait_for_workers(2)
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
@@ -130,11 +126,11 @@ def test_basic(loop):
             cluster.scale(0)
 
             start = time()
-            while cluster.running_jobs:
+            while client.scheduler_info()["workers"]:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 
-            assert not cluster.running_jobs
+            assert not cluster.workers and not cluster.worker_spec
 
 
 @pytest.mark.env("pbs")
@@ -151,15 +147,11 @@ def test_scale_cores_memory(loop):
         with Client(cluster) as client:
 
             cluster.scale(cores=2)
-
-            start = time()
-            while not (cluster.pending_jobs or cluster.running_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+            client.wait_for_workers(2)
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
-            assert cluster.running_jobs
+            assert cluster.workers
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
@@ -169,11 +161,11 @@ def test_scale_cores_memory(loop):
             cluster.scale(memory="0GB")
 
             start = time()
-            while cluster.running_jobs:
+            while client.scheduler_info()["workers"]:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 
-            assert not cluster.running_jobs
+            assert not cluster.workers
 
 
 @pytest.mark.env("pbs")
@@ -194,11 +186,11 @@ def test_basic_scale_edge_cases(loop):
         # Wait to see what happens
         sleep(0.2)
         start = time()
-        while cluster.pending_jobs or cluster.running_jobs:
+        while cluster.workers or client.scheduler_info()["workers"]:
             sleep(0.1)
             assert time() < start + QUEUE_WAIT
 
-        assert not (cluster.pending_jobs or cluster.running_jobs)
+        assert not cluster.workers
 
 
 @pytest.mark.env("pbs")
@@ -226,11 +218,9 @@ def test_adaptive(loop):
             del future
 
             start = time()
-            while cluster.pending_jobs or cluster.running_jobs:
+            while client.scheduler_info()["workers"] or cluster.workers:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
-
-            assert cluster.finished_jobs
 
 
 @pytest.mark.env("pbs")
@@ -246,18 +236,10 @@ def test_adaptive_grouped(loop):
     ) as cluster:
         cluster.adapt(minimum=1)  # at least 1 worker
         with Client(cluster) as client:
-            start = time()
-            while not (cluster.pending_jobs or cluster.running_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+            client.wait_for_workers(1)
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
-
-            start = time()
-            while not cluster.running_jobs:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
 
             start = time()
             processes = cluster.worker_processes
@@ -291,11 +273,9 @@ def test_adaptive_cores_mem(loop):
             del future
 
             start = time()
-            while cluster.pending_jobs or cluster.running_jobs:
+            while cluster.workers:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
-
-            assert cluster.finished_jobs
 
 
 @pytest.mark.env("pbs")
