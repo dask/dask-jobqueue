@@ -33,6 +33,8 @@ class Job(ProcessInterface):
         Total amount of memory per job
     processes : int
         Number of processes per job
+    nanny : bool
+        Whether or not to start a nanny process
     interface : str
         Network interface like 'eth0' or 'ib0'.
     death_timeout : float
@@ -54,8 +56,6 @@ class Job(ProcessInterface):
         Python executable used to launch Dask workers.
     config_name : str
         Section to use from jobqueue.yaml configuration file.
-    kwargs : dict
-        Additional keyword arguments to pass to `LocalCluster`
 
     Attributes
     ----------
@@ -98,6 +98,7 @@ class Job(ProcessInterface):
         cores=None,
         memory=None,
         processes=None,
+        nanny=True,
         interface=None,
         death_timeout=None,
         local_directory=None,
@@ -195,6 +196,7 @@ class Job(ProcessInterface):
 
         command_args += ["--memory-limit", self.worker_process_memory]
         command_args += ["--name", str(name)]
+        command_args += ["--nanny" if nanny else "--no-nanny"]
 
         if death_timeout is not None:
             command_args += ["--death-timeout", death_timeout]
