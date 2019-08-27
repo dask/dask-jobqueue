@@ -1,5 +1,6 @@
 # flake8: noqa
 from . import config
+from .local import LocalJob, LocalCluster
 from .core import JobQueueCluster
 from .job import Job
 from .moab import MoabCluster, MoabJob

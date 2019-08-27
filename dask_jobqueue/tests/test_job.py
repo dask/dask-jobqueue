@@ -1,7 +1,7 @@
 import asyncio
 from time import time
 
-from dask_jobqueue import PBSJob, SGEJob, SLURMJob, LSFJob
+from dask_jobqueue import PBSJob, SGEJob, SLURMJob, LSFJob, LocalJob
 from dask_jobqueue.job import JobQueueCluster
 from dask.distributed import Scheduler, Client
 
@@ -18,6 +18,7 @@ job_params = [
     pytest.param(PBSJob, marks=[pytest.mark.env("pbs")]),
     pytest.param(SLURMJob, marks=[pytest.mark.env("slurm")]),
     pytest.param(LSFJob, marks=[pytest.mark.env("lsf")]),
+    LocalJob,
 ]
 
 
@@ -43,7 +44,7 @@ async def test_job(Job):
         start = time()
         while len(s.workers):
             await asyncio.sleep(0.1)
-            assert time() < start + 5
+            assert time() < start + 10
         print(8)
 
 

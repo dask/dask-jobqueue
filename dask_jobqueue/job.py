@@ -4,7 +4,6 @@ import os
 import re
 import shlex
 import subprocess
-import six
 import sys
 import weakref
 
@@ -80,9 +79,7 @@ class Job(ProcessInterface):
 %(shebang)s
 
 %(job_header)s
-
 %(env_header)s
-
 %(worker_command)s
 """.lstrip()
 
@@ -182,7 +179,7 @@ class Job(ProcessInterface):
 
         self.shebang = shebang
 
-        self._env_header = "\n".join(env_extra)
+        self._env_header = "\n".join(filter(None, env_extra))
         self.header_skip = set(header_skip)
 
         # dask-worker command line build
@@ -329,12 +326,12 @@ class Job(ProcessInterface):
         )
 
         proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, **kwargs
         )
 
         out, err = proc.communicate()
-        if six.PY3:
-            out, err = out.decode(), err.decode()
+        out, err = out.decode(), err.decode()
+
         if proc.returncode != 0:
             raise RuntimeError(
                 "Command exited with non-zero exit code.\n"
