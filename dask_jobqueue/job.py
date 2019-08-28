@@ -407,8 +407,10 @@ class JobQueueCluster(SpecCluster):
             self.scale(n_workers)
 
     def new_worker_spec(self):
-        spec = super().new_worker_spec()
-        nprocs = self.new_spec["options"]["processes"]
+        spec = {self._i: self.new_spec}
+        self._i += 1
+
+        nprocs = self.new_spec.get("options", {}).get("processes", 1)
         if nprocs >= 1:
             [(name, value)] = spec.items()
             value = value.copy()
