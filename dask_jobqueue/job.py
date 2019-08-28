@@ -5,6 +5,7 @@ import re
 import shlex
 import subprocess
 import sys
+import toolz
 import weakref
 
 import dask
@@ -405,6 +406,21 @@ class JobQueueCluster(SpecCluster):
         if n_workers:
             self.scale(n_workers)
 
+    def new_worker_spec(self):
+        spec = super().new_worker_spec()
+        nprocs = self.new_spec["options"]["processes"]
+        if nprocs >= 1:
+            [(name, value)] = spec.items()
+            value = value.copy()
+            value["options"] = toolz.assoc(value["options"], "name", name)
+            name = str(name)
+
+            spec = {name + "-0": value}
+            for i in range(1, nprocs):
+                spec[name + "-" + str(i)] = {"cls": EmptyJob}
+
+        return spec
+
     @property
     def example_job(self):
         try:
@@ -423,3 +439,7 @@ class JobQueueCluster(SpecCluster):
     @property
     def job_name(self):
         return self.example_job.job_name
+
+
+class EmptyJob(ProcessInterface):
+    pass

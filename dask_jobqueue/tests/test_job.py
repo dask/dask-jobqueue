@@ -1,7 +1,7 @@
 import asyncio
 from time import time
 
-from dask_jobqueue import PBSJob, SGEJob, SLURMJob, LSFJob, LocalJob
+from dask_jobqueue import PBSJob, SGEJob, SLURMJob, LSFJob, LocalJob, LocalCluster
 from dask_jobqueue.job import JobQueueCluster
 from dask.distributed import Scheduler, Client
 
@@ -107,3 +107,27 @@ def test_header_lines_skip():
 
     job = PBSJob(cores=1, memory="1GB", job_name="foobar", header_skip=["-N"])
     assert "foobar" not in job.job_script()
+
+
+@pytest.mark.asyncio
+async def test_nprocs():
+    async with LocalCluster(
+        cores=2, memory="4GB", processes=2, asynchronous=True
+    ) as cluster:
+        async with Client(cluster, asynchronous=True) as client:
+            cluster.scale(cores=2)
+            assert len(cluster.worker_spec) == 2  # two workers
+            await cluster
+            await client.wait_for_workers(2)
+
+            assert set(cluster.workers) == {
+                ws.name for ws in cluster.scheduler.workers.values()
+            }
+
+            cluster.scale(cores=1)
+            await cluster
+            await asyncio.sleep(0.2)
+            assert len(cluster.scheduler.workers) == 2  # they're still one group
+
+            # this fails
+            # assert len(cluster.workers) == len(cluster.worker_spec) == 2
