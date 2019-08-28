@@ -180,18 +180,24 @@ def test_jobqueue_cluster_call(tmpdir):
     [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster, OARCluster],
 )
 def test_cluster_has_cores_and_memory(Cluster):
-    error_message_string = "You must specify how many cores to use per job like ``cores=8``"\
-                           + "as well as how much memory to use per job like ``memory='24 GB'``"
+    error_message_string = (
+        "You must specify how many cores to use per job like ``cores=8``"
+        + "as well as how much memory to use per job like ``memory='24 GB'``"
+    )
     with pytest.raises(ValueError, match=error_message_string):
         with Cluster():
             pass
 
-    error_message_string_no_cores = "You must specify how many cores to use per job like ``cores=8``"
+    error_message_string_no_cores = (
+        "You must specify how many cores to use per job like ``cores=8``"
+    )
     with pytest.raises(ValueError, match=error_message_string_no_cores):
-        with Cluster(memory='1GB'):
+        with Cluster(memory="1GB"):
             pass
 
-    error_message_string_no_memory = "You must specify how much memory to use per job like ``memory='24 GB'``"
+    error_message_string_no_memory = (
+        "You must specify how much memory to use per job like ``memory='24 GB'``"
+    )
     with pytest.raises(ValueError, match=error_message_string_no_memory):
         with Cluster(cores=4):
             pass
