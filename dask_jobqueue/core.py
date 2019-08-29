@@ -206,8 +206,8 @@ class JobQueueCluster(ClusterManager):
         if cores is None or memory is None:
             raise ValueError(
                 "You must specify how much cores and memory per job you want to use, for example:\n"
-                "cluster = {}(cores={}, memory='{!r}'".format(
-                    self.__class__.__name__, "cores or 8", "memory or '24GB'"
+                "cluster = {}(cores={}, memory='{}')".format(
+                    self.__class__.__name__, "8", "24GB"
                 )
             )
 
