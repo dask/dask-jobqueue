@@ -327,7 +327,7 @@ class Job(ProcessInterface):
         )
 
         proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, **kwargs
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs
         )
 
         out, err = proc.communicate()
