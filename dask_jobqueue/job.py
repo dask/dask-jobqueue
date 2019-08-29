@@ -392,7 +392,10 @@ class JobQueueCluster(SpecCluster):
         self._kwargs = kwargs
         self._Job = Job
         worker = {"cls": Job, "options": kwargs}
-        self.example_job
+        if "processes" in kwargs and kwargs["processes"] > 1:
+            worker["group"] = ["-" + str(i) for i in range(kwargs["processes"])]
+
+        self.example_job  # trigger property to ensure that the job is valid
 
         super().__init__(
             scheduler=scheduler,
@@ -405,23 +408,6 @@ class JobQueueCluster(SpecCluster):
 
         if n_workers:
             self.scale(n_workers)
-
-    def new_worker_spec(self):
-        spec = {self._i: self.new_spec}
-        self._i += 1
-
-        nprocs = self.new_spec.get("options", {}).get("processes", 1)
-        if nprocs >= 1:
-            [(name, value)] = spec.items()
-            value = value.copy()
-            value["options"] = toolz.assoc(value["options"], "name", name)
-            name = str(name)
-
-            spec = {name + "-0": value}
-            for i in range(1, nprocs):
-                spec[name + "-" + str(i)] = {"cls": EmptyJob}
-
-        return spec
 
     @property
     def example_job(self):

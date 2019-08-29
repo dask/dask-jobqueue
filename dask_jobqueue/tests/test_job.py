@@ -114,20 +114,16 @@ async def test_nprocs():
     async with LocalCluster(
         cores=2, memory="4GB", processes=2, asynchronous=True
     ) as cluster:
+        s = cluster.scheduler
         async with Client(cluster, asynchronous=True) as client:
             cluster.scale(cores=2)
-            assert len(cluster.worker_spec) == 2  # two workers
             await cluster
             await client.wait_for_workers(2)
-
-            assert set(cluster.workers) == {
-                ws.name for ws in cluster.scheduler.workers.values()
-            }
+            assert len(cluster.workers) == 1  # two workers, one job
+            assert len(s.workers) == 2
+            assert cluster.plan == {ws.name for ws in s.workers.values()}
 
             cluster.scale(cores=1)
             await cluster
             await asyncio.sleep(0.2)
             assert len(cluster.scheduler.workers) == 2  # they're still one group
-
-            # this fails
-            # assert len(cluster.workers) == len(cluster.worker_spec) == 2
