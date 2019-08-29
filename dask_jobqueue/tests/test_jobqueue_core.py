@@ -180,16 +180,12 @@ def test_jobqueue_cluster_call(tmpdir):
     [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster, OARCluster],
 )
 def test_cluster_has_cores_and_memory(Cluster):
-    error_message_check = r"cores.+memory"
+    cls_name = Cluster.__name__ + r"\("
+    with pytest.raises(ValueError, match=cls_name + r"cores=\d, memory='\d+GB'"):
+        Cluster()
 
-    with pytest.raises(ValueError, match=error_message_check):
-        with Cluster():
-            pass
+    with pytest.raises(ValueError, match=cls_name + r"cores=\d, memory='1GB'"):
+        Cluster(memory="1GB")
 
-    with pytest.raises(ValueError, match=error_message_check):
-        with Cluster(memory="1GB"):
-            pass
-
-    with pytest.raises(ValueError, match=error_message_check):
-        with Cluster(cores=4):
-            pass
+    with pytest.raises(ValueError, match=cls_name + r"cores=4, memory='\d+GB'"):
+        Cluster(cores=4)
