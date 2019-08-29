@@ -364,6 +364,7 @@ class JobQueueCluster(SpecCluster):
         # Job keywords
         **kwargs
     ):
+        self.status = "created"
         if Job is None:
             raise ValueError(
                 "You must provide a Job type like PBSJob, SLURMJob, "
