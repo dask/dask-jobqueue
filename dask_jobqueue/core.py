@@ -203,18 +203,12 @@ class JobQueueCluster(ClusterManager):
         if shebang is None:
             shebang = dask.config.get("jobqueue.%s.shebang" % config_name)
 
-        if (cores is None) and (memory is None):
+        if cores is None or memory is None:
             raise ValueError(
-                "You must specify how many cores to use per job like ``cores=8``"
-                + "as well as how much memory to use per job like ``memory='24 GB'``"
-            )
-        elif cores is None:
-            raise ValueError(
-                "You must specify how many cores to use per job like ``cores=8``"
-            )
-        elif memory is None:
-            raise ValueError(
-                "You must specify how much memory to use per job like ``memory='24 GB'``"
+                "You must specify how much cores and memory per job you want to use, for example:\n"
+                "cluster = {}(cores={}, memory='{!r}'".format(
+                    self.__class__.__name__, "cores or 8", "memory or '24GB'"
+                )
             )
 
         # This attribute should be overridden
