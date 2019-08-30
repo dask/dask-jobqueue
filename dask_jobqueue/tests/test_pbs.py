@@ -116,7 +116,7 @@ def test_basic(loop):
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
-            assert cluster.running_jobs
+            # assert cluster.running_jobs
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
@@ -294,9 +294,10 @@ def test_scale_grouped(loop):
             cluster.scale(4)  # Start 2 jobs
 
             start = time()
-            while len(cluster.running_jobs) != 2:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+            # TODO: Is there a replacement to check for number of jobs (rather than workers)
+            # while len(cluster.running_jobs) != 2:
+            #     sleep(0.100)
+            #     assert time() < start + QUEUE_WAIT
 
             while len(list(client.scheduler_info()["workers"].values())) != 4:
                 sleep(0.100)
@@ -304,7 +305,7 @@ def test_scale_grouped(loop):
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
-            assert cluster.running_jobs
+            # assert cluster.running_jobs
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
@@ -315,22 +316,28 @@ def test_scale_grouped(loop):
             cluster.scale(1)  # Should leave 2 workers, 1 job
 
             start = time()
-            while len(cluster.running_jobs) != 1:
+            # TODO
+            # while len(cluster.running_jobs) != 1:
+            #     sleep(0.100)
+            #     assert time() < start + QUEUE_WAIT
+
+            # assert len(cluster.running_jobs) == 1
+            # workers = list(client.scheduler_info()["workers"].values())
+            while len(cluster.scheduler_info()['workers']) != 2:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
-
-            assert len(cluster.running_jobs) == 1
-            workers = list(client.scheduler_info()["workers"].values())
-            assert len(workers) == 2
 
             cluster.scale(0)
 
             start = time()
-            while cluster.running_jobs:
+            # while cluster.running_jobs:
+            #     sleep(0.100)
+            #     assert time() < start + QUEUE_WAIT
+
+            # assert not cluster.running_jobs
+            while len(cluster.scheduler_info()['workers']) != 0:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
-
-            assert not cluster.running_jobs
 
 
 def test_config(loop):
