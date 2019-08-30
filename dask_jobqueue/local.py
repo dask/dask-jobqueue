@@ -40,6 +40,9 @@ class LocalJob(Job):
         self.process = subprocess.Popen(
             text, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
+        # TODO this should raise if self.process.returncode != 0. Refactor
+        # Job._call to be able to return process (so that we can return self.process.pid below)
+
         self.process.stderr.readline()  # make sure that we start
         return str(self.process.pid)
 
