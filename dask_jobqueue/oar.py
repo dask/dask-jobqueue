@@ -1,14 +1,16 @@
+import functools
 import logging
 import shlex
 
 import dask
 
-from .core import JobQueueCluster, docstrings
+from .core import docstrings
+from .job import JobQueueCluster, Job
 
 logger = logging.getLogger(__name__)
 
 
-class OARCluster(JobQueueCluster):
+class OARJob(Job):
     __doc__ = docstrings.with_indents(
         """ Launch Dask on a OAR cluster
 
@@ -49,6 +51,7 @@ class OARCluster(JobQueueCluster):
 
     def __init__(
         self,
+        *args,
         queue=None,
         project=None,
         resource_spec=None,
@@ -68,11 +71,11 @@ class OARCluster(JobQueueCluster):
         if job_extra is None:
             job_extra = dask.config.get("jobqueue.%s.job-extra" % config_name)
 
-        super().__init__(config_name=config_name, **kwargs)
+        super().__init__(*args, config_name=config_name, **kwargs)
 
         header_lines = []
-        if self.name is not None:
-            header_lines.append("#OAR -n %s" % self.name)
+        if self.job_name is not None:
+            header_lines.append("#OAR -n %s" % self.job_name)
         if queue is not None:
             header_lines.append("#OAR -q %s" % queue)
         if project is not None:
@@ -121,3 +124,6 @@ class OARCluster(JobQueueCluster):
         oarsub_command = " ".join([self.submit_command] + oarsub_options)
         oarsub_command_split = shlex.split(oarsub_command) + [inline_script]
         return self._call(oarsub_command_split)
+
+
+OARCluster = functools.partial(JobQueueCluster, Job=OARJob, config_name="oar")
