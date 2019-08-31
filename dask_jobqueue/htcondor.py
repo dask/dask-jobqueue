@@ -1,3 +1,4 @@
+import functools
 import logging
 import re
 import shlex
@@ -5,12 +6,13 @@ import shlex
 import dask
 from distributed.utils import parse_bytes
 
-from .core import JobQueueCluster, docstrings
+from .core import docstrings
+from .job import JobQueueCluster, Job
 
 logger = logging.getLogger(__name__)
 
 
-class HTCondorCluster(JobQueueCluster):
+class HTCondorJob(Job):
     __doc__ = docstrings.with_indents(
         """ Launch Dask on an HTCondor cluster with a shared file system
 
@@ -57,7 +59,7 @@ Executable = %(executable)s
     # Python (can't find its libs), so we have to go through the shell.
     executable = "/bin/sh"
 
-    def __init__(self, disk=None, job_extra=None, config_name="htcondor", **kwargs):
+    def __init__(self, *args, disk=None, job_extra=None, config_name="htcondor", **kwargs):
         if disk is None:
             disk = dask.config.get("jobqueue.%s.disk" % config_name)
         if disk is None:
@@ -71,7 +73,7 @@ Executable = %(executable)s
             self.job_extra = job_extra
 
         # Instantiate args and parameters from parent abstract class
-        super().__init__(config_name=config_name, **kwargs)
+        super().__init__(*args, config_name=config_name, **kwargs)
 
         env_extra = kwargs.get("env_extra", None)
         if env_extra is None:
@@ -220,3 +222,6 @@ def quote_environment(env):
         entries.append("%s=%s" % (k, qv))
 
     return " ".join(entries)
+
+
+HTCondorCluster = functools.partial(JobQueueCluster, Job=HTCondorJob, config_name="htcondor")
