@@ -323,7 +323,7 @@ def test_scale_grouped(loop):
 
             # assert len(cluster.running_jobs) == 1
             # workers = list(client.scheduler_info()["workers"].values())
-            while len(client.scheduler_info()['workers']) != 2:
+            while len(client.scheduler_info()["workers"]) != 2:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 
@@ -335,7 +335,7 @@ def test_scale_grouped(loop):
             #     assert time() < start + QUEUE_WAIT
 
             # assert not cluster.running_jobs
-            while len(client.scheduler_info()['workers']) != 0:
+            while len(client.scheduler_info()["workers"]) != 0:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 
