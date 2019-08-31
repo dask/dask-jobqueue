@@ -427,7 +427,3 @@ class JobQueueCluster(SpecCluster):
     @property
     def job_name(self):
         return self.example_job.job_name
-
-
-class EmptyJob(ProcessInterface):
-    pass

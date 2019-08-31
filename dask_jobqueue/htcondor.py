@@ -59,7 +59,9 @@ Executable = %(executable)s
     # Python (can't find its libs), so we have to go through the shell.
     executable = "/bin/sh"
 
-    def __init__(self, *args, disk=None, job_extra=None, config_name="htcondor", **kwargs):
+    def __init__(
+        self, *args, disk=None, job_extra=None, config_name="htcondor", **kwargs
+    ):
         if disk is None:
             disk = dask.config.get("jobqueue.%s.disk" % config_name)
         if disk is None:
@@ -224,4 +226,6 @@ def quote_environment(env):
     return " ".join(entries)
 
 
-HTCondorCluster = functools.partial(JobQueueCluster, Job=HTCondorJob, config_name="htcondor")
+HTCondorCluster = functools.partial(
+    JobQueueCluster, Job=HTCondorJob, config_name="htcondor"
+)
