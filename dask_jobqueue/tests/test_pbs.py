@@ -210,7 +210,7 @@ def test_adaptive(loop):
             assert future.result(QUEUE_WAIT) == 11
 
             start = time()
-            processes = cluster.worker_processes
+            processes = cluster.example_job.worker_processes
             while len(client.scheduler_info()["workers"]) != processes:
                 sleep(0.1)
                 assert time() < start + QUEUE_WAIT
@@ -242,7 +242,7 @@ def test_adaptive_grouped(loop):
             assert future.result(QUEUE_WAIT) == 11
 
             start = time()
-            processes = cluster.worker_processes
+            processes = cluster.example_job.worker_processes
             while len(client.scheduler_info()["workers"]) != processes:
                 sleep(0.1)
                 assert time() < start + QUEUE_WAIT
@@ -265,7 +265,7 @@ def test_adaptive_cores_mem(loop):
             assert future.result(QUEUE_WAIT) == 11
 
             start = time()
-            processes = cluster.worker_processes
+            processes = cluster.example_job.worker_processes
             while len(client.scheduler_info()["workers"]) != processes:
                 sleep(0.1)
                 assert time() < start + QUEUE_WAIT
