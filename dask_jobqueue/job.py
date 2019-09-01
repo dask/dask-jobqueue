@@ -164,7 +164,7 @@ class Job(ProcessInterface):
         self.job_header = None
 
         if interface:
-            extra += ["--interface", interface]
+            extra = extra + ["--interface", interface]
             kwargs.setdefault("host", get_ip_interface(interface))
         else:
             kwargs.setdefault("host", "")
