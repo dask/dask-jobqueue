@@ -193,4 +193,6 @@ def lsf_detect_units():
     return unit
 
 
-LSFCluster = functools.partial(JobQueueCluster, Job=LSFJob, config_name="lsf")
+class LSFCluster(JobQueueCluster):
+    Job = LSFJob
+    config_name = "lsf"

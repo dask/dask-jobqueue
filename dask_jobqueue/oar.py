@@ -1,4 +1,3 @@
-import functools
 import logging
 import shlex
 
@@ -126,4 +125,6 @@ class OARJob(Job):
         return self._call(oarsub_command_split)
 
 
-OARCluster = functools.partial(JobQueueCluster, Job=OARJob, config_name="oar")
+class OARCluster(JobQueueCluster):
+    Job = OARJob
+    config_name = "oar"

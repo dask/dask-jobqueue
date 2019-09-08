@@ -226,6 +226,6 @@ def quote_environment(env):
     return " ".join(entries)
 
 
-HTCondorCluster = functools.partial(
-    JobQueueCluster, Job=HTCondorJob, config_name="htcondor"
-)
+class HTCondorCluster(JobQueueCluster):
+    Job = HTCondorJob
+    config_name = "htcondor"

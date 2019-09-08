@@ -1,7 +1,4 @@
-import functools
-
-from .job import JobQueueCluster
-from .pbs import PBSJob
+from .pbs import PBSJob, PBSCluster
 
 
 class MoabJob(PBSJob):
@@ -10,4 +7,5 @@ class MoabJob(PBSJob):
     scheduler_name = "moab"
 
 
-MoabCluster = functools.partial(JobQueueCluster, Job=MoabJob, config_name="pbs")
+class MoabCluster(PBSCluster):
+    Job = MoabJob

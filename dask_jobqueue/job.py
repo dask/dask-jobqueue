@@ -344,6 +344,8 @@ class Job(ProcessInterface):
 
 
 class JobQueueCluster(SpecCluster):
+    Job = None
+
     def __init__(
         self,
         n_workers=0,
@@ -364,7 +366,10 @@ class JobQueueCluster(SpecCluster):
         **kwargs
     ):
         self.status = "created"
-        if Job is None:
+        if Job is not None:
+            self.Job = Job
+
+        if self.Job is None:
             raise ValueError(
                 "You must provide a Job type like PBSJob, SLURMJob, "
                 "or SGEJob with the Job= argument."
@@ -390,8 +395,7 @@ class JobQueueCluster(SpecCluster):
         kwargs["protocol"] = protocol
         kwargs["security"] = security
         self._kwargs = kwargs
-        self._Job = Job
-        worker = {"cls": Job, "options": kwargs}
+        worker = {"cls": self.Job, "options": kwargs}
         if "processes" in kwargs and kwargs["processes"] > 1:
             worker["group"] = ["-" + str(i) for i in range(kwargs["processes"])]
 
@@ -415,7 +419,7 @@ class JobQueueCluster(SpecCluster):
             address = self.scheduler.address
         except AttributeError:
             address = "tcp://scheduler:8786"
-        return self._Job(address or "tcp://scheduler:8786", name="name", **self._kwargs)
+        return self.Job(address or "tcp://scheduler:8786", name="name", **self._kwargs)
 
     @property
     def job_header(self):

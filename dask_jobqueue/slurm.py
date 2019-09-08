@@ -110,9 +110,6 @@ class SLURMJob(Job):
         self.job_header = "\n".join(header_lines)
 
 
-SLURMCluster = functools.partial(JobQueueCluster, Job=SLURMJob, config_name="slurm")
-
-
 def slurm_format_bytes_ceil(n):
     """ Format bytes as text.
 
@@ -136,3 +133,8 @@ def slurm_format_bytes_ceil(n):
     if n >= 1024:
         return "%dK" % math.ceil(n / 1024)
     return "1K" % n
+
+
+class SLURMCluster(JobQueueCluster):
+    Job = SLURMJob
+    config_name = "slurm"

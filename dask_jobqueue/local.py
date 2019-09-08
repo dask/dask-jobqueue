@@ -53,4 +53,6 @@ class LocalJob(Job):
         # terminate_process(self.process)
 
 
-LocalCluster = functools.partial(JobQueueCluster, Job=LocalJob, config_name="local")
+class LocalCluster(JobQueueCluster):
+    Job = LocalJob
+    config_name = "local"
