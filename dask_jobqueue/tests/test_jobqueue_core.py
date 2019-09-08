@@ -25,7 +25,7 @@ def test_errors():
 
 
 def test_command_template():
-    with PBSCluster(cores=2, memory="4GB") as cluster:
+    with PBSCluster(cores=2, processes=1, memory="4GB") as cluster:
         assert (
             "%s -m distributed.cli.dask_worker" % (sys.executable)
             in cluster._command_template
