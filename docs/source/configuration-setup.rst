@@ -70,9 +70,9 @@ This can be avoided by always using 'GiB' in dask-jobqueue configuration.
 Processes
 ---------
 
-By default Dask will run one Python process per job.  However, you can
-optionally choose to cut up that job into multiple processes using the
-``processes`` configuration value.  This can be advantageous if your
+Dask will, by default, divide each job into a number of processes according
+to the number of cores per job. However, you can overwrite this default value
+using the ``processes`` configuration value.  This can be advantageous if your
 computations are bound by the GIL, but disadvantageous if you plan to
 communicate a lot between processes.  Typically we find that for pure Numpy
 workloads a low number of processes (like one) is best, while for pure Python

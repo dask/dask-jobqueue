@@ -9,6 +9,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 
 import dask
+from dask.utils import factors
 import docrep
 from .deploy import ClusterManager
 from distributed import LocalCluster
@@ -185,7 +186,10 @@ class JobQueueCluster(ClusterManager):
         if memory is None:
             memory = dask.config.get("jobqueue.%s.memory" % config_name)
         if processes is None:
-            processes = dask.config.get("jobqueue.%s.processes" % config_name)
+            if cores <= 4:
+                processes = cores
+            else:
+                processes = min(f for f in factors(cores) if f >= math.sqrt(cores))
         if interface is None:
             interface = dask.config.get("jobqueue.%s.interface" % config_name)
         if death_timeout is None:
