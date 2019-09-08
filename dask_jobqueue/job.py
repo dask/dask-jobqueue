@@ -69,7 +69,6 @@ cluster_parameters = """
 """.strip()
 
 
-
 class Job(ProcessInterface):
     """ Base class to launch Dask workers on Job queues
 
@@ -97,7 +96,9 @@ class Job(ProcessInterface):
     OARCluster
     LSFCluster
     MoabCluster
-    """.format(job_parameters=job_parameters)
+    """.format(
+        job_parameters=job_parameters
+    )
 
     _script_template = """
 %(shebang)s
@@ -382,7 +383,9 @@ class JobQueueCluster(SpecCluster):
     Job : Job
         A class that can be awaited to ask for a single Job
     {cluster_parameters}
-    """.format(cluster_parameters=cluster_parameters)
+    """.format(
+        cluster_parameters=cluster_parameters
+    )
 
     Job = None
 

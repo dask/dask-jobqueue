@@ -222,6 +222,8 @@ class HTCondorCluster(JobQueueCluster):
     HTCondor can take longer to start jobs than other batch systems - tune Adaptive parameters accordingly.
 
     >>> cluster.adapt(minimum=5, startup_cost='60s')
-    """.format(job=job_parameters, cluster=cluster_parameters)
+    """.format(
+        job=job_parameters, cluster=cluster_parameters
+    )
     Job = HTCondorJob
     config_name = "htcondor"

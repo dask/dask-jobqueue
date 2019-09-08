@@ -1,9 +1,24 @@
 import asyncio
 from time import time
 
-from dask_jobqueue import (PBSJob, PBSCluster, SGEJob, SGECluster, SLURMJob,
-        SLURMCluster, LSFJob, LSFCluster, LocalJob, LocalCluster,
-        HTCondorJob, HTCondorCluster, MoabJob, MoabCluster, OARJob, OARCluster)
+from dask_jobqueue import (
+    PBSJob,
+    PBSCluster,
+    SGEJob,
+    SGECluster,
+    SLURMJob,
+    SLURMCluster,
+    LSFJob,
+    LSFCluster,
+    LocalJob,
+    LocalCluster,
+    HTCondorJob,
+    HTCondorCluster,
+    MoabJob,
+    MoabCluster,
+    OARJob,
+    OARCluster,
+)
 from dask_jobqueue.job import JobQueueCluster
 from dask.distributed import Scheduler, Client
 
@@ -25,8 +40,15 @@ job_protected = [
 
 
 all_jobs = [SGEJob, PBSJob, SLURMJob, LSFJob, HTCondorJob, MoabJob, OARJob]
-all_clusters = [SGECluster, PBSCluster, SLURMCluster, LSFCluster,
-        HTCondorCluster, MoabCluster, OARCluster]
+all_clusters = [
+    SGECluster,
+    PBSCluster,
+    SLURMCluster,
+    LSFCluster,
+    HTCondorCluster,
+    MoabCluster,
+    OARCluster,
+]
 
 
 @pytest.mark.parametrize("Job", job_protected)
@@ -131,4 +153,4 @@ async def test_nprocs():
 @pytest.mark.parametrize("Cluster", all_clusters)
 def test_docstring_cluster(Cluster):
     assert "cores :" in Cluster.__doc__
-    assert Cluster.__name__[:-len("Cluster")] in Cluster.__doc__
+    assert Cluster.__name__[: -len("Cluster")] in Cluster.__doc__

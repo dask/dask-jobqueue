@@ -1,4 +1,3 @@
-import functools
 import logging
 import os
 import subprocess
@@ -19,7 +18,9 @@ class LocalJob(Job):
     Parameters
     ----------
     {job}
-    """.format(job=job_parameters)
+    """.format(
+        job=job_parameters
+    )
 
     config_name = "local"
 
@@ -86,6 +87,8 @@ class LocalCluster(JobQueueCluster):
     See Also
     --------
     dask.distributed.LocalCluster
-    """.format(job=job_parameters, cluster=cluster_parameters)
+    """.format(
+        job=job_parameters, cluster=cluster_parameters
+    )
     Job = LocalJob
     config_name = "local"

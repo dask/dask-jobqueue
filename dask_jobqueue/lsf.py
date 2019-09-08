@@ -1,4 +1,3 @@
-import functools
 import logging
 import math
 import os
@@ -49,7 +48,9 @@ class LSFJob(Job):
     kill workers based on load.
 
     >>> cluster.adapt()
-    """.format(job=job_parameters)
+    """.format(
+        job=job_parameters
+    )
 
     submit_command = "bsub"
     cancel_command = "bkill"
@@ -237,6 +238,8 @@ class LSFCluster(JobQueueCluster):
     kill workers based on load.
 
     >>> cluster.adapt()
-    """.format(job=job_parameters, cluster=cluster_parameters)
+    """.format(
+        job=job_parameters, cluster=cluster_parameters
+    )
     Job = LSFJob
     config_name = "lsf"

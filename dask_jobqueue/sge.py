@@ -114,6 +114,8 @@ class SGECluster(JobQueueCluster):
     This also works with adaptive clusters.  This automatically launches and kill workers based on load.
 
     >>> cluster.adapt()
-    """.format(job=job_parameters, cluster=cluster_parameters)
+    """.format(
+        job=job_parameters, cluster=cluster_parameters
+    )
     Job = SGEJob
     config_name = "sge"
