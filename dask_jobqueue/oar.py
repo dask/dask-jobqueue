@@ -3,7 +3,6 @@ import shlex
 
 import dask
 
-from .core import docstrings
 from .job import JobQueueCluster, Job, job_parameters, cluster_parameters
 
 logger = logging.getLogger(__name__)

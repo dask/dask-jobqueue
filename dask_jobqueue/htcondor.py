@@ -1,4 +1,3 @@
-import functools
 import logging
 import re
 import shlex
@@ -6,7 +5,6 @@ import shlex
 import dask
 from distributed.utils import parse_bytes
 
-from .core import docstrings
 from .job import JobQueueCluster, Job, job_parameters, cluster_parameters
 
 logger = logging.getLogger(__name__)

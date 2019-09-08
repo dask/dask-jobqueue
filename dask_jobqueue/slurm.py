@@ -4,7 +4,6 @@ import math
 
 import dask
 
-from .core import docstrings
 from .job import Job, JobQueueCluster, job_parameters, cluster_parameters
 
 logger = logging.getLogger(__name__)
