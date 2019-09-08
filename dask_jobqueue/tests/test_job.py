@@ -120,7 +120,6 @@ async def test_nprocs():
             await client.wait_for_workers(2)
             assert len(cluster.workers) == 1  # two workers, one job
             assert len(s.workers) == 2
-            breakpoint()
             assert cluster.plan == {ws.name for ws in s.workers.values()}
 
             cluster.scale(cores=1)
