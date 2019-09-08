@@ -7,40 +7,12 @@ import dask
 from distributed.utils import parse_bytes
 
 from .core import docstrings
-from .job import JobQueueCluster, Job
+from .job import JobQueueCluster, Job, job_parameters, cluster_parameters
 
 logger = logging.getLogger(__name__)
 
 
 class HTCondorJob(Job):
-    __doc__ = docstrings.with_indents(
-        """ Launch Dask on an HTCondor cluster with a shared file system
-
-    Parameters
-    ----------
-    disk : str
-        Total amount of disk per job
-    job_extra : dict
-        Extra submit file attributes for the job
-    %(JobQueueCluster.parameters)s
-
-    Examples
-    --------
-    >>> from dask_jobqueue.htcondor import HTCondorCluster
-    >>> cluster = HTCondorCluster(cores=24, memory="4GB", disk="4GB")
-    >>> cluster.scale(10)
-
-    >>> from dask.distributed import Client
-    >>> client = Client(cluster)
-
-    This also works with adaptive clusters.  This automatically launches and kill workers based on load.
-    HTCondor can take longer to start jobs than other batch systems - tune Adaptive parameters accordingly.
-
-    >>> cluster.adapt(minimum=5, startup_cost='60s')
-    """,
-        4,
-    )
-
     _script_template = """
 %(shebang)s
 
@@ -227,5 +199,31 @@ def quote_environment(env):
 
 
 class HTCondorCluster(JobQueueCluster):
+    __doc__ = """
+    Launch Dask on an HTCondor cluster with a shared file system
+
+    Parameters
+    ----------
+    disk : str
+        Total amount of disk per job
+    job_extra : dict
+        Extra submit file attributes for the job
+    {job}
+    {cluster}
+
+    Examples
+    --------
+    >>> from dask_jobqueue.htcondor import HTCondorCluster
+    >>> cluster = HTCondorCluster(cores=24, memory="4GB", disk="4GB")
+    >>> cluster.scale(10)
+
+    >>> from dask.distributed import Client
+    >>> client = Client(cluster)
+
+    This also works with adaptive clusters.  This automatically launches and kill workers based on load.
+    HTCondor can take longer to start jobs than other batch systems - tune Adaptive parameters accordingly.
+
+    >>> cluster.adapt(minimum=5, startup_cost='60s')
+    """.format(job=job_parameters, cluster=cluster_parameters)
     Job = HTCondorJob
     config_name = "htcondor"

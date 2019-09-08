@@ -4,44 +4,12 @@ import shlex
 import dask
 
 from .core import docstrings
-from .job import JobQueueCluster, Job
+from .job import JobQueueCluster, Job, job_parameters, cluster_parameters
 
 logger = logging.getLogger(__name__)
 
 
 class OARJob(Job):
-    __doc__ = docstrings.with_indents(
-        """ Launch Dask on a OAR cluster
-
-    Parameters
-    ----------
-    queue : str
-        Destination queue for each worker job. Passed to `#OAR -q` option.
-    project : str
-        Accounting string associated with each worker job. Passed to `#OAR -p` option.
-    resource_spec : str
-        Request resources and specify job placement. Passed to `#OAR -l` option.
-    walltime : str
-        Walltime for each worker job.
-    job_extra : list
-        List of other OAR options, for example `-t besteffort`. Each option will be prepended with the #OAR prefix.
-    %(JobQueueCluster.parameters)s
-
-    Examples
-    --------
-    >>> from dask_jobqueue import OARCluster
-    >>> cluster = OARCluster(queue='regular')
-    >>> cluster.scale(10)  # this may take a few seconds to launch
-
-    >>> from dask.distributed import Client
-    >>> client = Client(cluster)
-
-    This also works with adaptive clusters.  This automatically launches and kill workers based on load.
-
-    >>> cluster.adapt()
-    """,
-        4,
-    )
 
     # Override class variables
     submit_command = "oarsub"
@@ -126,5 +94,38 @@ class OARJob(Job):
 
 
 class OARCluster(JobQueueCluster):
+    __doc__ = """ Launch Dask on an OAR cluster
+
+    Parameters
+    ----------
+    queue : str
+        Destination queue for each worker job. Passed to `#OAR -q` option.
+    project : str
+        Accounting string associated with each worker job. Passed to `#OAR -p` option.
+
+    {job}
+
+    {cluster}
+
+    resource_spec : str
+        Request resources and specify job placement. Passed to `#OAR -l` option.
+    walltime : str
+        Walltime for each worker job.
+    job_extra : list
+        List of other OAR options, for example `-t besteffort`. Each option will be prepended with the #OAR prefix.
+
+    Examples
+    --------
+    >>> from dask_jobqueue import OARCluster
+    >>> cluster = OARCluster(queue='regular')
+    >>> cluster.scale(10)  # this may take a few seconds to launch
+
+    >>> from dask.distributed import Client
+    >>> client = Client(cluster)
+
+    This also works with adaptive clusters.  This automatically launches and kill workers based on load.
+
+    >>> cluster.adapt()
+    """.format(job=job_parameters, cluster=cluster_parameters)
     Job = OARJob
     config_name = "oar"

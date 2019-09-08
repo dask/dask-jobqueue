@@ -5,38 +5,12 @@ import math
 import dask
 
 from .core import docstrings
-from .job import Job, JobQueueCluster
+from .job import Job, JobQueueCluster, job_parameters, cluster_parameters
 
 logger = logging.getLogger(__name__)
 
 
 class SLURMJob(Job):
-    __doc__ = docstrings.with_indents(
-        """ Launch Dask on a SLURM cluster
-
-    Parameters
-    ----------
-    queue : str
-        Destination queue for each worker job. Passed to `#SBATCH -p` option.
-    project : str
-        Accounting string associated with each worker job. Passed to `#SBATCH -A` option.
-    walltime : str
-        Walltime for each worker job.
-    job_cpu : int
-        Number of cpu to book in SLURM, if None, defaults to worker `threads * processes`
-    job_mem : str
-        Amount of memory to request in SLURM. If None, defaults to worker
-        processes * memory
-    job_extra : list
-        List of other Slurm options, for example -j oe. Each option will be prepended with the #SBATCH prefix.
-    %(JobQueueCluster.parameters)s
-
-    Examples
-    --------
-    """,
-        4,
-    )
-
     # Override class variables
     submit_command = "sbatch"
     cancel_command = "scancel"
@@ -136,5 +110,47 @@ def slurm_format_bytes_ceil(n):
 
 
 class SLURMCluster(JobQueueCluster):
+    __doc__ = """
+    Launch Dask on a SLURM cluster
+
+    Parameters
+    ----------
+    queue : str
+        Destination queue for each worker job. Passed to `#SBATCH -p` option.
+    project : str
+        Accounting string associated with each worker job. Passed to `#SBATCH -A` option.
+
+    {job}
+
+    {cluster}
+
+    walltime : str
+        Walltime for each worker job.
+    job_cpu : int
+        Number of cpu to book in SLURM, if None, defaults to worker `threads * processes`
+    job_mem : str
+        Amount of memory to request in SLURM. If None, defaults to worker
+        processes * memory
+    job_extra : list
+        List of other Slurm options, for example -j oe. Each option will be prepended with the #SBATCH prefix.
+
+    Examples
+    --------
+    >>> from dask_jobqueue import SLURMCluster
+    >>> cluster = SLURMCluster(
+    ...     queue='regular',
+    ...     project="myproj",
+    ...     cores=24,
+    ...     memory="500 GB"
+    ... )
+    >>> cluster.scale(10)  # this may take a few seconds to launch
+
+    >>> from dask.distributed import Client
+    >>> client = Client(cluster)
+
+    This also works with adaptive clusters.  This automatically launches and kill workers based on load.
+
+    >>> cluster.adapt()
+    """.format(job=job_parameters, cluster=cluster_parameters)
     Job = SLURMJob
     config_name = "slurm"

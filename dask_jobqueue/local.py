@@ -3,13 +3,23 @@ import logging
 import os
 import subprocess
 
-from .job import Job, JobQueueCluster
+from .job import Job, JobQueueCluster, job_parameters, cluster_parameters
 
 logger = logging.getLogger(__name__)
 
 
 class LocalJob(Job):
-    """ This is mostly used for testing.  It runs locally. """
+    __doc__ = """ Use Dask Jobqueue with local bash commands
+
+    This is mostly for testing.  It uses all the same machinery of
+    dask-jobqueue, but rather than submitting jobs to some external job
+    queueing system, it launches them locally.  For normal local use, please
+    see ``dask.distributed.LocalCluster``
+
+    Parameters
+    ----------
+    {job}
+    """.format(job=job_parameters)
 
     config_name = "local"
 
@@ -54,5 +64,28 @@ class LocalJob(Job):
 
 
 class LocalCluster(JobQueueCluster):
+    __doc__ = """ Use dask-jobqueue with local bash commands
+
+    This is mostly for testing.  It uses all the same machinery of
+    dask-jobqueue, but rather than submitting jobs to some external job
+    queueing system, it launches them locally.  For normal local use, please
+    see ``dask.distributed.LocalCluster``
+
+    Parameters
+    ----------
+    {job}
+
+    {cluster}
+
+    Examples
+    --------
+    >>> from dask_jobqueue import LocalCluster
+    >>> cluster = LocalCluster(cores=2, memory="4 GB")
+    >>> cluster.scale(3)
+
+    See Also
+    --------
+    dask.distributed.LocalCluster
+    """.format(job=job_parameters, cluster=cluster_parameters)
     Job = LocalJob
     config_name = "local"

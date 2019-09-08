@@ -8,4 +8,5 @@ class MoabJob(PBSJob):
 
 
 class MoabCluster(PBSCluster):
+    __doc__ = PBSCluster.__doc__.replace("PBSCluster", "MoabCluster")
     Job = MoabJob

@@ -16,31 +16,22 @@ from distributed.utils import format_bytes, parse_bytes, tmpfile, get_ip_interfa
 
 logger = logging.getLogger(__name__)
 
-
-class Job(ProcessInterface):
-    """ Base class to launch Dask workers on Job queues
-
-    This class should not be used directly, use inherited class appropriate for
-    your queueing system (e.g. PBScluster or SLURMCluster)
-
-    Parameters
-    ----------
-    name : str
-        Name of Dask workers.
+job_parameters = """
     cores : int
         Total number of cores per job
     memory: str
         Total amount of memory per job
     processes : int
-        Number of processes per job
-    nanny : bool
-        Whether or not to start a nanny process
+        Cut the job up into this many processes.
+        Good for GIL workloads or for nodes with many cores.
     interface : str
         Network interface like 'eth0' or 'ib0'.
-    death_timeout : float
-        Seconds to wait for a scheduler before closing workers
+    nanny : bool
+        Whether or not to start a nanny process
     local_directory : str
         Dask worker local directory for file spilling.
+    death_timeout : float
+        Seconds to wait for a scheduler before closing workers
     extra : list
         Additional arguments to pass to `dask-worker`
     env_extra : list
@@ -54,8 +45,40 @@ class Job(ProcessInterface):
         Path to desired interpreter for your batch submission script.
     python : str
         Python executable used to launch Dask workers.
+        Defaults to the Python that is submitting these jobs
     config_name : str
         Section to use from jobqueue.yaml configuration file.
+    name : str
+        Name of Dask worker.  This is typically set by the Cluster
+""".strip()
+
+
+cluster_parameters = """
+    n_workers : int
+        Number of workers to start by default.  Defaults to 0.
+        See the scale method
+    silence_logs : str
+        Log level like "debug", "info", or "error" to emit here if the
+        scheduler is started locally
+    asynchronous : bool
+        Whether or not to run this cluster object with the async/await syntax
+    security : Security
+        A dask.distributed security object if you're using TLS/SSL
+    dashboard_address : str or int
+        An address like ":8787" on which to host the Scheduler's dashboard
+""".strip()
+
+
+
+class Job(ProcessInterface):
+    """ Base class to launch Dask workers on Job queues
+
+    This class should not be used directly, use inherited class appropriate for
+    your queueing system (e.g. PBScluster or SLURMCluster)
+
+    Parameters
+    ----------
+    {job_parameters}
 
     Attributes
     ----------
@@ -74,7 +97,7 @@ class Job(ProcessInterface):
     OARCluster
     LSFCluster
     MoabCluster
-    """
+    """.format(job_parameters=job_parameters)
 
     _script_template = """
 %(shebang)s
@@ -344,6 +367,23 @@ class Job(ProcessInterface):
 
 
 class JobQueueCluster(SpecCluster):
+    __doc__ = """ Deploy Dask on a Job queuing system
+
+    This is a superclass, and is rarely used directly.  It is more common to
+    use an object like SGECluster, SLURMCluster, PBSCluster, LSFCluster, or
+    others.
+
+    However, it can be used directly if you have a custom ``Job`` type.
+    This class relies heavily on being passed a ``Job`` type that is able to
+    launch one Job on a job queueing system.
+
+    Parameters
+    ----------
+    Job : Job
+        A class that can be awaited to ask for a single Job
+    {cluster_parameters}
+    """.format(cluster_parameters=cluster_parameters)
+
     Job = None
 
     def __init__(

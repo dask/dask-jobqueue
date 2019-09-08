@@ -4,7 +4,7 @@ import os
 
 import dask
 
-from .job import Job, JobQueueCluster
+from .job import Job, JobQueueCluster, job_parameters, cluster_parameters
 
 logger = logging.getLogger(__name__)
 
@@ -103,5 +103,39 @@ class PBSJob(Job):
 
 
 class PBSCluster(JobQueueCluster):
+    __doc__ = """ Launch Dask on an OAR cluster
+
+    Parameters
+    ----------
+    queue : str
+        Destination queue for each worker job. Passed to `#PBS -q` option.
+    project : str
+        Accounting string associated with each worker job. Passed to `#PBS -A` option.
+
+    {job}
+
+    {cluster}
+
+    resource_spec : str
+        Request resources and specify job placement. Passed to `#PBS -l` option.
+    walltime : str
+        Walltime for each worker job.
+    job_extra : list
+        List of other PBS options. Each option will be prepended with the #PBS prefix.
+
+    Examples
+    --------
+    >>> from dask_jobqueue import PBSCluster
+    >>> cluster = PBSCluster(queue='regular', project="myproj", cores=24,
+    ...     memory="500 GB")
+    >>> cluster.scale(10)  # Ask for ten jobs
+
+    >>> from dask.distributed import Client
+    >>> client = Client(cluster)
+
+    This also works with adaptive clusters.  This automatically launches and kill workers based on load.
+
+    >>> cluster.adapt()
+    """.format(job=job_parameters, cluster=cluster_parameters)
     Job = PBSJob
     config_name = "pbs"

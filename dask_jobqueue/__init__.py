@@ -8,8 +8,8 @@ from .pbs import PBSCluster, PBSJob
 from .slurm import SLURMCluster, SLURMJob
 from .sge import SGECluster, SGEJob
 from .lsf import LSFCluster, LSFJob
-from .oar import OARCluster
-from .htcondor import HTCondorCluster
+from .oar import OARCluster, OARJob
+from .htcondor import HTCondorCluster, HTCondorJob
 
 from ._version import get_versions
 
