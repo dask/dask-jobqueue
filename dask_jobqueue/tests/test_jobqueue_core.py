@@ -189,3 +189,10 @@ def test_cluster_has_cores_and_memory(Cluster):
 
     with pytest.raises(ValueError, match=cls_name + r"cores=4, memory='\d+GB'"):
         Cluster(cores=4)
+
+
+def test_default_workers():
+    """For 6 cores, default is 1 workers with 3 procs, 2 threads/proc"""
+    with PBSCluster(cores=6, memory="4GB") as cluster:
+        assert " --nprocs 3" in cluster._command_template
+        assert " --nthreads 2" in cluster._command_template
