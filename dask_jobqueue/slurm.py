@@ -40,7 +40,6 @@ class SLURMJob(Job):
 
         super().__init__(*args, config_name=config_name, **kwargs)
 
-        # Always ask for only one task
         header_lines = []
         # SLURM header build
         if self.job_name is not None:
@@ -108,8 +107,7 @@ def slurm_format_bytes_ceil(n):
 
 
 class SLURMCluster(JobQueueCluster):
-    __doc__ = """
-    Launch Dask on a SLURM cluster
+    __doc__ = """ Launch Dask on a SLURM cluster
 
     Parameters
     ----------

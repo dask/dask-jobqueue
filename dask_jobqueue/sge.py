@@ -68,8 +68,7 @@ class SGEJob(Job):
 
 
 class SGECluster(JobQueueCluster):
-    __doc__ = """
-    Launch Dask on an SGE cluster
+    __doc__ = """ Launch Dask on an SGE cluster
 
     .. note::
         If you want a specific amount of RAM, both ``memory`` and ``resource_spec``

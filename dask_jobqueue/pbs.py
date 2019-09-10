@@ -103,7 +103,7 @@ class PBSJob(Job):
 
 
 class PBSCluster(JobQueueCluster):
-    __doc__ = """ Launch Dask on an OAR cluster
+    __doc__ = """ Launch Dask on a PBS cluster
 
     Parameters
     ----------

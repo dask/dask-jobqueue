@@ -72,8 +72,8 @@ cluster_parameters = """
 class Job(ProcessInterface):
     """ Base class to launch Dask workers on Job queues
 
-    This class should not be used directly, use inherited class appropriate for
-    your queueing system (e.g. PBScluster or SLURMCluster)
+    This class should not be used directly, use a class appropriate for
+    your queueing system (e.g. PBScluster or SLURMCluster) instead.
 
     Parameters
     ----------
@@ -144,9 +144,12 @@ class Job(ProcessInterface):
         if config_name is None:
             config_name = getattr(type(self), "config_name", None)
 
+        # TODO I think the __init__ should be an abstractmethod rather than relying on config_name ...
         if config_name is None:
             raise NotImplementedError(
-                "JobQueueCluster is an abstract class that should not be instantiated."
+                "Job is an abstract class that should not be instantiated."
+                "Use a cluster class appropriate to your job queueing system, "
+                "e.g. PBSCluster or SLURMCluster"
             )
 
         if job_name is None:
@@ -203,6 +206,7 @@ class Job(ProcessInterface):
         self.shebang = shebang
 
         self._env_header = "\n".join(filter(None, env_extra))
+        # TODO: should skip be part of this PR?
         self.header_skip = set(header_skip)
 
         # dask-worker command line build
@@ -278,12 +282,13 @@ class Job(ProcessInterface):
 
         with self.job_file() as fn:
             out = self._submit_job(fn)
-            job = self._job_id_from_submit_output(out)
-            if not job:
-                raise ValueError("Unable to parse jobid from output of %s" % out)
-            self.job_id = job
+            job_id = self._job_id_from_submit_output(out)
+            # TODO: why is this needed since _job_id_from_submit_output already raise a ValueError
+            if not job_id:
+                raise ValueError("Unable to parse job id from output of %s" % out)
+            self.job_id = job_id
 
-        weakref.finalize(self, self._close_job, job)
+        weakref.finalize(self, self._close_job, job_id)
 
         logger.debug("Starting job: %s", self.job_id)
         await super().start()
@@ -318,6 +323,7 @@ class Job(ProcessInterface):
         if job_id:
             with ignoring(RuntimeError):  # deleting job when job already gone
                 cls._call(shlex.split(cls.cancel_command) + [job_id])
+            # TODO: Maybe a log.debug here
 
     @staticmethod
     def _call(cmd, **kwargs):
@@ -387,6 +393,7 @@ class JobQueueCluster(SpecCluster):
         cluster_parameters=cluster_parameters
     )
 
+    # TODO: I have a slight preference for a parameter like job_cls
     Job = None
 
     def __init__(
@@ -442,6 +449,9 @@ class JobQueueCluster(SpecCluster):
         if "processes" in kwargs and kwargs["processes"] > 1:
             worker["group"] = ["-" + str(i) for i in range(kwargs["processes"])]
 
+        # TODO: this seems like this sets self.scheduler.address, is there a
+        # less magical way of doing the same thing?
+        # self.example_job is also used for cluster.job_script()
         self.example_job  # trigger property to ensure that the job is valid
 
         super().__init__(
