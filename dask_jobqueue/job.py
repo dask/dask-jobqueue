@@ -472,7 +472,9 @@ class JobQueueCluster(SpecCluster):
             address = self.scheduler.address
         except AttributeError:
             address = "tcp://scheduler:8786"
-        return self.job_cls(address or "tcp://scheduler:8786", name="name", **self._kwargs)
+        return self.job_cls(
+            address or "tcp://scheduler:8786", name="name", **self._kwargs
+        )
 
     @property
     def job_header(self):
