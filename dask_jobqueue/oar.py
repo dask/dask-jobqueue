@@ -101,11 +101,8 @@ class OARCluster(JobQueueCluster):
         Destination queue for each worker job. Passed to `#OAR -q` option.
     project : str
         Accounting string associated with each worker job. Passed to `#OAR -p` option.
-
     {job}
-
     {cluster}
-
     resource_spec : str
         Request resources and specify job placement. Passed to `#OAR -l` option.
     walltime : str

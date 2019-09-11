@@ -115,11 +115,8 @@ class SLURMCluster(JobQueueCluster):
         Destination queue for each worker job. Passed to `#SBATCH -p` option.
     project : str
         Accounting string associated with each worker job. Passed to `#SBATCH -A` option.
-
     {job}
-
     {cluster}
-
     walltime : str
         Walltime for each worker job.
     job_cpu : int

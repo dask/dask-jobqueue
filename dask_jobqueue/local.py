@@ -75,7 +75,6 @@ class LocalCluster(JobQueueCluster):
     Parameters
     ----------
     {job}
-
     {cluster}
 
     Examples

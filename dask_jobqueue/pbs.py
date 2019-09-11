@@ -111,11 +111,8 @@ class PBSCluster(JobQueueCluster):
         Destination queue for each worker job. Passed to `#PBS -q` option.
     project : str
         Accounting string associated with each worker job. Passed to `#PBS -A` option.
-
     {job}
-
     {cluster}
-
     resource_spec : str
         Request resources and specify job placement. Passed to `#PBS -l` option.
     walltime : str

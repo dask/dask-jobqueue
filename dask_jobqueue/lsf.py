@@ -162,18 +162,14 @@ class LSFCluster(JobQueueCluster):
     project : str
         Accounting string associated with each worker job. Passed to
         `#BSUB -P` option.
-
     {job}
-
     ncpus : int
         Number of cpus. Passed to `#BSUB -n` option.
     mem : int
         Request memory in bytes. Passed to `#BSUB -M` option.
     walltime : str
         Walltime for each worker job in HH:MM. Passed to `#BSUB -W` option.
-
     {cluster}
-
     job_extra : list
         List of other LSF options, for example -u. Each option will be
         prepended with the #LSF prefix.
