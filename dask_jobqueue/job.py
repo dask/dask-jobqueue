@@ -394,7 +394,7 @@ class JobQueueCluster(SpecCluster):
     )
 
     # TODO: I have a slight preference for a parameter like job_cls
-    Job = None
+    job_cls = None
 
     def __init__(
         self,
@@ -417,9 +417,9 @@ class JobQueueCluster(SpecCluster):
     ):
         self.status = "created"
         if Job is not None:
-            self.Job = Job
+            self.job_cls = Job
 
-        if self.Job is None:
+        if self.job_cls is None:
             raise ValueError(
                 "You must provide a Job type like PBSJob, SLURMJob, "
                 "or SGEJob with the Job= argument."
@@ -445,7 +445,7 @@ class JobQueueCluster(SpecCluster):
         kwargs["protocol"] = protocol
         kwargs["security"] = security
         self._kwargs = kwargs
-        worker = {"cls": self.Job, "options": kwargs}
+        worker = {"cls": self.job_cls, "options": kwargs}
         if "processes" in kwargs and kwargs["processes"] > 1:
             worker["group"] = ["-" + str(i) for i in range(kwargs["processes"])]
 
@@ -472,7 +472,7 @@ class JobQueueCluster(SpecCluster):
             address = self.scheduler.address
         except AttributeError:
             address = "tcp://scheduler:8786"
-        return self.Job(address or "tcp://scheduler:8786", name="name", **self._kwargs)
+        return self.job_cls(address or "tcp://scheduler:8786", name="name", **self._kwargs)
 
     @property
     def job_header(self):

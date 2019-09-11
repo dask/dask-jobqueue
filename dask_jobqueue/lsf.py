@@ -198,5 +198,5 @@ class LSFCluster(JobQueueCluster):
     """.format(
         job=job_parameters, cluster=cluster_parameters
     )
-    Job = LSFJob
+    job_cls = LSFJob
     config_name = "lsf"

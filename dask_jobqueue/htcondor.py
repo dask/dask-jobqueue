@@ -224,5 +224,5 @@ class HTCondorCluster(JobQueueCluster):
     """.format(
         job=job_parameters, cluster=cluster_parameters
     )
-    Job = HTCondorJob
+    job_cls = HTCondorJob
     config_name = "htcondor"

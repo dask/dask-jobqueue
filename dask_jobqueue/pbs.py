@@ -139,5 +139,5 @@ class PBSCluster(JobQueueCluster):
     """.format(
         job=job_parameters, cluster=cluster_parameters
     )
-    Job = PBSJob
+    job_cls = PBSJob
     config_name = "pbs"

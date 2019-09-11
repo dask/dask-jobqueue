@@ -128,5 +128,5 @@ class OARCluster(JobQueueCluster):
     """.format(
         job=job_parameters, cluster=cluster_parameters
     )
-    Job = OARJob
+    job_cls = OARJob
     config_name = "oar"

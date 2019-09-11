@@ -90,5 +90,5 @@ class LocalCluster(JobQueueCluster):
     """.format(
         job=job_parameters, cluster=cluster_parameters
     )
-    Job = LocalJob
+    job_cls = LocalJob
     config_name = "local"
