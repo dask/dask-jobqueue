@@ -10,14 +10,16 @@ from dask_jobqueue import (
     SLURMCluster,
     LSFJob,
     LSFCluster,
-    LocalJob,
-    LocalCluster,
     HTCondorJob,
     HTCondorCluster,
     MoabJob,
     MoabCluster,
     OARJob,
     OARCluster,
+)
+from dask_jobqueue.local import (
+    LocalJob,
+    LocalCluster,
 )
 from dask_jobqueue.job import JobQueueCluster
 from dask.distributed import Scheduler, Client
