@@ -262,7 +262,7 @@ class Job(ProcessInterface):
                 f.write(self.job_script())
             yield fn
 
-    def _submit_job(self, script_filename):
+    async def _submit_job(self, script_filename):
         # Should we make this async friendly?
         return self._call(shlex.split(self.submit_command) + [script_filename])
 
@@ -281,7 +281,7 @@ class Job(ProcessInterface):
         logger.debug("Starting worker: %s", self.name)
 
         with self.job_file() as fn:
-            out = self._submit_job(fn)
+            out = await self._submit_job(fn)
             job_id = self._job_id_from_submit_output(out)
             # TODO: why is this needed since _job_id_from_submit_output already raise a ValueError
             if not job_id:

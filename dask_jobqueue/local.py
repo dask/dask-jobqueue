@@ -1,6 +1,6 @@
 import logging
 import os
-import subprocess
+from tornado.process import Subprocess
 
 from .job import Job, JobQueueCluster, job_parameters, cluster_parameters
 
@@ -39,22 +39,27 @@ class LocalJob(Job):
         super().__init__(*args, config_name=config_name, shebang="", **kwargs)
 
         # Declare class attribute that shall be overridden
-        header_lines = []
-        self.job_header = "\n".join(header_lines)
+        self.job_header = ""
 
         logger.debug("Job script: \n %s" % self.job_script())
 
-    def _submit_job(self, script_filename):
+    async def _submit_job(self, script_filename):
         # Should we make this async friendly?
         with open(script_filename) as f:
             text = f.read().strip().split()
-        self.process = subprocess.Popen(
-            text, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        self.process = Subprocess(
+            text, stdout=Subprocess.STREAM, stderr=Subprocess.STREAM
         )
-        # TODO this should raise if self.process.returncode != 0. Refactor
-        # Job._call to be able to return process (so that we can return self.process.pid below)
 
-        self.process.stderr.readline()  # make sure that we start
+        lines = []
+        while True:
+            line = await self.process.stderr.read_until(b'\n')  # make sure that we start
+            lines.append(line.decode())
+            if b"Registered to:" in line:
+                break
+            if b"error" in line.lower():
+                raise Exception("Worker failed\n\n" + "".join(lines))
+
         return str(self.process.pid)
 
     @classmethod
