@@ -1,13 +1,13 @@
 # flake8: noqa
 from . import config
-from .job import Job, JobQueueCluster
-from .moab import MoabCluster, MoabJob
-from .pbs import PBSCluster, PBSJob
-from .slurm import SLURMCluster, SLURMJob
-from .sge import SGECluster, SGEJob
-from .lsf import LSFCluster, LSFJob
-from .oar import OARCluster, OARJob
-from .htcondor import HTCondorCluster, HTCondorJob
+from .job import JobQueueCluster
+from .moab import MoabCluster
+from .pbs import PBSCluster
+from .slurm import SLURMCluster
+from .sge import SGECluster
+from .lsf import LSFCluster
+from .oar import OARCluster
+from .htcondor import HTCondorCluster
 
 from ._version import get_versions
 

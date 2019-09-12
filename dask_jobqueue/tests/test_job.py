@@ -2,26 +2,27 @@ import asyncio
 from time import time
 
 from dask_jobqueue import (
-    PBSJob,
     PBSCluster,
-    SGEJob,
     SGECluster,
-    SLURMJob,
     SLURMCluster,
-    LSFJob,
     LSFCluster,
-    HTCondorJob,
     HTCondorCluster,
-    MoabJob,
     MoabCluster,
-    OARJob,
     OARCluster,
 )
 from dask_jobqueue.local import (
     LocalJob,
     LocalCluster,
 )
-from dask_jobqueue.job import JobQueueCluster
+from dask_jobqueue.pbs import PBSJob
+from dask_jobqueue.sge import SGEJob
+from dask_jobqueue.slurm import SLURMJob
+from dask_jobqueue.lsf import LSFJob
+from dask_jobqueue.moab import MoabJob
+from dask_jobqueue.htcondor import HTCondorJob
+from dask_jobqueue.oar import OARJob
+
+from dask_jobqueue.job import Job, JobQueueCluster
 from dask.distributed import Scheduler, Client
 
 import pytest
