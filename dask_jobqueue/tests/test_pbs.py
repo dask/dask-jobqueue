@@ -295,10 +295,6 @@ def test_scale_grouped(loop):
             cluster.scale(4)  # Start 2 jobs
 
             start = time()
-            # TODO: Is there a replacement to check for number of jobs (rather than workers)
-            # while len(cluster.running_jobs) != 2:
-            #     sleep(0.100)
-            #     assert time() < start + QUEUE_WAIT
 
             while len(list(client.scheduler_info()["workers"].values())) != 4:
                 sleep(0.100)
@@ -317,13 +313,6 @@ def test_scale_grouped(loop):
             cluster.scale(1)  # Should leave 2 workers, 1 job
 
             start = time()
-            # TODO
-            # while len(cluster.running_jobs) != 1:
-            #     sleep(0.100)
-            #     assert time() < start + QUEUE_WAIT
-
-            # assert len(cluster.running_jobs) == 1
-            # workers = list(client.scheduler_info()["workers"].values())
             while len(client.scheduler_info()["workers"]) != 2:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
@@ -331,11 +320,8 @@ def test_scale_grouped(loop):
             cluster.scale(0)
 
             start = time()
-            # while cluster.running_jobs:
-            #     sleep(0.100)
-            #     assert time() < start + QUEUE_WAIT
 
-            # assert not cluster.running_jobs
+            assert not cluster.worker_spec
             while len(client.scheduler_info()["workers"]) != 0:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT

@@ -53,7 +53,9 @@ class LocalJob(Job):
 
         lines = []
         while True:
-            line = await self.process.stderr.read_until(b'\n')  # make sure that we start
+            line = await self.process.stderr.read_until(
+                b"\n"
+            )  # make sure that we start
             lines.append(line.decode())
             if b"Registered to:" in line:
                 break

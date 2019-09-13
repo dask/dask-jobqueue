@@ -323,7 +323,7 @@ class Job(ProcessInterface):
         if job_id:
             with ignoring(RuntimeError):  # deleting job when job already gone
                 cls._call(shlex.split(cls.cancel_command) + [job_id])
-            # TODO: Maybe a log.debug here
+            logger.debug("Closed job %s", job_id)
 
     @staticmethod
     def _call(cmd, **kwargs):
@@ -393,7 +393,6 @@ class JobQueueCluster(SpecCluster):
         cluster_parameters=cluster_parameters
     )
 
-    # TODO: I have a slight preference for a parameter like job_cls
     job_cls = None
 
     def __init__(
@@ -449,9 +448,6 @@ class JobQueueCluster(SpecCluster):
         if "processes" in kwargs and kwargs["processes"] > 1:
             worker["group"] = ["-" + str(i) for i in range(kwargs["processes"])]
 
-        # TODO: this seems like this sets self.scheduler.address, is there a
-        # less magical way of doing the same thing?
-        # self.example_job is also used for cluster.job_script()
         self.example_job  # trigger property to ensure that the job is valid
 
         super().__init__(

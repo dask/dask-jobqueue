@@ -118,9 +118,6 @@ def test_complex_cancel_command(loop):
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
 
-            # TODO: Is there a replacement for .stop_all_jobs? stop_all_jobs
-            # does make sure that the pending jobs get qdeled.
-            # cluster.stop_all_jobs()
             cluster.scale(0)
 
             start = time()
