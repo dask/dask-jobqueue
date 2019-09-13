@@ -282,13 +282,9 @@ class Job(ProcessInterface):
 
         with self.job_file() as fn:
             out = await self._submit_job(fn)
-            job_id = self._job_id_from_submit_output(out)
-            # TODO: why is this needed since _job_id_from_submit_output already raise a ValueError
-            if not job_id:
-                raise ValueError("Unable to parse job id from output of %s" % out)
-            self.job_id = job_id
+            self.job_id = self._job_id_from_submit_output(out)
 
-        weakref.finalize(self, self._close_job, job_id)
+        weakref.finalize(self, self._close_job, self.job_id)
 
         logger.debug("Starting job: %s", self.job_id)
         await super().start()
