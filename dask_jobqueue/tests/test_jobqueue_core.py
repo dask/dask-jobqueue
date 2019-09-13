@@ -19,12 +19,9 @@ from dask_jobqueue import (
 from dask_jobqueue.sge import SGEJob
 
 
-@pytest.mark.xfail
 def test_errors():
-    with pytest.raises(NotImplementedError) as info:
+    with pytest.raises(ValueError, match="Job type.*job_cls="):
         JobQueueCluster(cores=4)
-
-    assert "abstract class" in str(info.value)
 
 
 def test_command_template():
@@ -111,7 +108,7 @@ def test_job_id_from_qsub_legacy(Cluster, qsub_return_string):
         assert original_job_id == cluster._job_id_from_submit_output(qsub_return_string)
 
 
-@pytest.mark.parametrize("Job", [SGEJob])
+@pytest.mark.parametrize("job_cls", [SGEJob])
 @pytest.mark.parametrize(
     "qsub_return_string",
     [
@@ -123,10 +120,10 @@ def test_job_id_from_qsub_legacy(Cluster, qsub_return_string):
         "{job_id}",
     ],
 )
-def test_job_id_from_qsub(Job, qsub_return_string):
+def test_job_id_from_qsub(job_cls, qsub_return_string):
     original_job_id = "654321"
     qsub_return_string = qsub_return_string.format(job_id=original_job_id)
-    job = Job(cores=1, memory="1GB")
+    job = job_cls(cores=1, memory="1GB")
     assert original_job_id == job._job_id_from_submit_output(qsub_return_string)
 
 
@@ -146,16 +143,16 @@ def test_job_id_error_handling_legacy(Cluster):
             cluster._job_id_from_submit_output(return_string)
 
 
-@pytest.mark.parametrize("Job", [SGEJob])
-def test_job_id_error_handling(Job):
+@pytest.mark.parametrize("job_cls", [SGEJob])
+def test_job_id_error_handling(job_cls):
     # non-matching regexp
-    job = Job(cores=1, memory="1GB")
+    job = job_cls(cores=1, memory="1GB")
     with pytest.raises(ValueError, match="Could not parse job id"):
         return_string = "there is no number here"
         job._job_id_from_submit_output(return_string)
 
     # no job_id named group in the regexp
-    job = Job(cores=1, memory="1GB")
+    job = job_cls(cores=1, memory="1GB")
     with pytest.raises(ValueError, match="You need to use a 'job_id' named group"):
         return_string = "Job <12345> submitted to <normal>."
         job.job_id_regexp = r"(\d+)"

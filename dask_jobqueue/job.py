@@ -6,6 +6,7 @@ import shlex
 import subprocess
 import sys
 import weakref
+import abc
 
 import dask
 from dask.utils import ignoring
@@ -69,7 +70,7 @@ cluster_parameters = """
 """.strip()
 
 
-class Job(ProcessInterface):
+class Job(ProcessInterface, abc.ABC):
     """ Base class to launch Dask workers on Job queues
 
     This class should not be used directly, use a class appropriate for
@@ -111,8 +112,10 @@ class Job(ProcessInterface):
     # Following class attributes should be overridden by extending classes.
     submit_command = None
     cancel_command = None
+    config_name = None
     job_id_regexp = r"(?P<job_id>\d+)"
 
+    @abc.abstractmethod
     def __init__(
         self,
         scheduler=None,
@@ -134,22 +137,20 @@ class Job(ProcessInterface):
         config_name=None,
         **kwargs
     ):
-        # """
-        # This initializer should be considered as Abstract, and never used directly.
-        # """
         self.scheduler = scheduler
         self.job_id = None
 
         super().__init__()
-        if config_name is None:
-            config_name = getattr(type(self), "config_name", None)
 
-        # TODO I think the __init__ should be an abstractmethod rather than relying on config_name ...
         if config_name is None:
-            raise NotImplementedError(
-                "Job is an abstract class that should not be instantiated."
-                "Use a cluster class appropriate to your job queueing system, "
-                "e.g. PBSCluster or SLURMCluster"
+            config_name = getattr(type(self), "config_name")
+        if config_name is None:
+            raise ValueError(
+                "Looks like you are trying to create a class that inherits from dask_jobqueue.job.Job. "
+                "If that is the case, you need to:\n"
+                "- set the 'config_name' class variable to a non-None value\n"
+                "- create a section in jobqueue.yaml with the value of 'config_name'\n"
+                "If that is not the case, please open an issue in https://github.com/dask/dask-jobqueue/issues."
             )
 
         if job_name is None:
@@ -394,7 +395,7 @@ class JobQueueCluster(SpecCluster):
     def __init__(
         self,
         n_workers=0,
-        Job: Job = None,
+        job_cls: Job = None,
         # Cluster keywords
         loop=None,
         security=None,
@@ -411,13 +412,13 @@ class JobQueueCluster(SpecCluster):
         **kwargs
     ):
         self.status = "created"
-        if Job is not None:
-            self.job_cls = Job
+        if job_cls is not None:
+            self.job_cls = job_cls
 
         if self.job_cls is None:
             raise ValueError(
                 "You must provide a Job type like PBSJob, SLURMJob, "
-                "or SGEJob with the Job= argument."
+                "or SGEJob with the job_cls= argument."
             )
 
         if config_name:

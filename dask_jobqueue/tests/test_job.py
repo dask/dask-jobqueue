@@ -51,11 +51,11 @@ all_clusters = [
 ]
 
 
-@pytest.mark.parametrize("Job", job_protected)
+@pytest.mark.parametrize("job_cls", job_protected)
 @pytest.mark.asyncio
-async def test_job(Job):
+async def test_job(job_cls):
     async with Scheduler(port=0) as s:
-        job = Job(scheduler=s.address, name="foo", cores=1, memory="1GB")
+        job = job_cls(scheduler=s.address, name="foo", cores=1, memory="1GB")
         job = await job
         async with Client(s.address, asynchronous=True) as client:
             await client.wait_for_workers(1)
@@ -69,18 +69,18 @@ async def test_job(Job):
             assert time() < start + 10
 
 
-@pytest.mark.parametrize("Job", job_protected)
+@pytest.mark.parametrize("job_cls", job_protected)
 @pytest.mark.asyncio
-async def test_cluster(Job):
+async def test_cluster(job_cls):
     async with JobQueueCluster(
-        1, cores=1, memory="1GB", Job=Job, asynchronous=True, name="foo"
+        1, cores=1, memory="1GB", job_cls=job_cls, asynchronous=True, name="foo"
     ) as cluster:
         async with Client(cluster, asynchronous=True) as client:
             assert len(cluster.workers) == 1
             cluster.scale(2)
             await cluster
             assert len(cluster.workers) == 2
-            assert all(isinstance(w, Job) for w in cluster.workers.values())
+            assert all(isinstance(w, job_cls) for w in cluster.workers.values())
             assert all(w.status == "running" for w in cluster.workers.values())
             await client.wait_for_workers(2)
 
@@ -92,11 +92,11 @@ async def test_cluster(Job):
                 assert time() < start + 10
 
 
-@pytest.mark.parametrize("Job", job_protected)
+@pytest.mark.parametrize("job_cls", job_protected)
 @pytest.mark.asyncio
-async def test_adapt(Job):
+async def test_adapt(job_cls):
     async with JobQueueCluster(
-        1, cores=1, memory="1GB", Job=Job, asynchronous=True, name="foo"
+        1, cores=1, memory="1GB", job_cls=job_cls, asynchronous=True, name="foo"
     ) as cluster:
         async with Client(cluster, asynchronous=True) as client:
             await client.wait_for_workers(1)
