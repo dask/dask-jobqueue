@@ -2,7 +2,7 @@ import logging
 import os
 from tornado.process import Subprocess
 
-from .job import Job, JobQueueCluster, job_parameters, cluster_parameters
+from .core import Job, JobQueueCluster, job_parameters, cluster_parameters
 
 logger = logging.getLogger(__name__)
 

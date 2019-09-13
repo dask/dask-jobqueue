@@ -146,7 +146,7 @@ class Job(ProcessInterface, abc.ABC):
             config_name = getattr(type(self), "config_name")
         if config_name is None:
             raise ValueError(
-                "Looks like you are trying to create a class that inherits from dask_jobqueue.job.Job. "
+                "Looks like you are trying to create a class that inherits from dask_jobqueue.core.Job. "
                 "If that is the case, you need to:\n"
                 "- set the 'config_name' class variable to a non-None value\n"
                 "- create a section in jobqueue.yaml with the value of 'config_name'\n"

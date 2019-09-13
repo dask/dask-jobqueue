@@ -1,6 +1,6 @@
 # flake8: noqa
 from . import config
-from .job import JobQueueCluster
+from .core import JobQueueCluster
 from .moab import MoabCluster
 from .pbs import PBSCluster
 from .slurm import SLURMCluster

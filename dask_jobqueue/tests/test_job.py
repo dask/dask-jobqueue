@@ -19,7 +19,7 @@ from dask_jobqueue.moab import MoabJob
 from dask_jobqueue.htcondor import HTCondorJob
 from dask_jobqueue.oar import OARJob
 
-from dask_jobqueue.job import JobQueueCluster
+from dask_jobqueue.core import JobQueueCluster
 from dask.distributed import Scheduler, Client
 
 import pytest
