@@ -207,7 +207,6 @@ class Job(ProcessInterface, abc.ABC):
         self.shebang = shebang
 
         self._env_header = "\n".join(filter(None, env_extra))
-        # TODO: should skip be part of this PR?
         self.header_skip = set(header_skip)
 
         # dask-worker command line build
