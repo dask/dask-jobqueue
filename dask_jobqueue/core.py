@@ -444,7 +444,7 @@ class JobQueueCluster(SpecCluster):
         if "processes" in kwargs and kwargs["processes"] > 1:
             worker["group"] = ["-" + str(i) for i in range(kwargs["processes"])]
 
-        self.example_job  # trigger property to ensure that the job is valid
+        self._dummy_job  # trigger property to ensure that the job is valid
 
         super().__init__(
             scheduler=scheduler,
@@ -459,9 +459,16 @@ class JobQueueCluster(SpecCluster):
             self.scale(n_workers)
 
     @property
-    def example_job(self):
+    def _dummy_job(self):
+        """
+        Creates a Job similar to what we will use in practice
+
+        This is used for backwards functionality and a variety of convenience
+        functions.  It is also used on construction to raise errors if any of
+        the keywords are improper.
+        """
         try:
-            address = self.scheduler.address
+            address = self.scheduler.address  # Have we already connected?
         except AttributeError:
             address = "tcp://<insert-scheduler-address-here>:8786"
         return self.job_cls(
@@ -472,11 +479,11 @@ class JobQueueCluster(SpecCluster):
 
     @property
     def job_header(self):
-        return self.example_job.job_header
+        return self._dummy_job.job_header
 
     def job_script(self):
-        return self.example_job.job_script()
+        return self._dummy_job.job_script()
 
     @property
     def job_name(self):
-        return self.example_job.job_name
+        return self._dummy_job.job_name

@@ -13,9 +13,9 @@ QUEUE_WAIT = 30  # seconds
 
 def test_header():
     with HTCondorCluster(cores=1, memory="100MB", disk="100MB") as cluster:
-        assert cluster.example_job.job_header_dict["MY.DaskWorkerCores"] == 1
-        assert cluster.example_job.job_header_dict["MY.DaskWorkerDisk"] == 100000000
-        assert cluster.example_job.job_header_dict["MY.DaskWorkerMemory"] == 100000000
+        assert cluster._dummy_job.job_header_dict["MY.DaskWorkerCores"] == 1
+        assert cluster._dummy_job.job_header_dict["MY.DaskWorkerDisk"] == 100000000
+        assert cluster._dummy_job.job_header_dict["MY.DaskWorkerMemory"] == 100000000
 
 
 def test_job_script():
