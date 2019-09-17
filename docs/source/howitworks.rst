@@ -24,10 +24,15 @@ object is instantiated:
    )
 
 You then ask for more workers using the ``scale`` command:
+You can either specify the number of jobs, or the total number of cores or
+memory that you want.
 
 .. code-block:: python
 
-   cluster.scale(36)
+
+   cluster.scale(2)  # launch 2 jobs, each of which starts 6 worker processes
+   cluster.scale(cores=48)  # Or specify cores or memory directly
+   cluster.scale(memory="200 GB")  # Or specify cores or memory directly
 
 The cluster generates a traditional job script and submits that an appropriate
 number of times to the job queue.  You can see the job script that it will
