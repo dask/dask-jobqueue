@@ -248,7 +248,6 @@ def test_adaptive_grouped(loop):
                 assert time() < start + QUEUE_WAIT
 
 
-@pytest.mark.xfail(reason="adapt doesn't yet have cores/memory")
 @pytest.mark.env("pbs")
 def test_adaptive_cores_mem(loop):
     with PBSCluster(
