@@ -218,9 +218,8 @@ class HTCondorCluster(JobQueueCluster):
     >>> client = Client(cluster)
 
     This also works with adaptive clusters.  This automatically launches and kill workers based on load.
-    HTCondor can take longer to start jobs than other batch systems - tune Adaptive parameters accordingly.
 
-    >>> cluster.adapt(minimum=5, startup_cost='60s')
+    >>> cluster.adapt(minimum=5)
     """.format(
         job=job_parameters, cluster=cluster_parameters
     )
