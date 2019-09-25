@@ -30,7 +30,7 @@ memory that you want.
 .. code-block:: python
 
 
-   cluster.scale(2)  # launch 2 jobs, each of which starts 6 worker processes
+   cluster.scale(jobs=2)  # launch 2 jobs, each of which starts 6 worker processes
    cluster.scale(cores=48)  # Or specify cores or memory directly
    cluster.scale(memory="200 GB")  # Or specify cores or memory directly
 

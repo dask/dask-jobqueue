@@ -33,12 +33,12 @@ full desired deployment, but rather to the size of a *single job* which should
 be no larger than the size of a single machine in your cluster.
 
 Separately you will specify how many jobs to deploy using the scale method.
-You can either specify the number of jobs, or the total number of cores or
+You can either specify the number of workers, or the total number of cores or
 memory that you want.
 
 .. code-block:: python
 
-   cluster.scale(2)  # launch 2 jobs, each of which starts 6 worker processes
+   cluster.scale(jobs=2)  # launch 2 workers, each of which starts 6 worker processes
    cluster.scale(cores=48)  # Or specify cores or memory directly
    cluster.scale(memory="200 GB")  # Or specify cores or memory directly
 
