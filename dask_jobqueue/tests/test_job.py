@@ -77,7 +77,7 @@ async def test_cluster(job_cls):
     ) as cluster:
         async with Client(cluster, asynchronous=True) as client:
             assert len(cluster.workers) == 1
-            cluster.scale(2)
+            cluster.scale(jobs=2)
             await cluster
             assert len(cluster.workers) == 2
             assert all(isinstance(w, job_cls) for w in cluster.workers.values())
@@ -131,7 +131,7 @@ def test_header_lines_skip():
 
 
 @pytest.mark.asyncio
-async def test_nprocs():
+async def test_nprocs_scale():
     async with LocalCluster(
         cores=2, memory="4GB", processes=2, asynchronous=True
     ) as cluster:
@@ -148,6 +148,13 @@ async def test_nprocs():
             await cluster
             await asyncio.sleep(0.2)
             assert len(cluster.scheduler.workers) == 2  # they're still one group
+
+            cluster.scale(jobs=2)
+            assert len(cluster.worker_spec) == 2
+            cluster.scale(5)
+            assert len(cluster.worker_spec) == 3
+            cluster.scale(1)
+            assert len(cluster.worker_spec) == 1
 
 
 @pytest.mark.parametrize("Cluster", all_clusters)

@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 import logging
+import math
 import os
 import re
 import shlex
@@ -487,3 +488,9 @@ class JobQueueCluster(SpecCluster):
     @property
     def job_name(self):
         return self._dummy_job.job_name
+
+    def scale(self, n=None, jobs=0, memory=None, cores=None):
+        if n is not None:
+            jobs = int(math.ceil(n / self._dummy_job.worker_processes))
+
+        return super().scale(jobs, memory=memory, cores=cores)
