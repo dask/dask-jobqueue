@@ -126,7 +126,7 @@ async def test_adapt(job_cls):
 @pytest.mark.asyncio
 async def test_adapt_parameters(job_cls):
     async with JobQueueCluster(
-        cores=4, memory="2GB", processes=2, job_cls=job_cls, asynchronous=True
+        cores=2, memory="1GB", processes=2, job_cls=job_cls, asynchronous=True
     ) as cluster:
         adapt = cluster.adapt(minimum=2, maximum=4, interval="10ms")
         await adapt.adapt()
