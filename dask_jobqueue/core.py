@@ -496,11 +496,7 @@ class JobQueueCluster(SpecCluster):
         return super().scale(jobs, memory=memory, cores=cores)
 
     def adapt(
-        self,
-        *args,
-        minimum_jobs: int = None,
-        maximum_jobs: int = None,
-        **kwargs
+        self, *args, minimum_jobs: int = None, maximum_jobs: int = None, **kwargs
     ):
         if minimum_jobs is not None:
             kwargs["minimum"] = minimum_jobs * self._dummy_job.worker_processes

@@ -126,16 +126,15 @@ async def test_adapt(job_cls):
 @pytest.mark.asyncio
 async def test_adapt_parameters(job_cls):
     async with JobQueueCluster(
-        cores=4, memory="2GB", processes=2, job_cls=job_cls, asynchronous=True,
+        cores=4, memory="2GB", processes=2, job_cls=job_cls, asynchronous=True
     ) as cluster:
-        async with Client(cluster, asynchronous=True) as client:
-            adapt = cluster.adapt(minimum=2, maximum=4, interval="10ms")
-            await adapt.adapt()
-            assert len(cluster.worker_spec) == 1  # 2 workers, 4 jobs
+        adapt = cluster.adapt(minimum=2, maximum=4, interval="10ms")
+        await adapt.adapt()
+        assert len(cluster.worker_spec) == 1  # 2 workers, 4 jobs
 
-            adapt = cluster.adapt(minimum_jobs=2, maximum_jobs=4, interval="10ms")
-            await adapt.adapt()
-            assert len(cluster.worker_spec) == 2  # 2 workers, 4 jobs
+        adapt = cluster.adapt(minimum_jobs=2, maximum_jobs=4, interval="10ms")
+        await adapt.adapt()
+        assert len(cluster.worker_spec) == 2  # 2 workers, 4 jobs
 
 
 def test_header_lines_skip():
