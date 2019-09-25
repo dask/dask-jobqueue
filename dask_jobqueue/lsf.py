@@ -182,7 +182,7 @@ class LSFCluster(JobQueueCluster):
     >>> from dask_jobqueue import LSFCluster
     >>> cluster = LSFCluster(queue='general', project='DaskonLSF',
     ...                      cores=15, memory='25GB')
-    >>> cluster.scale(10)  # this may take a few seconds to launch
+    >>> cluster.scale(jobs=10)  # this may take a few seconds to launch
 
     >>> from dask.distributed import Client
     >>> client = Client(cluster)
@@ -190,7 +190,7 @@ class LSFCluster(JobQueueCluster):
     This also works with adaptive clusters.  This automatically launches and
     kill workers based on load.
 
-    >>> cluster.adapt()
+    >>> cluster.adapt(maximum_jobs=20)
     """.format(
         job=job_parameters, cluster=cluster_parameters
     )

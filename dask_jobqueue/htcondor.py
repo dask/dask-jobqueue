@@ -212,14 +212,14 @@ class HTCondorCluster(JobQueueCluster):
     --------
     >>> from dask_jobqueue.htcondor import HTCondorCluster
     >>> cluster = HTCondorCluster(cores=24, memory="4GB", disk="4GB")
-    >>> cluster.scale(10)
+    >>> cluster.scale(jobs=10)  # ask for 10 jobs
 
     >>> from dask.distributed import Client
     >>> client = Client(cluster)
 
     This also works with adaptive clusters.  This automatically launches and kill workers based on load.
 
-    >>> cluster.adapt(minimum=5)
+    >>> cluster.adapt(maximum_jobs=20)
     """.format(
         job=job_parameters, cluster=cluster_parameters
     )

@@ -88,7 +88,7 @@ class LocalCluster(JobQueueCluster):
     --------
     >>> from dask_jobqueue import LocalCluster
     >>> cluster = LocalCluster(cores=2, memory="4 GB")
-    >>> cluster.scale(3)
+    >>> cluster.scale(jobs=3)  # ask for 3 jobs
 
     See Also
     --------

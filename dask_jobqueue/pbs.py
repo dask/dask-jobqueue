@@ -125,14 +125,14 @@ class PBSCluster(JobQueueCluster):
     >>> from dask_jobqueue import PBSCluster
     >>> cluster = PBSCluster(queue='regular', project="myproj", cores=24,
     ...     memory="500 GB")
-    >>> cluster.scale(10)  # Ask for ten jobs
+    >>> cluster.scale(jobs=10)  # This may take a few seconds to launch
 
     >>> from dask.distributed import Client
     >>> client = Client(cluster)
 
     This also works with adaptive clusters.  This automatically launches and kill workers based on load.
 
-    >>> cluster.adapt()
+    >>> cluster.adapt(maximum_jobs=20)
     """.format(
         job=job_parameters, cluster=cluster_parameters
     )
