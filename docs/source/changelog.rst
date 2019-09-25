@@ -11,10 +11,6 @@ Changelog
     of more centralized logic.  This improves standardization and adds new
     features, but does include the following **breaking changes**:
 
-    -   The scale method now refers to the number of jobs rather than the
-        number of workers.  Previously if each job launched two workers then
-        ``cluster.scale(4)`` would launch two jobs for a total of four workers.
-        Now it launches four jobs for a total of eight workers.
     -   The ``cluster.stop_all_jobs()`` method has been removed.
         Please use ``cluster.scale(0)`` instead.
     -   The attributes ``running_jobs``, ``pending_jobs``, and

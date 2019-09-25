@@ -19,7 +19,7 @@ Example
 
    from dask_jobqueue import PBSCluster
    cluster = PBSCluster()
-   cluster.scale(jobs=10)         # Deploy ten single-node jobs
+   cluster.scale(jobs=10)    # Deploy ten single-node jobs
 
    from dask.distributed import Client
    client = Client(cluster)  # Connect this local process to remote workers
