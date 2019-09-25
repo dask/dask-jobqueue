@@ -130,11 +130,13 @@ async def test_adapt_parameters(job_cls):
     ) as cluster:
         adapt = cluster.adapt(minimum=2, maximum=4, interval="10ms")
         await adapt.adapt()
-        assert len(cluster.worker_spec) == 1  # 2 workers, 4 jobs
+        await cluster
+        assert len(cluster.workers) == 1  # 2 workers, 4 jobs
 
         adapt = cluster.adapt(minimum_jobs=2, maximum_jobs=4, interval="10ms")
         await adapt.adapt()
-        assert len(cluster.worker_spec) == 2  # 2 workers, 4 jobs
+        await cluster
+        assert len(cluster.workers) == 2  # 2 workers, 4 jobs
 
 
 def test_header_lines_skip():
