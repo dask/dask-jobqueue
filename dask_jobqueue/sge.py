@@ -102,7 +102,7 @@ class SGECluster(JobQueueCluster):
     ...     cores=24,
     ...     memory="500 GB"
     ... )
-    >>> cluster.scale(jobs=10)  # this may take a few seconds to launch
+    >>> cluster.scale(jobs=10)  # ask for 10 jobs
 
     >>> from dask.distributed import Client
     >>> client = Client(cluster)

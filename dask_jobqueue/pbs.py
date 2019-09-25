@@ -125,7 +125,7 @@ class PBSCluster(JobQueueCluster):
     >>> from dask_jobqueue import PBSCluster
     >>> cluster = PBSCluster(queue='regular', project="myproj", cores=24,
     ...     memory="500 GB")
-    >>> cluster.scale(jobs=10)  # This may take a few seconds to launch
+    >>> cluster.scale(jobs=10)  # ask for 10 jobs
 
     >>> from dask.distributed import Client
     >>> client = Client(cluster)
