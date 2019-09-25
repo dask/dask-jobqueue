@@ -9,6 +9,12 @@ We recommend first doing these steps from a login node (nothing will be
 computationally intensive) but at some point you may want to shift to a compute
 or interactive node.
 
+*Note: We also recommend the `JupyterHub <https://jupyter.org/hub>`_ project,
+which allows HPC administrators to offer and control the process described
+in this document automatically.  If you find this process valuable but tedious,
+then you may want to ask your system administrators to support it with
+JupyterHub.*
+
 Install JupyterLab
 ------------------
 
@@ -84,7 +90,8 @@ Often a command like the following works:
 
    ssh -L 8888:login-node-hostname:8888 username@hpc.agency.gov
 
-Where ...
+Where ``login-node-hostname`` and ``username@hpc.agency.gov`` are placeholders
+that you need to fill in:
 
 -  ``login-node-hostname`` is the name of the node from which you are
     running your Jupyter server, designated ``hostname`` below.
@@ -104,7 +111,7 @@ So in a real example this might look like the following:
 .. code-block:: bash
 
     alice@login2.summit $ jupyter lab --no-browser --ip="login2" --port 8888
-    alice@laptop        $ ssh -L 8888:login2:8888 summit.olcf.ornl.gov
+    alice@laptop        $ ssh -L 8888:login2:8888 alice@summit.olcf.ornl.gov
 
 Additionally, if port ``8888`` is busy then you may want to choose a different
 port, like ``9999``.  Someone else may be using this port, particularly if they
