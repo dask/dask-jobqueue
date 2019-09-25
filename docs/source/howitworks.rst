@@ -25,6 +25,7 @@ object is instantiated:
 
 These parameters specify the characteristics of a *single job* or a *single
 compute node*, rather than the characteristics of your computation as a whole.
+It hasn't actually launched any jobs yet.
 For the full computation, you will then ask for a number of jobs using the
 ``scale`` command:
 
