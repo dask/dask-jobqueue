@@ -220,5 +220,5 @@ def use_stdin():
 @toolz.memoize
 def lsf_version():
     out, _ = subprocess.Popen("lsid", stdout=subprocess.PIPE).communicate()
-    version = re.search("(\d\.)+\d+", out)
+    version = re.search(r"(\d\.)+\d+", out)
     return LooseVersion(version)
