@@ -1,6 +1,11 @@
+from distutils.version import LooseVersion
+
 import logging
 import math
 import os
+import re
+import subprocess
+import toolz
 
 import dask
 
@@ -90,6 +95,13 @@ class LSFJob(Job):
         self.job_header = "\n".join(header_lines)
 
         logger.debug("Job script: \n %s" % self.job_script())
+
+    async def _submit_job(self, script_filename):
+        if use_stdin():
+            piped_cmd = [self.submit_command + "< " + script_filename + " 2> /dev/null"]
+            return self._call(piped_cmd, shell=True)
+        else:
+            return super()._submit_job(script_filename)
 
 
 def lsf_format_bytes_ceil(n, lsf_units="mb"):
@@ -196,3 +208,17 @@ class LSFCluster(JobQueueCluster):
     )
     job_cls = LSFJob
     config_name = "lsf"
+
+
+def use_stdin():
+    if dask.config.get("jobqueue.lsf.use-stdin") is not None:
+        return dask.config.get("jobqueue.lsf.use-stdin")
+
+    return lsf_version() <= "9"
+
+
+@toolz.memoize
+def lsf_version():
+    out, _ = subprocess.Popen("lsid", stdout=subprocess.PIPE).communicate()
+    version = re.search("(\d\.)+\d+", out)
+    return LooseVersion(version)
