@@ -101,7 +101,8 @@ class LSFJob(Job):
             piped_cmd = [self.submit_command + "< " + script_filename + " 2> /dev/null"]
             return self._call(piped_cmd, shell=True)
         else:
-            return super()._submit_job(script_filename)
+            result = await super()._submit_job(script_filename)
+            return result
 
 
 def lsf_format_bytes_ceil(n, lsf_units="mb"):
