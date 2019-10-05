@@ -214,11 +214,11 @@ def use_stdin():
     if dask.config.get("jobqueue.lsf.use-stdin") is not None:
         return dask.config.get("jobqueue.lsf.use-stdin")
 
-    return lsf_version() <= "9"
+    return lsf_version() < "10"
 
 
 @toolz.memoize
 def lsf_version():
     out, _ = subprocess.Popen("lsid", stdout=subprocess.PIPE).communicate()
-    version = re.search(r"(\d\.)+\d+", out)
+    version = re.search(r"(\d+\.)+\d+", out.decode()).group()
     return LooseVersion(version)
