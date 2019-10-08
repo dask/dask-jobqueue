@@ -516,7 +516,14 @@ class JobQueueCluster(SpecCluster):
 
         Parameters
         ----------
-
+        minimum_cores : int
+           Minimum number of cores for the cluster
+        maximum_cores : int
+           Maximum number of cores for the cluster
+        minimum_memory : str
+           Minimum amount of memory for the cluster
+        maximum_memory : str
+           Maximum amount of memory for the cluster
         minimum_jobs : int
            Minimum number of jobs
         maximum_jobs : int
