@@ -108,66 +108,7 @@ def test_job_script():
         assert "--nthreads 2 --nprocs 4 --memory-limit 7.00GB" in job_script
 
 
-@pytest.mark.env("slurm")
-def test_basic(loop):
-    with SLURMCluster(
-        walltime="00:02:00",
-        cores=2,
-        processes=1,
-        memory="2GB",
-        # job_extra=["-D /"],
-        loop=loop,
-    ) as cluster:
-        with Client(cluster) as client:
-
-            cluster.scale(2)
-
-            start = time()
-            client.wait_for_workers(2)
-
-            future = client.submit(lambda x: x + 1, 10)
-            assert future.result(QUEUE_WAIT) == 11
-
-            workers = list(client.scheduler_info()["workers"].values())
-            w = workers[0]
-            assert w["memory_limit"] == 2e9
-            assert w["nthreads"] == 2
-
-            cluster.scale(0)
-
-            start = time()
-            while client.scheduler_info()["workers"]:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-
-@pytest.mark.env("slurm")
-def test_adaptive(loop):
-    with SLURMCluster(
-        walltime="00:02:00",
-        cores=2,
-        processes=1,
-        memory="2GB",
-        # job_extra=["-D /"],
-        loop=loop,
-    ) as cluster:
-        cluster.adapt()
-        with Client(cluster) as client:
-            future = client.submit(lambda x: x + 1, 10)
-
-            start = time()
-            client.wait_for_workers(1)
-
-            assert future.result(QUEUE_WAIT) == 11
-
-            del future
-
-            start = time()
-            while client.scheduler_info()["workers"]:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-
+# TODO I should turn that into a common test as well
 def test_config_name_slurm_takes_custom_config():
     conf = {
         "queue": "myqueue",

@@ -98,234 +98,7 @@ def test_job_script(Cluster):
         assert "--nthreads 2 --nprocs 4 --memory-limit 7.00GB" in job_script
 
 
-@pytest.mark.env("pbs")
-def test_basic(loop):
-    with PBSCluster(
-        walltime="00:02:00",
-        processes=1,
-        cores=2,
-        memory="2GB",
-        local_directory="/tmp",
-        job_extra=["-V"],
-        loop=loop,
-    ) as cluster:
-        with Client(cluster) as client:
-
-            cluster.scale(2)
-            client.wait_for_workers(2)
-
-            future = client.submit(lambda x: x + 1, 10)
-            assert future.result(QUEUE_WAIT) == 11
-            # assert cluster.running_jobs
-
-            workers = list(client.scheduler_info()["workers"].values())
-            w = workers[0]
-            assert w["memory_limit"] == 2e9
-            assert w["nthreads"] == 2
-
-            cluster.scale(0)
-
-            start = time()
-            while client.scheduler_info()["workers"]:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            assert not cluster.workers and not cluster.worker_spec
-
-
-@pytest.mark.env("pbs")
-def test_scale_cores_memory(loop):
-    with PBSCluster(
-        walltime="00:02:00",
-        processes=1,
-        cores=2,
-        memory="2GB",
-        local_directory="/tmp",
-        job_extra=["-V"],
-        loop=loop,
-    ) as cluster:
-        with Client(cluster) as client:
-
-            cluster.scale(cores=2)
-            client.wait_for_workers(1)
-
-            future = client.submit(lambda x: x + 1, 10)
-            assert future.result(QUEUE_WAIT) == 11
-            assert cluster.workers
-
-            workers = list(client.scheduler_info()["workers"].values())
-            w = workers[0]
-            assert w["memory_limit"] == 2e9
-            assert w["nthreads"] == 2
-
-            cluster.scale(memory="0GB")
-
-            start = time()
-            while client.scheduler_info()["workers"]:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            assert not cluster.workers
-
-
-@pytest.mark.env("pbs")
-def test_basic_scale_edge_cases(loop):
-    with PBSCluster(
-        walltime="00:02:00",
-        processes=1,
-        cores=2,
-        memory="2GB",
-        local_directory="/tmp",
-        job_extra=["-V"],
-        loop=loop,
-    ) as cluster:
-
-        cluster.scale(2)
-        cluster.scale(0)
-
-        # Wait to see what happens
-        sleep(0.2)
-        start = time()
-        while cluster.workers:
-            sleep(0.1)
-            assert time() < start + QUEUE_WAIT
-
-        assert not cluster.workers
-
-
-@pytest.mark.env("pbs")
-def test_adaptive(loop):
-    with PBSCluster(
-        walltime="00:02:00",
-        processes=1,
-        cores=2,
-        memory="2GB",
-        local_directory="/tmp",
-        job_extra=["-V"],
-        loop=loop,
-    ) as cluster:
-        cluster.adapt()
-        with Client(cluster) as client:
-            future = client.submit(lambda x: x + 1, 10)
-            assert future.result(QUEUE_WAIT) == 11
-
-            start = time()
-            processes = cluster._dummy_job.worker_processes
-            while len(client.scheduler_info()["workers"]) != processes:
-                sleep(0.1)
-                assert time() < start + QUEUE_WAIT
-
-            del future
-
-            start = time()
-            while client.scheduler_info()["workers"] or cluster.workers:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-
-@pytest.mark.env("pbs")
-def test_adaptive_grouped(loop):
-    with PBSCluster(
-        walltime="00:02:00",
-        processes=1,
-        cores=2,
-        memory="2GB",
-        local_directory="/tmp",
-        job_extra=["-V"],
-        loop=loop,
-    ) as cluster:
-        cluster.adapt(minimum=1)  # at least 1 worker
-        with Client(cluster) as client:
-            client.wait_for_workers(1)
-
-            future = client.submit(lambda x: x + 1, 10)
-            assert future.result(QUEUE_WAIT) == 11
-
-            start = time()
-            processes = cluster._dummy_job.worker_processes
-            while len(client.scheduler_info()["workers"]) != processes:
-                sleep(0.1)
-                assert time() < start + QUEUE_WAIT
-
-
-@pytest.mark.env("pbs")
-def test_adaptive_cores_mem(loop):
-    with PBSCluster(
-        walltime="00:02:00",
-        processes=1,
-        cores=2,
-        memory="2GB",
-        local_directory="/tmp",
-        job_extra=["-V"],
-        loop=loop,
-    ) as cluster:
-        cluster.adapt(minimum_cores=0, maximum_memory="4GB")
-        with Client(cluster) as client:
-            future = client.submit(lambda x: x + 1, 10)
-            assert future.result(QUEUE_WAIT) == 11
-
-            start = time()
-            processes = cluster._dummy_job.worker_processes
-            while len(client.scheduler_info()["workers"]) != processes:
-                sleep(0.1)
-                assert time() < start + QUEUE_WAIT
-
-            del future
-
-            start = time()
-            while cluster.workers:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-
-@pytest.mark.env("pbs")
-def test_scale_grouped(loop):
-    with PBSCluster(
-        walltime="00:02:00",
-        processes=2,
-        cores=2,
-        memory="2GB",
-        local_directory="/tmp",
-        job_extra=["-V"],
-        loop=loop,
-    ) as cluster:
-        with Client(cluster) as client:
-
-            cluster.scale(4)  # Start 2 jobs
-
-            start = time()
-
-            while len(list(client.scheduler_info()["workers"].values())) != 4:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            future = client.submit(lambda x: x + 1, 10)
-            assert future.result(QUEUE_WAIT) == 11
-            # assert cluster.running_jobs
-
-            workers = list(client.scheduler_info()["workers"].values())
-            w = workers[0]
-            assert w["memory_limit"] == 1e9
-            assert w["nthreads"] == 1
-            assert len(workers) == 4
-
-            cluster.scale(1)  # Should leave 2 workers, 1 job
-
-            start = time()
-            while len(client.scheduler_info()["workers"]) != 2:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            cluster.scale(0)
-
-            start = time()
-
-            assert not cluster.worker_spec
-            while len(client.scheduler_info()["workers"]) != 0:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-
+# TODO make it a common test?
 def test_config(loop):
     with dask.config.set(
         {"jobqueue.pbs.walltime": "00:02:00", "jobqueue.pbs.local-directory": "/foo"}
@@ -334,7 +107,7 @@ def test_config(loop):
             assert "00:02:00" in cluster.job_script()
             assert "--local-directory /foo" in cluster.job_script()
 
-
+# TODO make it a common test
 def test_config_name_pbs_takes_custom_config():
     conf = {
         "queue": "myqueue",
@@ -362,7 +135,7 @@ def test_config_name_pbs_takes_custom_config():
         with PBSCluster(config_name="pbs-config-name") as cluster:
             assert cluster.job_name == "myname"
 
-
+# TODO common test
 def test_informative_errors():
     with pytest.raises(ValueError) as info:
         PBSCluster(memory=None, cores=4)
@@ -373,6 +146,7 @@ def test_informative_errors():
     assert "cores" in str(info.value)
 
 
+# TODO Hmmm what is this testing?
 @pytest.mark.asyncio
 async def test_adapt(loop):
     async with PBSCluster(cores=1, memory="1 GB", asynchronous=True) as cluster:

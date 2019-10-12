@@ -110,111 +110,7 @@ def test_job_script():
         assert "--nthreads 2 --nprocs 4 --memory-limit 7.00GB" in job_script
 
 
-@pytest.mark.env("lsf")
-def test_basic(loop):
-    with LSFCluster(
-        walltime="00:02",
-        processes=1,
-        cores=2,
-        memory="2GB",
-        local_directory="/tmp",
-        loop=loop,
-    ) as cluster:
-        with Client(cluster) as client:
-            cluster.start_workers(2)
-            assert cluster.pending_jobs or cluster.running_jobs
-            future = client.submit(lambda x: x + 1, 10)
-            assert future.result(QUEUE_WAIT) == 11
-            assert cluster.running_jobs
-
-            workers = list(client.scheduler_info()["workers"].values())
-            w = workers[0]
-            assert w["memory_limit"] == 2e9
-            assert w["nthreads"] == 2
-
-            cluster.stop_workers(workers)
-
-            start = time()
-            while client.scheduler_info()["workers"]:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            assert not cluster.running_jobs
-
-
-@pytest.mark.env("lsf")
-def test_adaptive(loop):
-    with LSFCluster(
-        walltime="00:02",
-        processes=1,
-        cores=2,
-        memory="2GB",
-        local_directory="/tmp",
-        loop=loop,
-    ) as cluster:
-        cluster.adapt()
-        with Client(cluster) as client:
-            future = client.submit(lambda x: x + 1, 10)
-
-            start = time()
-            while not (cluster.pending_jobs or cluster.running_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            assert future.result(QUEUE_WAIT) == 11
-
-            start = time()
-            processes = cluster.worker_processes
-            while len(client.scheduler_info()["workers"]) != processes:
-                sleep(0.1)
-                assert time() < start + QUEUE_WAIT
-
-            del future
-
-            start = time()
-            while len(client.scheduler_info()["workers"]) > 0:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            start = time()
-            while cluster.pending_jobs or cluster.running_jobs:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-            assert cluster.finished_jobs
-
-
-@pytest.mark.env("lsf")
-def test_adaptive_grouped(loop):
-    with LSFCluster(
-        walltime="00:02",
-        processes=1,
-        cores=2,
-        memory="2GB",
-        local_directory="/tmp",
-        loop=loop,
-    ) as cluster:
-        cluster.adapt(minimum=1)  # at least 1 worker
-        with Client(cluster) as client:
-            start = time()
-            while not (cluster.pending_jobs or cluster.running_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            future = client.submit(lambda x: x + 1, 10)
-            assert future.result(QUEUE_WAIT) == 11
-
-            start = time()
-            while not cluster.running_jobs:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            start = time()
-            processes = cluster.worker_processes
-            while len(client.scheduler_info()["workers"]) != processes:
-                sleep(0.1)
-                assert time() < start + QUEUE_WAIT
-
-
+# TODO common test
 def test_config(loop):
     with dask.config.set(
         {
@@ -254,6 +150,7 @@ def test_use_stdin(loop, config_value, constructor_value):
                 assert cluster._dummy_job.use_stdin == config_value
 
 
+# TODO common test
 def test_config_name_lsf_takes_custom_config():
     conf = {
         "queue": "myqueue",
@@ -281,7 +178,7 @@ def test_config_name_lsf_takes_custom_config():
         with LSFCluster(config_name="lsf-config-name") as cluster:
             assert cluster.job_name == "myname"
 
-
+# TODO common test
 def test_informative_errors():
     with pytest.raises(ValueError) as info:
         LSFCluster(memory=None, cores=4)

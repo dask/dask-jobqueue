@@ -50,35 +50,6 @@ def test_job_script():
         assert "--nprocs 2" in job_script
 
 
-@pytest.mark.env("htcondor")
-def test_basic(loop):
-    with HTCondorCluster(cores=1, memory="100MB", disk="100MB", loop=loop) as cluster:
-        with Client(cluster) as client:
-
-            cluster.scale(2)
-
-            start = time()
-            while not (cluster.pending_jobs or cluster.running_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            future = client.submit(lambda x: x + 1, 10)
-            assert future.result(QUEUE_WAIT) == 11
-            assert cluster.running_jobs
-
-            workers = list(client.scheduler_info()["workers"].values())
-            w = workers[0]
-            assert w["memory_limit"] == 1e8
-            assert w["nthreads"] == 1
-
-            cluster.scale(0)
-
-            start = time()
-            while cluster.running_jobs:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-
 def test_config_name_htcondor_takes_custom_config():
     conf = {
         "cores": 1,

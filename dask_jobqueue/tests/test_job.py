@@ -24,7 +24,12 @@ from dask.distributed import Scheduler, Client
 
 import pytest
 
+# General TODO for this module: should I get rid of most stuff or at least
+# improve test_cluster.py taking inspiration from this? I guess I still want to
+# test JobQueueCluster(job=...) maybe at least in a very simple way but at the
+# same time I feel like this is duplicating the testing of FooCluster classes
 
+# TODO: move to common test
 def test_basic():
     job = PBSJob(scheduler="127.0.0.1:12345", cores=1, memory="1 GB")
     assert "127.0.0.1:12345" in job.job_script()
@@ -174,6 +179,7 @@ async def test_nprocs_scale():
             assert len(cluster.worker_spec) == 1
 
 
+# TODO: this should move to test_cluster.py ?
 @pytest.mark.parametrize("Cluster", all_clusters)
 def test_docstring_cluster(Cluster):
     assert "cores :" in Cluster.__doc__

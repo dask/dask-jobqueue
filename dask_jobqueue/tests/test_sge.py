@@ -9,37 +9,6 @@ import dask
 from . import QUEUE_WAIT
 
 
-@pytest.mark.env("sge")
-def test_basic(loop):
-    with SGECluster(
-        walltime="00:02:00", cores=8, processes=4, memory="2GB", loop=loop
-    ) as cluster:
-        with Client(cluster, loop=loop) as client:
-
-            cluster.scale(2)
-
-            start = time()
-            while not client.scheduler_info()["workers"]:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-            future = client.submit(lambda x: x + 1, 10)
-            assert future.result(QUEUE_WAIT) == 11
-            assert len(client.scheduler_info()["workers"]) > 0
-
-            workers = list(client.scheduler_info()["workers"].values())
-            w = workers[0]
-            assert w["memory_limit"] == 2e9 / 4
-            assert w["nthreads"] == 2
-
-            cluster.scale(0)
-
-            start = time()
-            while client.scheduler_info()["workers"]:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
-
 def test_config_name_sge_takes_custom_config():
     conf = {
         "queue": "myqueue",
@@ -102,6 +71,7 @@ def test_job_script(tmpdir):
             assert each in job_script
 
 
+# TODO what should I do with this one? Should I do it for all clusters?
 @pytest.mark.env("sge")
 def test_complex_cancel_command(loop):
     with SGECluster(
