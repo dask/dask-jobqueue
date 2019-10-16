@@ -172,6 +172,7 @@ async def check_adaptive_cores_mem(cluster, client):
         asyncio.sleep(0.100)
         assert time() < start + QUEUE_WAIT
 
+
 @pytest.mark.parametrize("cluster_cls", cluster_params)
 @pytest.mark.parametrize("check", all_checks())
 @pytest.mark.asyncio

@@ -1,13 +1,9 @@
 import sys
-from time import sleep, time
 
 import dask
 import pytest
-from dask.distributed import Client
 
 from dask_jobqueue import MoabCluster, PBSCluster
-
-from . import QUEUE_WAIT
 
 
 @pytest.mark.parametrize("Cluster", [PBSCluster, MoabCluster])
@@ -107,6 +103,7 @@ def test_config(loop):
             assert "00:02:00" in cluster.job_script()
             assert "--local-directory /foo" in cluster.job_script()
 
+
 # TODO make it a common test
 def test_config_name_pbs_takes_custom_config():
     conf = {
@@ -134,6 +131,7 @@ def test_config_name_pbs_takes_custom_config():
     with dask.config.set({"jobqueue.pbs-config-name": conf}):
         with PBSCluster(config_name="pbs-config-name") as cluster:
             assert cluster.job_name == "myname"
+
 
 # TODO common test
 def test_informative_errors():

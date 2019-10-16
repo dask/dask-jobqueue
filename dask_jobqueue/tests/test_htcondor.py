@@ -1,8 +1,4 @@
 import sys
-from time import sleep, time
-
-import pytest
-from distributed import Client
 
 import dask
 

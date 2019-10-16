@@ -3,16 +3,12 @@ from shutil import rmtree
 import sys
 from textwrap import dedent
 import tempfile
-from time import sleep, time
 
 import dask
 import pytest
-from dask.distributed import Client
 from distributed.utils import parse_bytes
 
 from dask_jobqueue import LSFCluster, lsf
-
-from . import QUEUE_WAIT
 
 
 def test_header():
@@ -177,6 +173,7 @@ def test_config_name_lsf_takes_custom_config():
     with dask.config.set({"jobqueue.lsf-config-name": conf}):
         with LSFCluster(config_name="lsf-config-name") as cluster:
             assert cluster.job_name == "myname"
+
 
 # TODO common test
 def test_informative_errors():

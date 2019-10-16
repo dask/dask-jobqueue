@@ -29,6 +29,7 @@ import pytest
 # test JobQueueCluster(job=...) maybe at least in a very simple way but at the
 # same time I feel like this is duplicating the testing of FooCluster classes
 
+
 # TODO: move to common test
 def test_basic():
     job = PBSJob(scheduler="127.0.0.1:12345", cores=1, memory="1 GB")
