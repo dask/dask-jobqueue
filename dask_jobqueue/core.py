@@ -391,6 +391,7 @@ class JobQueueCluster(SpecCluster):
     )
 
     job_cls = None
+    config_name = None
 
     def __init__(
         self,
@@ -421,9 +422,12 @@ class JobQueueCluster(SpecCluster):
                 "or SGEJob with the job_cls= argument."
             )
 
-        if config_name:
+        if config_name is not None:
+            self.config_name = config_name
+
+        if self.config_name:
             if interface is None:
-                interface = dask.config.get("jobqueue.%s.interface" % config_name)
+                interface = dask.config.get("jobqueue.%s.interface" % self.config_name)
 
         scheduler = {
             "cls": Scheduler,  # Use local scheduler for now
@@ -435,8 +439,8 @@ class JobQueueCluster(SpecCluster):
                 "security": security,
             },
         }
-        if config_name:
-            kwargs["config_name"] = config_name
+        if self.config_name:
+            kwargs["config_name"] = self.config_name
         kwargs["interface"] = interface
         kwargs["protocol"] = protocol
         kwargs["security"] = security
