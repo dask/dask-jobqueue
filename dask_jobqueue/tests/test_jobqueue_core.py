@@ -3,9 +3,11 @@ import shutil
 import socket
 import sys
 import re
+import psutil
 
 import pytest
 
+import dask
 from dask_jobqueue import (
     JobQueueCluster,
     PBSCluster,
@@ -206,3 +208,12 @@ def test_cluster_has_cores_and_memory(Cluster):
 
     with pytest.raises(ValueError, match=r"cores=4, memory='\d+GB'"):
         Cluster(cores=4)
+
+
+@pytest.mark.asyncio
+async def test_config_interface():
+    net_if_addrs = psutil.net_if_addrs()
+    interface = list(net_if_addrs.keys())[0]
+    with dask.config.set({"jobqueue.pbs.interface": interface}):
+        cluster = PBSCluster(cores=1, memory="2GB", asynchronous=True)
+        assert interface in str(cluster.scheduler_spec)
