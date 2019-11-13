@@ -143,10 +143,16 @@ class Job(ProcessInterface, abc.ABC):
 
         super().__init__()
 
-        if config_name is None:
+        default_config_name = getattr(type(self), "config_name", None)
+        # TODO better error message
+        if default_config_name is None:
             raise ValueError(
-                "Job needs a config_name"
+                "Nope your job class needs to have a config_name class attribute"
             )
+
+        if config_name is None:
+            config_name = default_config_name
+        self.config_name = config_name
 
         if job_name is None:
             job_name = dask.config.get("jobqueue.%s.name" % config_name)
@@ -407,33 +413,32 @@ class JobQueueCluster(SpecCluster):
     ):
         self.status = "created"
 
-        if hasattr(type(self), 'job_cls'):
-            raise ValueError(
-                "You must provide a Job type like PBSJob, SLURMJob, "
-                "or SGEJob with the job_cls= argument."
-            )
-
-        # TODO hmmm do we really need to be able to pass a job_cls to
-        # JobQueueCluster? maybe this can be simpler and we can have an error
-        # if type(self) has no job_cls attribute? there may be tests that uses
-        # this ... this is probably historical with
-        # JobQueueCluster(job_cls=...) but we wanted to keep the classes as
-        # they were before I may be able to decide this is not possible any more maybe ...
-        if not hasattr(self, 'job_cls') and job_cls is None:
-            raise ValueError('you need to have a class variable in your JobQueueCluster-derived class or pass a job_cls parameter ...')
-
+        default_job_cls = getattr(type(self), "job_cls", None)
+        self.job_cls = default_job_cls
         if job_cls is not None:
             self.job_cls = job_cls
 
-        if config_name is None:
+        # TODO better error
+        if self.job_cls is None:
             raise ValueError(
-                "You must provide a config_name for example 'pbs', 'slurm', "
-                "or 'sge' with the job_cls= argument."
+                "you need to specify a Job type. "
+                "two cases:\n"
+                "- you are inheriting from JobQueueCluster (most likely): you need to have a class variable"
+                " in your JobQueueCluster-derived class\n"
+                "- you are using JobQueueCluster directly (less likely, only useful for tests), "
+                "pass a  job_cls= parameter."
             )
 
-        if config_name:
-            if interface is None:
-                interface = dask.config.get("jobqueue.%s.interface" % config_name)
+        default_config_name = getattr(self.job_cls, "config_name", None)
+        if default_config_name is None:
+            # TODO better error
+            raise ValueError("Job needs to have a config_name class variable")
+
+        if config_name is None:
+            config_name = default_config_name
+
+        if interface is None:
+            interface = dask.config.get("jobqueue.%s.interface" % config_name)
 
         scheduler = {
             "cls": Scheduler,  # Use local scheduler for now
@@ -445,8 +450,8 @@ class JobQueueCluster(SpecCluster):
                 "security": security,
             },
         }
-        if config_name:
-            kwargs["config_name"] = config_name
+
+        kwargs["config_name"] = config_name
         kwargs["interface"] = interface
         kwargs["protocol"] = protocol
         kwargs["security"] = security

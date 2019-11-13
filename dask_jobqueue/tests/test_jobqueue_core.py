@@ -20,7 +20,8 @@ from dask_jobqueue.sge import SGEJob
 
 
 def test_errors():
-    with pytest.raises(ValueError, match="Job type.*job_cls="):
+    match = re.compile("Job type.*job_cls=", flags=re.DOTALL)
+    with pytest.raises(ValueError, match=match):
         JobQueueCluster(cores=4)
 
 
