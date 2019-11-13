@@ -114,4 +114,3 @@ class SGECluster(JobQueueCluster):
         job=job_parameters, cluster=cluster_parameters
     )
     job_cls = SGEJob
-    config_name = "sge"

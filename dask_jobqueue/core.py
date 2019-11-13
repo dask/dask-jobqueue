@@ -143,14 +143,9 @@ class Job(ProcessInterface, abc.ABC):
 
         super().__init__()
 
-        # TODO move if cores is None exception here too ...
         if config_name is None:
             raise ValueError(
-                "Looks like you are trying to create a class that inherits from dask_jobqueue.core.JobQueueCluster. "
-                "If that is the case, you need to:\n"
-                "- set the 'config_name' class variable to a non-None value\n"
-                "- create a section in jobqueue.yaml with the value of 'config_name'\n"
-                "If that is not the case, please open an issue in https://github.com/dask/dask-jobqueue/issues."
+                "Job needs a config_name"
             )
 
         if job_name is None:
@@ -190,7 +185,7 @@ class Job(ProcessInterface, abc.ABC):
                 )
             )
 
-        # This attribute should be overridden
+        # This attribute should be set in the derived class
         self.job_header = None
 
         if interface:
@@ -391,8 +386,6 @@ class JobQueueCluster(SpecCluster):
         cluster_parameters=cluster_parameters
     )
 
-    job_cls = None
-
     def __init__(
         self,
         n_workers=0,
@@ -413,13 +406,29 @@ class JobQueueCluster(SpecCluster):
         **kwargs
     ):
         self.status = "created"
-        if job_cls is not None:
-            self.job_cls = job_cls
 
-        if self.job_cls is None:
+        if hasattr(type(self), 'job_cls'):
             raise ValueError(
                 "You must provide a Job type like PBSJob, SLURMJob, "
                 "or SGEJob with the job_cls= argument."
+            )
+
+        # TODO hmmm do we really need to be able to pass a job_cls to
+        # JobQueueCluster? maybe this can be simpler and we can have an error
+        # if type(self) has no job_cls attribute? there may be tests that uses
+        # this ... this is probably historical with
+        # JobQueueCluster(job_cls=...) but we wanted to keep the classes as
+        # they were before I may be able to decide this is not possible any more maybe ...
+        if not hasattr(self, 'job_cls') and job_cls is None:
+            raise ValueError('you need to have a class variable in your JobQueueCluster-derived class or pass a job_cls parameter ...')
+
+        if job_cls is not None:
+            self.job_cls = job_cls
+
+        if config_name is None:
+            raise ValueError(
+                "You must provide a config_name for example 'pbs', 'slurm', "
+                "or 'sge' with the job_cls= argument."
             )
 
         if config_name:
