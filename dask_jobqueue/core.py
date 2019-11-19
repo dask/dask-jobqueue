@@ -143,43 +143,43 @@ class Job(ProcessInterface, abc.ABC):
 
         super().__init__()
 
-        default_config_name = getattr(type(self), "config_name", None)
-        # TODO better error message
-        if default_config_name is None:
-            raise ValueError(
-                "Nope your job class needs to have a config_name class attribute"
-            )
-
+        default_config_name = self.default_config_name()
         if config_name is None:
             config_name = default_config_name
         self.config_name = config_name
 
         if job_name is None:
-            job_name = dask.config.get("jobqueue.%s.name" % config_name)
+            job_name = dask.config.get("jobqueue.%s.name" % self.config_name)
         if cores is None:
-            cores = dask.config.get("jobqueue.%s.cores" % config_name)
+            cores = dask.config.get("jobqueue.%s.cores" % self.config_name)
         if memory is None:
-            memory = dask.config.get("jobqueue.%s.memory" % config_name)
+            memory = dask.config.get("jobqueue.%s.memory" % self.config_name)
         if processes is None:
-            processes = dask.config.get("jobqueue.%s.processes" % config_name)
+            processes = dask.config.get("jobqueue.%s.processes" % self.config_name)
         if interface is None:
-            interface = dask.config.get("jobqueue.%s.interface" % config_name)
+            interface = dask.config.get("jobqueue.%s.interface" % self.config_name)
         if death_timeout is None:
-            death_timeout = dask.config.get("jobqueue.%s.death-timeout" % config_name)
+            death_timeout = dask.config.get(
+                "jobqueue.%s.death-timeout" % self.config_name
+            )
         if local_directory is None:
             local_directory = dask.config.get(
-                "jobqueue.%s.local-directory" % config_name
+                "jobqueue.%s.local-directory" % self.config_name
             )
         if extra is None:
-            extra = dask.config.get("jobqueue.%s.extra" % config_name)
+            extra = dask.config.get("jobqueue.%s.extra" % self.config_name)
         if env_extra is None:
-            env_extra = dask.config.get("jobqueue.%s.env-extra" % config_name)
+            env_extra = dask.config.get("jobqueue.%s.env-extra" % self.config_name)
         if header_skip is None:
-            header_skip = dask.config.get("jobqueue.%s.header-skip" % config_name, ())
+            header_skip = dask.config.get(
+                "jobqueue.%s.header-skip" % self.config_name, ()
+            )
         if log_directory is None:
-            log_directory = dask.config.get("jobqueue.%s.log-directory" % config_name)
+            log_directory = dask.config.get(
+                "jobqueue.%s.log-directory" % self.config_name
+            )
         if shebang is None:
-            shebang = dask.config.get("jobqueue.%s.shebang" % config_name)
+            shebang = dask.config.get("jobqueue.%s.shebang" % self.config_name)
 
         if cores is None or memory is None:
             job_class_name = self.__class__.__name__
@@ -238,6 +238,18 @@ class Job(ProcessInterface, abc.ABC):
         if self.log_directory is not None:
             if not os.path.exists(self.log_directory):
                 os.makedirs(self.log_directory)
+
+    @classmethod
+    def default_config_name(cls):
+        config_name = getattr(cls, "config_name", None)
+        if config_name is None:
+            raise ValueError(
+                "The class {} is required to have 'config_name' class variable.\n"
+                "If you have created this class, please add a 'config_name' class variable.\n"
+                "If not this may be a bug, feel free to create an issue at: "
+                "https://github.com/dask/dask-jobqueue/issues/new".format(cls)
+            )
+        return config_name
 
     def job_script(self):
         """ Construct a job submission script """
@@ -418,22 +430,18 @@ class JobQueueCluster(SpecCluster):
         if job_cls is not None:
             self.job_cls = job_cls
 
-        # TODO better error
         if self.job_cls is None:
             raise ValueError(
-                "you need to specify a Job type. "
-                "two cases:\n"
-                "- you are inheriting from JobQueueCluster (most likely): you need to have a class variable"
-                " in your JobQueueCluster-derived class\n"
-                "- you are using JobQueueCluster directly (less likely, only useful for tests), "
-                "pass a  job_cls= parameter."
+                "You need to specify a Job type. Two cases:\n"
+                "- you are inheriting from JobQueueCluster (most likely): you need to add a 'job_cls' class variable "
+                "in your JobQueueCluster-derived class {}\n"
+                "- you are using JobQueueCluster directly (less likely, only useful for tests): "
+                "please explicitly pass a Job type through the 'job_cls' parameter.".format(
+                    type(self)
+                )
             )
 
-        default_config_name = getattr(self.job_cls, "config_name", None)
-        if default_config_name is None:
-            # TODO better error
-            raise ValueError("Job needs to have a config_name class variable")
-
+        default_config_name = self.job_cls.default_config_name()
         if config_name is None:
             config_name = default_config_name
 
