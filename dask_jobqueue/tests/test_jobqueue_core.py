@@ -19,6 +19,8 @@ from dask_jobqueue import (
     OARCluster,
 )
 
+from dask_jobqueue.local import LocalCluster
+
 from dask_jobqueue.sge import SGEJob
 
 
@@ -217,6 +219,10 @@ def test_cluster_has_cores_and_memory(Cluster):
 async def test_config_interface():
     net_if_addrs = psutil.net_if_addrs()
     interface = list(net_if_addrs.keys())[0]
-    with dask.config.set({"jobqueue.pbs.interface": interface}):
-        cluster = PBSCluster(cores=1, memory="2GB", asynchronous=True)
-        assert interface in str(cluster.scheduler_spec)
+    with dask.config.set({"jobqueue.local.interface": interface}):
+        cluster = LocalCluster(cores=1, memory="2GB", asynchronous=True)
+        await cluster
+        expected = "'interface': {!r}".format(interface)
+        assert expected in str(cluster.scheduler_spec)
+        cluster.scale(1)
+        assert expected in str(cluster.worker_spec)
