@@ -34,6 +34,19 @@ def pbs_format_bytes_ceil(n):
     return "%dB" % n
 
 
+def pbs_format_resource_spec(resource_spec, worker_cores, worker_memory):
+    if resource_spec is None:
+        # Compute default resources specifications
+        resource_spec = "select=1:ncpus=%d" % worker_cores
+        memory_string = pbs_format_bytes_ceil(worker_memory)
+        resource_spec += ":mem=" + memory_string
+        logger.info(
+            "Resource specification for PBS not set, initializing it to %s"
+            % resource_spec
+        )
+    return resource_spec
+
+
 class PBSJob(Job):
     submit_command = "qsub"
     cancel_command = "qdel"
@@ -73,36 +86,25 @@ class PBSJob(Job):
         # Try to find a project name from environment variable
         project = project or os.environ.get("PBS_ACCOUNT")
 
-        header_lines = []
-        # PBS header build
-        if self.job_name is not None:
-            header_lines.append("#PBS -N %s" % self.job_name)
-        if queue is not None:
-            header_lines.append("#PBS -q %s" % queue)
-        if project is not None:
-            header_lines.append("#PBS -A %s" % project)
-        if resource_spec is None:
-            # Compute default resources specifications
-            resource_spec = "select=1:ncpus=%d" % self.worker_cores
-            memory_string = pbs_format_bytes_ceil(self.worker_memory)
-            resource_spec += ":mem=" + memory_string
-            logger.info(
-                "Resource specification for PBS not set, initializing it to %s"
-                % resource_spec
-            )
-        if resource_spec is not None:
-            header_lines.append("#PBS -l %s" % resource_spec)
-        if walltime is not None:
-            header_lines.append("#PBS -l walltime=%s" % walltime)
-        if self.log_directory is not None:
-            header_lines.append("#PBS -e %s/" % self.log_directory)
-            header_lines.append("#PBS -o %s/" % self.log_directory)
-        header_lines.extend(["#PBS %s" % arg for arg in job_extra])
-
-        # Declare class attribute that shall be overridden
-        self.job_header = "\n".join(header_lines)
+        self.job_header = self.template_env.get_template('pbs_job_header').render(
+            job_name=self.job_name,
+            queue=queue,
+            project=project,
+            resource_spec=resource_spec,
+            worker_cores=self.worker_cores,
+            worker_memory=self.worker_memory,
+            walltime=walltime,
+            log_directory=self.log_directory,
+            job_extra=job_extra,
+        )
 
         logger.debug("Job script: \n %s" % self.job_script())
+
+    @property
+    def template_env(self):
+        env = super().template_env
+        env.filters['pbs_format_resource_spec'] = pbs_format_resource_spec
+        return env
 
 
 class PBSCluster(JobQueueCluster):
