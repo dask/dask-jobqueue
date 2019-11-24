@@ -1,23 +1,23 @@
 {% if job_name is not none -%}
-#PBS -N {{job_name}}
+#PBS -N {{ job_name }}
 {%- endif %}
 {% if queue is not none -%}
-#PBS -q {{queue}}
+#PBS -q {{ queue }}
 {%- endif %}
 {% if project is not none -%}
-#PBS -A {{project}}
+#PBS -A {{ project }}
 {%- endif %}
-#PBS -l {{resource_spec | pbs_format_resource_spec(worker_cores, worker_memory) }}
+#PBS -l {{ resource_spec | pbs_format_resource_spec(worker_cores, worker_memory) }}
 {% if walltime is not none -%}
-#PBS -l walltime={{walltime}}
+#PBS -l walltime={{ walltime }}
 {%- endif %}
 {% if log_directory is not none -%}
-#PBS -o {{log_directory}}/
-#PBS -e {{log_directory}}/
+#PBS -o {{ log_directory }}/
+#PBS -e {{ log_directory }}/
 {%- endif %}
 {%- if job_extra is not none -%}
 {%- for j in job_extra %}
-#PBS {{j}}
+#PBS {{ j }}
 {%- endfor -%}
 {%- endif %}
 JOB_ID=${PBS_JOBID%%.*}
