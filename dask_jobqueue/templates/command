@@ -1,0 +1,22 @@
+{{python}} -m distributed.cli.dask_worker {{scheduler}} --nthreads {{threads}}{{" "}}
+{%- if processes is not none and processes > 1 -%}
+--nprocs {{processes}}{{" "}}
+{%- endif -%}
+--memory-limit {{memory}} --name {{name}}{{" "}}
+{%- if nanny -%}
+--nanny
+{%- else -%}
+--no-nanny
+{%- endif -%}{{" "}}
+{%- if death_timeout is not none -%}
+--death-timeout {{ death_timeout }}{{" "}}
+{%- endif -%}
+{%- if local_directory is not none -%}
+--local-directory {{ local_directory }}{{" "}}
+{%- endif -%}
+{%- if extra is not none -%}
+{{ extra | join(" ") }}{{" "}}
+{%- endif -%}
+{%- if interface -%}
+--interface {{ interface }}{{" "}}
+{%- endif -%}
