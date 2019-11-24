@@ -44,43 +44,30 @@ class SLURMJob(Job):
         if job_extra is None:
             job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name)
 
-        header_lines = []
-        # SLURM header build
-        if self.job_name is not None:
-            header_lines.append("#SBATCH -J %s" % self.job_name)
-        if self.log_directory is not None:
-            header_lines.append(
-                "#SBATCH -e %s/%s-%%J.err"
-                % (self.log_directory, self.job_name or "worker")
-            )
-            header_lines.append(
-                "#SBATCH -o %s/%s-%%J.out"
-                % (self.log_directory, self.job_name or "worker")
-            )
-        if queue is not None:
-            header_lines.append("#SBATCH -p %s" % queue)
-        if project is not None:
-            header_lines.append("#SBATCH -A %s" % project)
-
-        # Init resources, always 1 task,
-        # and then number of cpu is processes * threads if not set
-        header_lines.append("#SBATCH -n 1")
-        header_lines.append(
-            "#SBATCH --cpus-per-task=%d" % (job_cpu or self.worker_cores)
+        self.job_header = self.template_env.get_template("slurm_job_header").render(
+            job_name=self.job_name,
+            log_directory=self.log_directory,
+            queue=queue,
+            project=project,
+            job_cpu=job_cpu,
+            worker_cores=self.worker_cores,
+            memory=job_mem,
+            worker_memory=self.worker_memory,
+            walltime=walltime,
+            job_extra=job_extra,
         )
-        # Memory
-        memory = job_mem
-        if job_mem is None:
-            memory = slurm_format_bytes_ceil(self.worker_memory)
-        if memory is not None:
-            header_lines.append("#SBATCH --mem=%s" % memory)
 
-        if walltime is not None:
-            header_lines.append("#SBATCH -t %s" % walltime)
-        header_lines.extend(["#SBATCH %s" % arg for arg in job_extra])
+    @property
+    def template_env(self):
+        env = super().template_env
+        env.filters["slurm_format_memory"] = slurm_format_memory
+        return env
 
-        # Declare class attribute that shall be overridden
-        self.job_header = "\n".join(header_lines)
+
+def slurm_format_memory(memory, worker_memory):
+    if memory is None:
+        memory = slurm_format_bytes_ceil(worker_memory)
+    return memory
 
 
 def slurm_format_bytes_ceil(n):
