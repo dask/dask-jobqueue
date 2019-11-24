@@ -1,0 +1,26 @@
+{% if job_name is not none -%}
+#SBATCH -J {{ job_name }}
+{%- endif %}
+{% if log_directory is not none -%}
+#SBATCH -o {{ log_directory }}/{{ job_name if job_name is not none else "worker" }}-%J.err
+#SBATCH -e {{ log_directory }}/{{ job_name if job_name is not none else "worker" }}-%J.out
+{%- endif %}
+{% if queue is not none -%}
+#SBATCH -p {{ queue }}
+{%- endif %}
+{% if project is not none -%}
+#SBATCH -A {{ project }}
+{%- endif %}
+#SBATCH -n 1
+#SBATCH --cpus-per-task={{ job_cpu if job_cpu is not none else worker_cores }}
+#SBATCH --mem={{ memory | slurm_format_memory(worker_memory) }}
+{% if walltime is not none -%}
+#SBATCH -t {{ walltime }}
+{%- endif %}
+{%- if job_extra is not none -%}
+{%- for j in job_extra %}
+#SBATCH {{ j }}
+{%- endfor -%}
+{%- endif %}
+
+JOB_ID=${SLURM_JOB_ID%;*}
