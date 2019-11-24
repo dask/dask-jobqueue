@@ -238,7 +238,7 @@ class Job(ProcessInterface, abc.ABC):
         self._env_header = "\n".join(filter(None, env_extra))
         self.header_skip = set(header_skip)
 
-        self._command_template = self.template_env.get_template('command').render(
+        self._command_template = self.template_env.get_template("command").render(
             python=python,
             scheduler=self.scheduler,
             threads=self.worker_process_threads,
@@ -274,7 +274,7 @@ class Job(ProcessInterface, abc.ABC):
         """
         Jinja2 template rendering environment
         """
-        return Environment(loader=PackageLoader('dask_jobqueue', 'templates'))
+        return Environment(loader=PackageLoader("dask_jobqueue", "templates"))
 
     def job_script(self):
         """Construct a job submission script"""
@@ -291,7 +291,7 @@ class Job(ProcessInterface, abc.ABC):
             "env_header": self._env_header,
             "worker_command": self._command_template,
         }
-        return self.template_env.get_template('script.sh').render(**pieces)
+        return self.template_env.get_template("script.sh").render(**pieces)
 
     @contextmanager
     def job_file(self):
