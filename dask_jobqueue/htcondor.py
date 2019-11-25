@@ -11,18 +11,6 @@ logger = logging.getLogger(__name__)
 
 
 class HTCondorJob(Job):
-    _script_template = """
-%(shebang)s
-
-%(job_header)s
-
-Environment = "%(quoted_environment)s"
-Arguments = "%(quoted_arguments)s"
-Executable = %(executable)s
-
-Queue
-""".lstrip()
-
     submit_command = "condor_submit"
     cancel_command = "condor_rm"
     job_id_regexp = r"(?P<job_id>\d+\.\d+)"
@@ -65,63 +53,21 @@ Queue
             env_extra = dask.config.get(
                 "jobqueue.%s.env-extra" % self.config_name, default=[]
             )
-        self.env_dict = self.env_lines_to_dict(env_extra)
-
-        self.job_header_dict = {
-            "MY.DaskWorkerName": '"htcondor--$F(MY.JobId)--"',
-            "RequestCpus": "MY.DaskWorkerCores",
-            "RequestMemory": "floor(MY.DaskWorkerMemory / 1048576)",
-            "RequestDisk": "floor(MY.DaskWorkerDisk / 1024)",
-            "MY.JobId": '"$(ClusterId).$(ProcId)"',
-            "MY.DaskWorkerCores": self.worker_cores,
-            "MY.DaskWorkerMemory": self.worker_memory,
-            "MY.DaskWorkerDisk": self.worker_disk,
-        }
-        if self.log_directory:
-            self.job_header_dict.update(
-                {
-                    "LogDirectory": self.log_directory,
-                    # $F(...) strips quotes
-                    "Output": "$(LogDirectory)/worker-$F(MY.JobId).out",
-                    "Error": "$(LogDirectory)/worker-$F(MY.JobId).err",
-                    "Log": "$(LogDirectory)/worker-$(ClusterId).log",
-                    # We kill all the workers to stop them so we need to stream their
-                    # output+error if we ever want to see anything
-                    "Stream_Output": True,
-                    "Stream_Error": True,
-                }
-            )
-        if self.job_extra:
-            self.job_header_dict.update(self.job_extra)
-
-    def env_lines_to_dict(self, env_lines):
-        """Convert an array of export statements (what we get from env-extra
-        in the config) into a dict"""
-        env_dict = {}
-        for env_line in env_lines:
-            split_env_line = shlex.split(env_line)
-            if split_env_line[0] == "export":
-                split_env_line = split_env_line[1:]
-            for item in split_env_line:
-                if "=" in item:
-                    k, v = item.split("=", 1)
-                    env_dict[k] = v
-        return env_dict
+        self.env_extra = env_extra
 
     def job_script(self):
-        """Construct a job submission script"""
-        quoted_arguments = quote_arguments(["-c", self._command_template])
-        quoted_environment = quote_environment(self.env_dict)
-        job_header_lines = "\n".join(
-            "%s = %s" % (k, v) for k, v in self.job_header_dict.items()
+        """ Construct a job submission script """
+        return self.template_env.get_template("htcondor_script.sh").render(
+            shebang=self.shebang,
+            worker_command=self._command_template,
+            executable=self.executable,
+            log_directory=self.log_directory,
+            worker_cores=self.worker_cores,
+            worker_disk=self.worker_disk,
+            worker_memory=self.worker_memory,
+            job_extra=self.job_extra,
+            env_extra=self.env_extra,
         )
-        return self._script_template % {
-            "shebang": self.shebang,
-            "job_header": job_header_lines,
-            "quoted_environment": quoted_environment,
-            "quoted_arguments": quoted_arguments,
-            "executable": self.executable,
-        }
 
     def _job_id_from_submit_output(self, out):
         cluster_id_regexp = r"submitted to cluster (\d+)"
@@ -135,45 +81,31 @@ Queue
             raise ValueError(msg)
         return "%s.0" % match.group(1)
 
+    @property
+    def template_env(self):
+        env = super().template_env
+        env.filters['env_lines_to_dict'] = env_lines_to_dict
+        env.filters['quote_environment'] = quote_environment
+        return env
+
+
+def env_lines_to_dict(env_lines):
+    """ Convert an array of export statements (what we get from env-extra
+    in the config) into a dict """
+    env_dict = {}
+    for env_line in env_lines:
+        split_env_line = shlex.split(env_line)
+        if split_env_line[0] == "export":
+            split_env_line = split_env_line[1:]
+        for item in split_env_line:
+            if "=" in item:
+                k, v = item.split("=", 1)
+                env_dict[k] = v
+    return env_dict
+
 
 def _double_up_quotes(instr):
     return instr.replace("'", "''").replace('"', '""')
-
-
-def quote_arguments(args):
-    """Quote a string or list of strings using the Condor submit file "new" argument quoting rules.
-
-    Returns
-    -------
-    str
-        The arguments in a quoted form.
-
-    Warnings
-    --------
-    You will need to surround the result in double-quotes before using it in
-    the Arguments attribute.
-
-    Examples
-    --------
-    >>> quote_arguments(["3", "simple", "arguments"])
-    '3 simple arguments'
-    >>> quote_arguments(["one", "two with spaces", "three"])
-    'one \'two with spaces\' three'
-    >>> quote_arguments(["one", "\"two\"", "spacy 'quoted' argument"])
-    'one ""two"" \'spacey \'\'quoted\'\' argument\''
-    """
-    if isinstance(args, str):
-        args_list = [args]
-    else:
-        args_list = args
-
-    quoted_args = []
-    for a in args_list:
-        qa = _double_up_quotes(a)
-        if " " in qa or "'" in qa:
-            qa = "'" + qa + "'"
-        quoted_args.append(qa)
-    return " ".join(quoted_args)
 
 
 def quote_environment(env):
