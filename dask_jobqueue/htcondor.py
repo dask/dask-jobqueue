@@ -84,8 +84,8 @@ class HTCondorJob(Job):
     @property
     def template_env(self):
         env = super().template_env
-        env.filters['env_lines_to_dict'] = env_lines_to_dict
-        env.filters['quote_environment'] = quote_environment
+        env.filters["env_lines_to_dict"] = env_lines_to_dict
+        env.filters["quote_environment"] = quote_environment
         return env
 
 
