@@ -1,0 +1,26 @@
+{% if job_name is not none -%}
+#$ -N {{ job_name }}
+{%- endif %}
+{% if queue is not none -%}
+#$ -q {{ queue }}
+{%- endif %}
+{% if project is not none -%}
+#$ -P {{ project }}
+{%- endif %}
+{% if resource_spec is not none -%}
+#$ -l {{ resource_spec }}
+{%- endif %}
+{% if walltime is not none -%}
+#$ -l h_rt={{ walltime }}
+{%- endif %}
+{% if log_directory is not none -%}
+#$ -e {{ log_directory }}/
+#$ -o {{ log_directory }}/
+{%- endif %}
+#$ -cwd
+#$ -j y
+{%- if job_extra is not none -%}
+{%- for j in job_extra %}
+#$ {{ j }}
+{%- endfor -%}
+{%- endif %}
