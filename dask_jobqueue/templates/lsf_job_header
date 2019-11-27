@@ -1,0 +1,33 @@
+{% if name is not none -%}
+#BSUB -J {{ job_name }}
+{%- endif %}
+{% if log_directory is not none -%}
+#BSUB -e {{ log_directory }}/{{ name if name is not none else 'worker' }}-%J.err
+#BSUB -o {{ log_directory }}/{{ name if name is not none else 'worker' }}-%J.out
+{%- endif %}
+{% if queue is not none -%}
+#BSUB -q {{ queue }}
+{%- endif %}
+{% if project is not none -%}
+#BSUB -P {{ project }}
+{%- endif %}
+{%- set ncpus = ncpus | set_ncpus(worker_cores, logger) -%}
+{% if ncpus is not none -%}
+#BSUB -n {{ ncpus }}
+{% if ncpus > 1 -%}
+#BSUB -R "span[hosts=1]"
+{%- endif %}
+{%- endif %}
+{%- set mem = mem | set_mem(worker_memory, logger) -%}
+{% if mem is not none -%}
+#BSUB -M {{ mem | format_memory(lsf_units) }}
+{%- endif %}
+{% if walltime is not none -%}
+#BSUB -W {{ walltime }}
+{%- endif %}
+{%- if job_extra is not none -%}
+{%- for j in job_extra %}
+#BSUB {{ j }}
+{%- endfor -%}
+{%- endif %}
+JOB_ID=${LSB_JOBID%.*}

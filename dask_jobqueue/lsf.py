@@ -57,51 +57,31 @@ class LSFJob(Job):
             use_stdin = dask.config.get("jobqueue.%s.use-stdin" % self.config_name)
         self.use_stdin = use_stdin
 
-        header_lines = []
-        # LSF header build
-        if self.name is not None:
-            header_lines.append("#BSUB -J %s" % self.job_name)
-        if self.log_directory is not None:
-            header_lines.append(
-                "#BSUB -e %s/%s-%%J.err" % (self.log_directory, self.name or "worker")
-            )
-            header_lines.append(
-                "#BSUB -o %s/%s-%%J.out" % (self.log_directory, self.name or "worker")
-            )
-        if queue is not None:
-            header_lines.append("#BSUB -q %s" % queue)
-        if project is not None:
-            header_lines.append('#BSUB -P "%s"' % project)
-        if ncpus is None:
-            # Compute default cores specifications
-            ncpus = self.worker_cores
-            logger.info(
-                "ncpus specification for LSF not set, initializing it to %s" % ncpus
-            )
-        if ncpus is not None:
-            header_lines.append("#BSUB -n %s" % ncpus)
-            if ncpus > 1:
-                # span[hosts=1] _might_ affect queue waiting
-                # time, and is not required if ncpus==1
-                header_lines.append('#BSUB -R "span[hosts=1]"')
-        if mem is None:
-            # Compute default memory specifications
-            mem = self.worker_memory
-            logger.info(
-                "mem specification for LSF not set, initializing it to %s bytes" % mem
-            )
-        if mem is not None:
-            lsf_units = lsf_units if lsf_units is not None else lsf_detect_units()
-            memory_string = lsf_format_bytes_ceil(mem, lsf_units=lsf_units)
-            header_lines.append("#BSUB -M %s" % memory_string)
-        if walltime is not None:
-            header_lines.append("#BSUB -W %s" % walltime)
-        header_lines.extend(["#BSUB %s" % arg for arg in job_extra])
-
-        # Declare class attribute that shall be overridden
-        self.job_header = "\n".join(header_lines)
+        self.job_header = self.template_env.get_template("lsf_job_header").render(
+            name=self.name,
+            job_name=self.job_name,
+            log_directory=self.log_directory,
+            queue=queue,
+            project=project,
+            ncpus=ncpus,
+            worker_cores=self.worker_cores,
+            mem=mem,
+            worker_memory=self.worker_memory,
+            lsf_units=lsf_units,
+            walltime=walltime,
+            job_extra=job_extra,
+            logger=logger,
+        )
 
         logger.debug("Job script: \n %s" % self.job_script())
+
+    @property
+    def template_env(self):
+        env = super().template_env
+        env.filters['set_ncpus'] = set_ncpus
+        env.filters['set_mem'] = set_mem
+        env.filters['format_memory'] = format_memory
+        return env
 
     async def _submit_job(self, script_filename):
         if self.use_stdin:
@@ -110,6 +90,25 @@ class LSFJob(Job):
         else:
             result = await super()._submit_job(script_filename)
             return result
+
+
+def set_ncpus(ncpus, worker_cores, logger):
+    if ncpus is None:
+        ncpus = worker_cores
+        logger.info("ncpus specification for LSF not set, initializing it to %s" % ncpus)
+    return ncpus
+
+
+def set_mem(mem, worker_memory, logger):
+    if mem is None:
+        mem = worker_memory
+        logger.info("mem specification for LSF not set, initializing it to %s bytes" % mem)
+    return mem
+
+
+def format_memory(mem, lsf_units):
+    lsf_units = lsf_units if lsf_units is not None else lsf_detect_units()
+    return lsf_format_bytes_ceil(mem, lsf_units=lsf_units)
 
 
 def lsf_format_bytes_ceil(n, lsf_units="mb"):
