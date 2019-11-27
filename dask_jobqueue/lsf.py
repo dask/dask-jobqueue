@@ -78,9 +78,9 @@ class LSFJob(Job):
     @property
     def template_env(self):
         env = super().template_env
-        env.filters['set_ncpus'] = set_ncpus
-        env.filters['set_mem'] = set_mem
-        env.filters['format_memory'] = format_memory
+        env.filters["set_ncpus"] = set_ncpus
+        env.filters["set_mem"] = set_mem
+        env.filters["format_memory"] = format_memory
         return env
 
     async def _submit_job(self, script_filename):
@@ -95,14 +95,18 @@ class LSFJob(Job):
 def set_ncpus(ncpus, worker_cores, logger):
     if ncpus is None:
         ncpus = worker_cores
-        logger.info("ncpus specification for LSF not set, initializing it to %s" % ncpus)
+        logger.info(
+            "ncpus specification for LSF not set, initializing it to %s" % ncpus
+        )
     return ncpus
 
 
 def set_mem(mem, worker_memory, logger):
     if mem is None:
         mem = worker_memory
-        logger.info("mem specification for LSF not set, initializing it to %s bytes" % mem)
+        logger.info(
+            "mem specification for LSF not set, initializing it to %s bytes" % mem
+        )
     return mem
 
 
