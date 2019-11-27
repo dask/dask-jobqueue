@@ -1,0 +1,22 @@
+{% if job_name is not none -%}
+#OAR -n {{ job_name }}
+{%- endif %}
+{% if queue is not none -%}
+#OAR -q {{ queue }}
+{%- endif %}
+{% if project is not none -%}
+#OAR --project {{ project }}
+{%- endif %}
+#OAR -l{{ " " }}
+{%- if resource_spec is none %}/nodes=1/core={{ worker_cores }}
+{%- else %}{{ resource_spec }}
+{%- endif %}
+{%- if walltime is not none -%}
+,walltime={{ walltime }}
+{%- endif %}
+{%- if job_extra is not none -%}
+{%- for j in job_extra %}
+#OAR {{ j }}
+{%- endfor -%}
+{%- endif %}
+JOB_ID=${OAR_JOB_ID}

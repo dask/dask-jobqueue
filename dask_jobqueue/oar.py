@@ -45,31 +45,42 @@ class OARJob(Job):
         if job_extra is None:
             job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name)
 
-        header_lines = []
-        if self.job_name is not None:
-            header_lines.append("#OAR -n %s" % self.job_name)
-        if queue is not None:
-            header_lines.append("#OAR -q %s" % queue)
-        if project is not None:
-            header_lines.append("#OAR --project %s" % project)
+        #header_lines = []
+        #if self.job_name is not None:
+        #    header_lines.append("#OAR -n %s" % self.job_name)
+        #if queue is not None:
+        #    header_lines.append("#OAR -q %s" % queue)
+        #if project is not None:
+        #    header_lines.append("#OAR --project %s" % project)
+#
+        ## OAR needs to have the resource on a single line otherwise it is
+        ## considered as a "moldable job" (i.e. the scheduler can chose between
+        ## multiple sets of resources constraints)
+        #resource_spec_list = []
+        #if resource_spec is None:
+        #    # default resource_spec if not specified. Crucial to specify
+        #    # nodes=1 to make sure the cores allocated are on the same node.
+        #    resource_spec = "/nodes=1/core=%d" % self.worker_cores
+        #resource_spec_list.append(resource_spec)
+        #if walltime is not None:
+        #    resource_spec_list.append("walltime=%s" % walltime)
+#
+        #full_resource_spec = ",".join(resource_spec_list)
+        #header_lines.append("#OAR -l %s" % full_resource_spec)
+        #header_lines.extend(["#OAR %s" % arg for arg in job_extra])
+        #header_lines.append("JOB_ID=${OAR_JOB_ID}")
+#
+        ##self.job_header = "\n".join(header_lines)
 
-        # OAR needs to have the resource on a single line otherwise it is
-        # considered as a "moldable job" (i.e. the scheduler can chose between
-        # multiple sets of resources constraints)
-        resource_spec_list = []
-        if resource_spec is None:
-            # default resource_spec if not specified. Crucial to specify
-            # nodes=1 to make sure the cores allocated are on the same node.
-            resource_spec = "/nodes=1/core=%d" % self.worker_cores
-        resource_spec_list.append(resource_spec)
-        if walltime is not None:
-            resource_spec_list.append("walltime=%s" % walltime)
-
-        full_resource_spec = ",".join(resource_spec_list)
-        header_lines.append("#OAR -l %s" % full_resource_spec)
-        header_lines.extend(["#OAR %s" % arg for arg in job_extra])
-
-        self.job_header = "\n".join(header_lines)
+        self.job_header = self.template_env.get_template("oar_job_header").render(
+            job_name=self.job_name,
+            queue=queue,
+            project=project,
+            resource_spec=resource_spec,
+            walltime=walltime,
+            worker_cores=self.worker_cores,
+            job_extra=job_extra,
+        )
 
         logger.debug("Job script: \n %s" % self.job_script())
 
