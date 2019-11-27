@@ -9,6 +9,8 @@ import sys
 import weakref
 import abc
 
+from jinja2 import Environment, PackageLoader
+
 import dask
 
 from distributed.core import Status
@@ -236,27 +238,19 @@ class Job(ProcessInterface, abc.ABC):
         self._env_header = "\n".join(filter(None, env_extra))
         self.header_skip = set(header_skip)
 
-        # dask-worker command line build
-        dask_worker_command = "%(python)s -m distributed.cli.dask_worker" % dict(
-            python=python
+        self._command_template = self.template_env.get_template('command').render(
+            python=python,
+            scheduler=self.scheduler,
+            threads=self.worker_process_threads,
+            processes=processes,
+            memory=self.worker_process_memory,
+            nanny=nanny,
+            name=name,
+            death_timeout=death_timeout,
+            local_directory=local_directory,
+            interface=interface,
+            extra=extra,
         )
-        command_args = [dask_worker_command, self.scheduler]
-        command_args += ["--nthreads", self.worker_process_threads]
-        if processes is not None and processes > 1:
-            command_args += ["--nprocs", processes]
-
-        command_args += ["--memory-limit", self.worker_process_memory]
-        command_args += ["--name", str(name)]
-        command_args += ["--nanny" if nanny else "--no-nanny"]
-
-        if death_timeout is not None:
-            command_args += ["--death-timeout", death_timeout]
-        if local_directory is not None:
-            command_args += ["--local-directory", local_directory]
-        if extra is not None:
-            command_args += extra
-
-        self._command_template = " ".join(map(str, command_args))
 
         self.log_directory = log_directory
         if self.log_directory is not None:
@@ -275,6 +269,13 @@ class Job(ProcessInterface, abc.ABC):
             )
         return config_name
 
+    @property
+    def template_env(self):
+        """
+        Jinja2 template rendering environment
+        """
+        return Environment(loader=PackageLoader('dask_jobqueue', 'templates'))
+
     def job_script(self):
         """Construct a job submission script"""
         header = "\n".join(
@@ -290,7 +291,7 @@ class Job(ProcessInterface, abc.ABC):
             "env_header": self._env_header,
             "worker_command": self._command_template,
         }
-        return self._script_template % pieces
+        return self.template_env.get_template('script.sh').render(**pieces)
 
     @contextmanager
     def job_file(self):
