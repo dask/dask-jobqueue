@@ -23,7 +23,7 @@ setup(
     python_requires=">=3.6",
     license="BSD 3-Clause",
     packages=["dask_jobqueue"],
-    package_data={'dask_jobqueue': ['templates/*']},
+    package_data={"dask_jobqueue": ["templates/*"]},
     include_package_data=True,
     install_requires=install_requires,
     tests_require=["pytest >= 2.7.1"],
