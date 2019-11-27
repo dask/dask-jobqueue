@@ -115,14 +115,6 @@ class Job(ProcessInterface, abc.ABC):
         job_parameters=job_parameters
     )
 
-    _script_template = """
-%(shebang)s
-
-%(job_header)s
-%(env_header)s
-%(worker_command)s
-""".lstrip()
-
     # Following class attributes should be overridden by extending classes.
     submit_command = None
     cancel_command = None
