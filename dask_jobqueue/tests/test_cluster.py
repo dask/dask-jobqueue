@@ -8,17 +8,23 @@ import dask_jobqueue
 from dask_jobqueue.tests import QUEUE_WAIT
 from dask_jobqueue.local import LocalCluster
 
-cluster_classes = [getattr(dask_jobqueue, attr) for attr in dir(dask_jobqueue) if attr.endswith('Cluster')]
-cluster_names = [cls.__name__.replace('Cluster', '').lower() for cls in cluster_classes]
+cluster_classes = [
+    getattr(dask_jobqueue, attr)
+    for attr in dir(dask_jobqueue)
+    if attr.endswith("Cluster")
+]
+cluster_names = [cls.__name__.replace("Cluster", "").lower() for cls in cluster_classes]
 
-cluster_params = [pytest.param(cluster_cls, marks=[pytest.mark.env(cluster_name)])
-                  for cluster_cls, cluster_name in zip(cluster_classes, cluster_names)]
+cluster_params = [
+    pytest.param(cluster_cls, marks=[pytest.mark.env(cluster_name)])
+    for cluster_cls, cluster_name in zip(cluster_classes, cluster_names)
+]
 cluster_params.append(pytest.param(LocalCluster))
 
 
 def all_checks():
-    checks = [obj for name, obj in globals().items() if name.startswith('check_')]
-    print('checks:', checks)
+    checks = [obj for name, obj in globals().items() if name.startswith("check_")]
+    print("checks:", checks)
     return checks
 
 
