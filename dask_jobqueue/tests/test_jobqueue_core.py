@@ -260,7 +260,11 @@ def test_cluster_without_job_cls():
     "Cluster",
     [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster, OARCluster],
 )
-def test_default_workers(Cluster):
+def test_default_number_of_worker_processes(Cluster):
+    with Cluster(cores=4, memory="4GB") as cluster:
+        assert " --nprocs 4" in cluster.job_script()
+        assert " --nthreads 1" in cluster.job_script()
+
     with Cluster(cores=6, memory="4GB") as cluster:
         assert " --nprocs 3" in cluster.job_script()
         assert " --nthreads 2" in cluster.job_script()
