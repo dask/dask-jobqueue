@@ -11,9 +11,10 @@ import abc
 
 import dask
 from dask.utils import ignoring
-from distributed.deploy.spec import ProcessInterface, SpecCluster
-from distributed.scheduler import Scheduler
 
+from distributed.deploy.spec import ProcessInterface, SpecCluster
+from distributed.deploy.local import nprocesses_nthreads
+from distributed.scheduler import Scheduler
 from distributed.utils import format_bytes, parse_bytes, tmpfile, get_ip_interface
 
 logger = logging.getLogger(__name__)
@@ -148,14 +149,27 @@ class Job(ProcessInterface, abc.ABC):
             config_name = default_config_name
         self.config_name = config_name
 
-        if job_name is None:
-            job_name = dask.config.get("jobqueue.%s.name" % self.config_name)
         if cores is None:
             cores = dask.config.get("jobqueue.%s.cores" % self.config_name)
         if memory is None:
             memory = dask.config.get("jobqueue.%s.memory" % self.config_name)
+
+        if cores is None or memory is None:
+            job_class_name = self.__class__.__name__
+            cluster_class_name = job_class_name.replace("Job", "Cluster")
+            raise ValueError(
+                "You must specify how much cores and memory per job you want to use, for example:\n"
+                "cluster = {}(cores={}, memory={!r})".format(
+                    cluster_class_name, cores or 8, memory or "24GB"
+                )
+            )
+
+        if job_name is None:
+            job_name = dask.config.get("jobqueue.%s.name" % self.config_name)
         if processes is None:
             processes = dask.config.get("jobqueue.%s.processes" % self.config_name)
+            if processes is None:
+                processes, _ = nprocesses_nthreads(cores)
         if interface is None:
             interface = dask.config.get("jobqueue.%s.interface" % self.config_name)
         if death_timeout is None:
@@ -180,16 +194,6 @@ class Job(ProcessInterface, abc.ABC):
             )
         if shebang is None:
             shebang = dask.config.get("jobqueue.%s.shebang" % self.config_name)
-
-        if cores is None or memory is None:
-            job_class_name = self.__class__.__name__
-            cluster_class_name = job_class_name.replace("Job", "Cluster")
-            raise ValueError(
-                "You must specify how much cores and memory per job you want to use, for example:\n"
-                "cluster = {}(cores={}, memory={!r})".format(
-                    cluster_class_name, cores or 8, memory or "24GB"
-                )
-            )
 
         # This attribute should be set in the derived class
         self.job_header = None
