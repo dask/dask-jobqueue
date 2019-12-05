@@ -25,8 +25,10 @@ job_parameters = """
     memory: str
         Total amount of memory per job
     processes : int
-        Cut the job up into this many processes.
-        Good for GIL workloads or for nodes with many cores.
+        Cut the job up into this many processes. Good for GIL workloads or for
+        nodes with many cores.
+        By default, ``process ~= sqrt(cores)`` so that the number of processes
+        and the number of threads per process is roughly the same.
     interface : str
         Network interface like 'eth0' or 'ib0'.
     nanny : bool
