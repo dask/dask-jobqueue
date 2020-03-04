@@ -69,8 +69,12 @@ cluster_parameters = """
         Whether or not to run this cluster object with the async/await syntax
     security : Security
         A dask.distributed security object if you're using TLS/SSL
-    dashboard_address : str or int
-        An address like ":8787" on which to host the Scheduler's dashboard
+    scheduler_options : dict
+        Used to pass additional arguments to Dask Scheduler. For example use
+        ``scheduler_options={'dasboard_address': ':12435'}`` to specify which
+        port the web dashboard should use or ``scheduler_options={'host': 'your-host'}``
+        to specify the host the Dask scheduler should run on. See
+        :class:`distributed.Scheduler` for more details.
 """.strip()
 
 
@@ -420,13 +424,15 @@ class JobQueueCluster(SpecCluster):
         silence_logs="error",
         name=None,
         asynchronous=False,
-        # Scheduler keywords
-        interface=None,
+        # Scheduler-only keywords
+        dashboard_address=None,
         host=None,
+        scheduler_options=None,
+        # Options for both scheduler and workers
+        interface=None,
         protocol="tcp://",
-        dashboard_address=":8787",
-        config_name=None,
         # Job keywords
+        config_name=None,
         **kwargs
     ):
         self.status = "created"
@@ -447,22 +453,47 @@ class JobQueueCluster(SpecCluster):
                 )
             )
 
+        if dashboard_address is not None:
+            raise ValueError(
+                "Please pass 'dashboard_address' through 'scheduler_options': use\n"
+                'cluster = {0}(..., scheduler_options={{"dashboard_address": ":12345"}}) rather than\n'
+                'cluster = {0}(..., dashboard_address="12435")'.format(
+                    self.__class__.__name__
+                )
+            )
+
+        if host is not None:
+            raise ValueError(
+                "Please pass 'host' through 'scheduler_options': use\n"
+                'cluster = {0}(..., scheduler_options={{"host": "your-host"}}) rather than\n'
+                'cluster = {0}(..., host="your-host")'.format(self.__class__.__name__)
+            )
+
         default_config_name = self.job_cls.default_config_name()
         if config_name is None:
             config_name = default_config_name
 
         if interface is None:
             interface = dask.config.get("jobqueue.%s.interface" % config_name)
+        if scheduler_options is None:
+            scheduler_options = {}
+
+        default_scheduler_options = {
+            "protocol": protocol,
+            "dashboard_address": ":8787",
+            "security": security,
+        }
+        # scheduler_options overrides parameters common to both workers and scheduler
+        scheduler_options = dict(default_scheduler_options, **scheduler_options)
+
+        # Use the same network interface as the workers if scheduler ip has not
+        # been set through scheduler_options via 'host' or 'interface'
+        if "host" not in scheduler_options and "interface" not in scheduler_options:
+            scheduler_options["interface"] = interface
 
         scheduler = {
             "cls": Scheduler,  # Use local scheduler for now
-            "options": {
-                "protocol": protocol,
-                "interface": interface,
-                "host": host,
-                "dashboard_address": dashboard_address,
-                "security": security,
-            },
+            "options": scheduler_options,
         }
 
         kwargs["config_name"] = config_name

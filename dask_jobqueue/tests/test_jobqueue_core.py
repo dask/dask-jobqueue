@@ -84,7 +84,7 @@ def test_forward_ip():
         cores=8,
         memory="28GB",
         name="dask-worker",
-        host=ip,
+        scheduler_options={"host": ip},
     ) as cluster:
         assert cluster.scheduler.ip == ip
 
@@ -268,3 +268,19 @@ def test_default_number_of_worker_processes(Cluster):
     with Cluster(cores=6, memory="4GB") as cluster:
         assert " --nprocs 3" in cluster.job_script()
         assert " --nthreads 2" in cluster.job_script()
+
+
+@pytest.mark.parametrize(
+    "Cluster",
+    [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster, OARCluster],
+)
+def test_scheduler_options(Cluster):
+    net_if_addrs = psutil.net_if_addrs()
+    interface = list(net_if_addrs.keys())[0]
+    port = 8804
+    with Cluster(
+        cores=1, memory="1GB", scheduler_options={"interface": interface, "port": port}
+    ) as cluster:
+        scheduler_options = cluster.scheduler_spec["options"]
+        assert scheduler_options["interface"] == interface
+        assert scheduler_options["port"] == port

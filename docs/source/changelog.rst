@@ -15,6 +15,10 @@ Development version
   process and only threads, i.e. ``proccesses=1``, ``threads_per_process=cores``.
 - fix bug (forgotten async def) in ``OARCluster._submit_job`` (:pr:`380`).
 - ``LSFCluster``: switch to ``use_stdin=True`` (:pr:`388`).
+- all cluster classes: add ``scheduler_options`` allows to pass parameters to
+  the Dask scheduler. For example ``scheduler_options={'interface': 'eth0',
+  dashboard_addresses=':12435')`` (:pr:`384`). Breaking change: ``port`` and
+  ``dashboard_addresses`` has to be passed through ``scheduler_options``.
 
 0.7.0 / 2019-10-09
 ------------------
