@@ -8,6 +8,7 @@ import subprocess
 import sys
 import weakref
 import abc
+import time
 
 import dask
 from dask.utils import ignoring
@@ -139,8 +140,12 @@ class Job(ProcessInterface, abc.ABC):
         python=sys.executable,
         job_name=None,
         config_name=None,
+        deploy_mode='local',
+        deploy_command='distributed.cli.dask_worker', # can also be distributed.cli.dask_worker
+        protocol='tcp',
         **kwargs
     ):
+
         self.scheduler = scheduler
         self.job_id = None
 
@@ -210,6 +215,7 @@ class Job(ProcessInterface, abc.ABC):
         self.worker_memory = parse_bytes(memory) if memory is not None else None
         self.worker_processes = processes
         self.worker_cores = cores
+        self.protocol = protocol
         self.name = name
         self.job_name = job_name
 
@@ -218,26 +224,30 @@ class Job(ProcessInterface, abc.ABC):
         self._env_header = "\n".join(filter(None, env_extra))
         self.header_skip = set(header_skip)
 
-        # dask-worker command line build
-        dask_worker_command = "%(python)s -m distributed.cli.dask_worker" % dict(
-            python=python
+        # dask-worker/schheduler command line build
+        dask_command = "%(python)s -m %(deploy_command)s" % dict(
+            python=python, deploy_command=deploy_command
         )
-        command_args = [dask_worker_command, self.scheduler]
-        command_args += ["--nthreads", self.worker_process_threads]
-        if processes is not None and processes > 1:
-            command_args += ["--nprocs", processes]
 
-        command_args += ["--memory-limit", self.worker_process_memory]
-        command_args += ["--name", str(name)]
-        command_args += ["--nanny" if nanny else "--no-nanny"]
+        command_args = [dask_command]
+        if deploy_mode is 'local' or self.scheduler is not None:
+            command_args = [dask_command, self.scheduler]
+            command_args += ["--nthreads", self.worker_process_threads]
+            if processes is not None and processes > 1:
+                command_args += ["--nprocs", processes]
 
-        if death_timeout is not None:
-            command_args += ["--death-timeout", death_timeout]
-        if local_directory is not None:
-            command_args += ["--local-directory", local_directory]
-        if extra is not None:
-            command_args += extra
+            command_args += ["--memory-limit", self.worker_process_memory]
+            command_args += ["--name", str(name)]
+            command_args += ["--nanny" if nanny else "--no-nanny"]
 
+            if death_timeout is not None:
+                command_args += ["--death-timeout", death_timeout]
+            if local_directory is not None:
+                command_args += ["--local-directory", local_directory]
+            if extra is not None:
+                command_args += extra
+
+        command_args += ["--protocol", self.protocol]
         self._command_template = " ".join(map(str, command_args))
 
         self.log_directory = log_directory
@@ -282,6 +292,25 @@ class Job(ProcessInterface, abc.ABC):
                 logger.debug("writing job script: \n%s", self.job_script())
                 f.write(self.job_script())
             yield fn
+
+    def get_logs(self):
+        if self.job_id:
+            fn = 'slurm-%s.out' % str(self.job_id)
+            if self.log_directory:
+                fn = os.path.join(self.log_directory, filename)
+            with open(fn) as f:
+                return f.read()
+
+    def get_address_from_logs(self, ignore=False):
+        """
+         'distributed.scheduler - INFO -   Scheduler at:    tcp://10.33.12.15:8786',
+        """
+        with ignoring(FileNotFoundError):
+            logs = self.get_logs()
+            for line in logs.split('\n'):
+                if 'Scheduler at' in line:
+                    return line.split()[-1]
+        return None
 
     async def _submit_job(self, script_filename):
         # Should we make this async friendly?
@@ -426,6 +455,7 @@ class JobQueueCluster(SpecCluster):
         protocol="tcp://",
         dashboard_address=":8787",
         config_name=None,
+        deploy_mode="local",
         # Job keywords
         **kwargs
     ):
@@ -474,19 +504,47 @@ class JobQueueCluster(SpecCluster):
         if "processes" in kwargs and kwargs["processes"] > 1:
             worker["group"] = ["-" + str(i) for i in range(kwargs["processes"])]
 
-        self._dummy_job  # trigger property to ensure that the job is valid
+        if deploy_mode is 'local':
+            self._dummy_job  # trigger property to ensure that the job is valid
+            super().__init__(
+                scheduler=scheduler,
+                worker=worker,
+                loop=loop,
+                silence_logs=silence_logs,
+                asynchronous=asynchronous,
+                name=name,
+            )
+        else:
+            # scheduler will be set in job
+            scheduler_job = self.job_cls(deploy_command='distributed.cli.dask_scheduler', deploy_mode=deploy_mode, **kwargs)
 
-        super().__init__(
-            scheduler=scheduler,
-            worker=worker,
-            loop=loop,
-            silence_logs=silence_logs,
-            asynchronous=asynchronous,
-            name=name,
-        )
+            import asyncio
+            asyncio.run(scheduler_job.start())
+
+            while scheduler_job.get_address_from_logs(ignore=True) is None:
+                logger.debug("Waiting for Scheduler to start")
+                time.sleep(1.0)
+
+            address = scheduler_job.get_address_from_logs()
+            scheduler_job.address = address
+            _scheduler = Scheduler()
+            _scheduler._address = address
+            self.scheduler_job = scheduler_job
+            self.scheduler = _scheduler
+            self._dummy_job
+
+            super().__init__(
+                scheduler=scheduler,
+                worker=worker,
+                loop=loop,
+                silence_logs=silence_logs,
+                asynchronous=asynchronous,
+                name=name,
+            )
 
         if n_workers:
             self.scale(n_workers)
+
 
     @property
     def _dummy_job(self):

@@ -24,9 +24,11 @@ class SLURMJob(Job):
         job_mem=None,
         job_extra=None,
         config_name=None,
+        deploy_mode='local',
+        deploy_command='distributed.cli.dask_worker',
         **kwargs
     ):
-        super().__init__(*args, config_name=config_name, **kwargs)
+        super().__init__(*args, deploy_mode=deploy_mode, deploy_command=deploy_command, config_name=config_name, **kwargs)
 
         if queue is None:
             queue = dask.config.get("jobqueue.%s.queue" % self.config_name)
