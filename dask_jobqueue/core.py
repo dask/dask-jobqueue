@@ -15,7 +15,7 @@ from dask.utils import ignoring
 from distributed.deploy.spec import ProcessInterface, SpecCluster
 from distributed.deploy.local import nprocesses_nthreads
 from distributed.scheduler import Scheduler
-from distributed.utils import format_bytes, parse_bytes, tmpfile, get_ip_interface
+from distributed.utils import format_bytes, parse_bytes, tmpfile
 
 logger = logging.getLogger(__name__)
 
@@ -206,9 +206,6 @@ class Job(ProcessInterface, abc.ABC):
 
         if interface:
             extra = extra + ["--interface", interface]
-            kwargs.setdefault("host", get_ip_interface(interface))
-        else:
-            kwargs.setdefault("host", "")
 
         # Keep information on process, cores, and memory, for use in subclasses
         self.worker_memory = parse_bytes(memory) if memory is not None else None
