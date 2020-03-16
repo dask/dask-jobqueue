@@ -9,6 +9,10 @@ docker exec slurmctld ip addr add 172.16.238.20/24 dev eth0 label eth0:scheduler
 docker exec c1 ip addr add 172.16.238.21/24 dev eth0 label eth0:worker
 docker exec c2 ip addr add 172.16.238.22/24 dev eth0 label eth0:worker
 
+docker exec slurmctld ip addr
+docker exec c1 ip addr
+docker exec c2 ip addr
+
 while [ `./register_cluster.sh 2>&1 | grep "sacctmgr: error" | wc -l` -ne 0 ]
   do
     echo "Waiting for SLURM cluster to become ready";
