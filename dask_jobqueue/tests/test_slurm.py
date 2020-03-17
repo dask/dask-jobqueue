@@ -197,6 +197,13 @@ def test_config_name_slurm_takes_custom_config():
 
 @pytest.mark.env("slurm")
 def test_different_interfaces_on_scheduler_and_workers(loop):
+    import socket
+
+    print()
+    print("host:", socket.gethostname())
+    import psutil
+
+    print("interfaces:", psutil.net_if_addrs().keys())
     with SLURMCluster(
         walltime="00:02:00",
         cores=1,

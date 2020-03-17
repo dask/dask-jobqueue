@@ -18,7 +18,7 @@ function jobqueue_install {
 }
 
 function jobqueue_script {
-    docker exec -it slurmctld /bin/bash -c "pytest /dask-jobqueue/dask_jobqueue --verbose -E slurm -s"
+    docker exec -it slurmctld /bin/bash -c "pytest /dask-jobqueue/dask_jobqueue --verbose -E slurm -s -k different"
 }
 
 function jobqueue_after_script {
