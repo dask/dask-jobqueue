@@ -9,13 +9,6 @@ docker exec slurmctld ip addr add 172.16.238.20/24 dev eth0 label eth0:scheduler
 docker exec c1 ip addr add 172.16.238.21/24 dev eth0 label eth0:worker
 docker exec c2 ip addr add 172.16.238.22/24 dev eth0 label eth0:worker
 
-for c in slurmctld c1 c2; do
-    echo $i
-    docker exec $c ip addr
-    docker exec -it $c python -c 'import psutil; print(psutil.net_if_addrs().keys())'
-    echo '------------------------------------------------------------'
-done
-
 while [ `./register_cluster.sh 2>&1 | grep "sacctmgr: error" | wc -l` -ne 0 ]
   do
     echo "Waiting for SLURM cluster to become ready";

@@ -11,13 +11,26 @@ function jobqueue_before_install {
 
     docker ps -a
     docker images
+    debug
+}
+
+function debug {
+    for c in slurmctld c1 c2; do
+        echo '------------------------------------------------------------'
+        echo $c
+        docker exec $c ip addr
+        docker exec -it $c python -c 'import psutil; print(psutil.net_if_addrs().keys())'
+        echo '------------------------------------------------------------'
+    done
 }
 
 function jobqueue_install {
+    debug
     docker exec -it slurmctld /bin/bash -c "cd /dask-jobqueue; pip install -e ."
 }
 
 function jobqueue_script {
+    debug
     docker exec -it slurmctld /bin/bash -c "pytest /dask-jobqueue/dask_jobqueue --verbose -E slurm -s -k different"
 }
 
