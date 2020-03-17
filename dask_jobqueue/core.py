@@ -30,7 +30,11 @@ job_parameters = """
         By default, ``process ~= sqrt(cores)`` so that the number of processes
         and the number of threads per process is roughly the same.
     interface : str
-        Network interface like 'eth0' or 'ib0'.
+        Network interface like 'eth0' or 'ib0'. This will be used both for the
+        Dask scheduler and the Dask workers interface. If you need a different
+        interface for the Dask scheduler you can pass it through
+        the ``scheduler_options`` argument:
+        ``interface=your_worker_interface, scheduler_options={'interface': your_scheduler_interface}``.
     nanny : bool
         Whether or not to start a nanny process
     local_directory : str
