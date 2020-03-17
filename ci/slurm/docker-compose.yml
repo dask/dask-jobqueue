@@ -48,7 +48,7 @@ services:
       - "slurmdbd"
     networks:
       common-network:
-        ipv4_address: 172.16.238.10
+        ipv4_address: 10.1.1.10
     cap_add:
       - NET_ADMIN
 
@@ -68,7 +68,7 @@ services:
       - "slurmctld"
     networks:
       common-network:
-        ipv4_address: 172.16.238.11
+        ipv4_address: 10.1.1.11
     cap_add:
       - NET_ADMIN
 
@@ -88,7 +88,7 @@ services:
       - "slurmctld"
     networks:
       common-network:
-        ipv4_address: 172.16.238.12
+        ipv4_address: 10.1.1.12
     cap_add:
       - NET_ADMIN
 
@@ -105,5 +105,4 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.16.238.0/24
-          gateway: 172.16.238.254
+        - subnet: 10.1.1.0/24
