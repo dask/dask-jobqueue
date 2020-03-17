@@ -12,6 +12,6 @@ echo "SLURM properly configured"
 # On some clusters the login node does not have the same interface as the
 # compute nodes. The next three lines allow to test this edge case by adding
 # separate interfaces on the worker and on the scheduler nodes.
-docker exec slurmctld ip addr add 172.16.238.20/24 dev eth0 label eth0:scheduler
-docker exec c1 ip addr add 172.16.238.21/24 dev eth0 label eth0:worker
-docker exec c2 ip addr add 172.16.238.22/24 dev eth0 label eth0:worker
+docker exec slurmctld ip addr add 10.1.1.20/24 dev eth0 label eth0:scheduler
+docker exec c1 ip addr add 10.1.1.21/24 dev eth0 label eth0:worker
+docker exec c2 ip addr add 10.1.1.22/24 dev eth0 label eth0:worker
