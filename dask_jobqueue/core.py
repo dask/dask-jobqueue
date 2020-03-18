@@ -136,6 +136,8 @@ class Job(ProcessInterface, abc.ABC):
         memory=None,
         processes=None,
         nanny=True,
+        protocol=None,
+        security=None,
         interface=None,
         death_timeout=None,
         local_directory=None,
@@ -147,7 +149,6 @@ class Job(ProcessInterface, abc.ABC):
         python=sys.executable,
         job_name=None,
         config_name=None,
-        **kwargs
     ):
         self.scheduler = scheduler
         self.job_id = None
@@ -210,6 +211,23 @@ class Job(ProcessInterface, abc.ABC):
 
         if interface:
             extra = extra + ["--interface", interface]
+        if protocol:
+            extra = extra + ["--protocol", protocol]
+        if security:
+            to_keep = ["tls_ca_file", "tls_worker_key", "tls_worker_cert"]
+            security_dict = {key: getattr(security, key, None) for key in to_keep}
+            security_dict = {
+                key: value for key, value in security_dict.items() if value is not None
+            }
+            security_dict = {
+                key.replace("worker_", ""): value
+                for key, value in security_dict.items()
+            }
+            security_command_line_list = [
+                ["--" + key, value] for key, value in security_dict.items()
+            ]
+            security_command_line = sum(security_command_line_list, [])
+            extra = extra + security_command_line
 
         # Keep information on process, cores, and memory, for use in subclasses
         self.worker_memory = parse_bytes(memory) if memory is not None else None
@@ -434,7 +452,7 @@ class JobQueueCluster(SpecCluster):
         protocol="tcp://",
         # Job keywords
         config_name=None,
-        **kwargs
+        **job_kwargs
     ):
         self.status = "created"
 
@@ -499,14 +517,18 @@ class JobQueueCluster(SpecCluster):
             "options": scheduler_options,
         }
 
-        kwargs["config_name"] = config_name
-        kwargs["interface"] = interface
-        kwargs["protocol"] = protocol
-        kwargs["security"] = security
-        self._kwargs = kwargs
-        worker = {"cls": self.job_cls, "options": kwargs}
-        if "processes" in kwargs and kwargs["processes"] > 1:
-            worker["group"] = ["-" + str(i) for i in range(kwargs["processes"])]
+        job_kwargs["config_name"] = config_name
+        job_kwargs["interface"] = interface
+        job_kwargs["protocol"] = protocol
+        job_kwargs["security"] = security
+        self._job_kwargs = job_kwargs
+        self.validate_job_kwargs()
+
+        worker = {"cls": self.job_cls, "options": self._job_kwargs}
+        if "processes" in self._job_kwargs and self._job_kwargs["processes"] > 1:
+            worker["group"] = [
+                "-" + str(i) for i in range(self._job_kwargs["processes"])
+            ]
 
         self._dummy_job  # trigger property to ensure that the job is valid
 
@@ -536,9 +558,9 @@ class JobQueueCluster(SpecCluster):
         except AttributeError:
             address = "tcp://<insert-scheduler-address-here>:8786"
         return self.job_cls(
-            scheduler=address or "tcp://<insert-scheduler-address-here>:8786",
+            address or "tcp://<insert-scheduler-address-here>:8786",
             name="name",
-            **self._kwargs
+            **self._job_kwargs
         )
 
     @property
@@ -604,3 +626,9 @@ class JobQueueCluster(SpecCluster):
         if maximum_jobs is not None:
             kwargs["maximum"] = maximum_jobs * self._dummy_job.worker_processes
         return super().adapt(*args, **kwargs)
+
+    def validate_job_kwargs(self):
+        # TODO
+        # self._job_kwargs
+        # Check self.job_cls.__init__ signature and Job.__init__.signature
+        pass
