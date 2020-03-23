@@ -514,6 +514,7 @@ class JobQueueCluster(SpecCluster):
             loop=loop,
             silence_logs=silence_logs,
             asynchronous=asynchronous,
+            security=security,
             name=name,
         )
 
