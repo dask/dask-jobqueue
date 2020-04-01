@@ -3,7 +3,7 @@
 QuickStart
 ==============
 
-Here is a VERY simple example of how Dask works on the HPC.
+Here is a VERY simple example of how Dask works and distributes tasks on the HPC.
 
 In order to really understand how this works have one terminal open on a login node to your HPC with ipython or jupyterhub, and another that is running `watch squeue`.
 
@@ -76,6 +76,7 @@ Let's write out some information about our jobs to a file. This will help you to
     import os
     from pathlib import Path
 
+    # Make sure your file is somewhere with mounted storage across all nodes
     home = str(Path.home())
     file_name = os.path.join(home, 'dask-jobqueue-info.txt')
 
