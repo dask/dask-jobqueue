@@ -1,4 +1,4 @@
-xfimport os
+import os
 import shutil
 import socket
 import sys
