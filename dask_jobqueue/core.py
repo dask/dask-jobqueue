@@ -484,14 +484,16 @@ class JobQueueCluster(SpecCluster):
             "dashboard_address": ":8787",
             "security": security,
         }
-        
-        config_scheduler_options = dask.config.get("jobqueue.%s" % config_name).get('scheduler_options') or {}
+
+        config_scheduler_options = (
+            dask.config.get("jobqueue.%s" % config_name).get("scheduler_options") or {}
+        )
 
         # merge the available scheduler_options
         scheduler_options = {
-            **default_scheduler_options, # least important
+            **default_scheduler_options,  # least important
             **config_scheduler_options,
-            **scheduler_options # most important
+            **scheduler_options,  # most important
         }
 
         # Use the same network interface as the workers if scheduler ip has not
