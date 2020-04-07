@@ -477,24 +477,17 @@ class JobQueueCluster(SpecCluster):
         if interface is None:
             interface = dask.config.get("jobqueue.%s.interface" % config_name)
         if scheduler_options is None:
-            scheduler_options = {}
+            scheduler_options = dask.config.get(
+                "jobqueue.%s.scheduler-options" % config_name, {}
+            )
 
         default_scheduler_options = {
             "protocol": protocol,
             "dashboard_address": ":8787",
             "security": security,
         }
-
-        config_scheduler_options = (
-            dask.config.get("jobqueue.%s" % config_name).get("scheduler_options") or {}
-        )
-
-        # merge the available scheduler_options
-        scheduler_options = {
-            **default_scheduler_options,  # least important
-            **config_scheduler_options,
-            **scheduler_options,  # most important
-        }
+        # scheduler_options overrides parameters common to both workers and scheduler
+        scheduler_options = dict(default_scheduler_options, **scheduler_options)
 
         # Use the same network interface as the workers if scheduler ip has not
         # been set through scheduler_options via 'host' or 'interface'
