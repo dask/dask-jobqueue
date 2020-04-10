@@ -29,7 +29,7 @@ what is appropriate for you job queuing system.
 To correct any problem detected at this point, you could try to use
 ``job_extra`` or ``env_extra`` kwargs when initializing your cluster object.
 
-In particular, pay attention to the python executable use to launch the
+In particular, pay attention to the python executable used to launch the
 workers, which by default is the one used to launch the scheduler.
 
 Activate debug mode
