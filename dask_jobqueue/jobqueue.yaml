@@ -10,13 +10,13 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    extra: []
 
     # OAR resource manager options
     shebang: "#!/usr/bin/env bash"
     queue: null
     project: null
     walltime: '00:30:00'
-    extra: []
     env-extra: []
     resource-spec: null
     job-extra: []
@@ -36,13 +36,13 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    extra: []
 
     # PBS resource manager options
     shebang: "#!/usr/bin/env bash"
     queue: null
     project: null
     walltime: '00:30:00'
-    extra: []
     env-extra: []
     resource-spec: null
     job-extra: []
@@ -62,17 +62,16 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    extra: []
 
     # SGE resource manager options
     shebang: "#!/usr/bin/env bash"
     queue: null
     project: null
     walltime: '00:30:00'
-    extra: []
     env-extra: []
     job-extra: []
     log-directory: null
-
     resource-spec: null
     
     # Scheduler options
@@ -89,13 +88,13 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    extra: []
 
     # SLURM resource manager options
     shebang: "#!/usr/bin/env bash"
     queue: null
     project: null
     walltime: '00:30:00'
-    extra: []
     env-extra: []
     job-cpu: null
     job-mem: null
@@ -116,13 +115,13 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    extra: []
 
     # PBS resource manager options
     shebang: "#!/usr/bin/env bash"
     queue: null
     project: null
     walltime: '00:30:00'
-    extra: []
     env-extra: []
     resource-spec: null
     job-extra: []
@@ -142,13 +141,13 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    extra: []
 
     # LSF resource manager options
     shebang: "#!/usr/bin/env bash"
     queue: null
     project: null
     walltime: '00:30'
-    extra: []
     env-extra: []
     ncpus: null
     mem: null
@@ -171,10 +170,10 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    extra: []
 
     # HTCondor Resource Manager options
     disk: null                  # Total amount of disk per job
-    extra: []
     env-extra: []
     job-extra: {}               # Extra submit attributes
     log-directory: null
@@ -193,8 +192,8 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
-
     extra: []
+
     env-extra: []
     job-extra: []
     log-directory: null
