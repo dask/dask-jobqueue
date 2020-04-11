@@ -21,6 +21,9 @@ jobqueue:
     resource-spec: null
     job-extra: []
     log-directory: null
+    
+    # Scheduler options
+    scheduler-options:
 
   pbs:
     name: dask-worker
@@ -44,6 +47,9 @@ jobqueue:
     resource-spec: null
     job-extra: []
     log-directory: null
+    
+    # Scheduler options
+    scheduler-options:
 
   sge:
     name: dask-worker
@@ -68,6 +74,9 @@ jobqueue:
     log-directory: null
 
     resource-spec: null
+    
+    # Scheduler options
+    scheduler-options:
 
   slurm:
     name: dask-worker
@@ -92,6 +101,9 @@ jobqueue:
     job-mem: null
     job-extra: []
     log-directory: null
+    
+    # Scheduler options
+    scheduler-options:
 
   moab:
     name: dask-worker
@@ -115,6 +127,9 @@ jobqueue:
     resource-spec: null
     job-extra: []
     log-directory: null
+    
+    # Scheduler options
+    scheduler-options:
 
   lsf:
     name: dask-worker
@@ -141,6 +156,9 @@ jobqueue:
     log-directory: null
     lsf-units: null
     use-stdin: True             # (bool) How jobs are launched, i.e. 'bsub jobscript.sh' or 'bsub < jobscript.sh'
+    
+    # Scheduler options
+    scheduler-options:
 
   htcondor:
     name: dask-worker
@@ -161,6 +179,9 @@ jobqueue:
     job-extra: {}               # Extra submit attributes
     log-directory: null
     shebang: "#!/usr/bin/env condor_submit"
+    
+    # Scheduler options
+    scheduler-options:
 
   local:
     name: dask-worker
@@ -177,3 +198,6 @@ jobqueue:
     env-extra: []
     job-extra: []
     log-directory: null
+    
+    # Scheduler options
+    scheduler-options:
