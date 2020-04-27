@@ -57,9 +57,7 @@ def test_basic(loop):
             cluster.scale(2)
 
             start = time()
-            while not (cluster.pending_jobs or cluster.running_jobs):
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+            client.wait_for_workers(2)
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
