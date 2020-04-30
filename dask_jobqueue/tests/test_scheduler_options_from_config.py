@@ -30,7 +30,7 @@ def test_import_scheduler_options_from_config(Cluster):
         "port": config_scheduler_port,
     }
 
-    default_config_name = Cluster(cores=2, memory="2GB").job_cls.config_name
+    default_config_name = Cluster.job_cls.config_name
 
     with dask.config.set(
         {"jobqueue.%s.scheduler-options" % default_config_name: scheduler_options}
