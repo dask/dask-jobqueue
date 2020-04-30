@@ -2,10 +2,14 @@
 
 docker-compose up --build -d
 
-while [ `./register_cluster.sh 2>&1 | grep "sacctmgr: error" | wc -l` -ne 0 ]
+bla=$(`./register_cluster.sh 2>&1)
+while [ `echo $bla | grep "sacctmgr: error" | wc -l` -ne 0 ]
   do
+    echo Cluster is not ready
+    echo "$bla"
     echo "Waiting for SLURM cluster to become ready";
     sleep 2
+    bla=$(`./register_cluster.sh 2>&1)
   done
 echo "SLURM properly configured"
 
