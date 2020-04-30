@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker-compose up --build -d
+docker-compose up --build
 
 bla=$(./register_cluster.sh 2>&1)
 while [ `echo $bla | grep "sacctmgr: error" | wc -l` -ne 0 ]
