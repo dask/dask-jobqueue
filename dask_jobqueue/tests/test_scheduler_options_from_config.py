@@ -25,39 +25,18 @@ def test_import_scheduler_options_from_config(Cluster):
 
     pass_scheduler_interface = list(net_if_addrs.keys())[1]
 
-    generic_cluster_conf = {
-        "cores": None,
-        "memory": None,
-        "queue": None,
-        "project": None,
-        "ncpus": None,
-        "processes": None,
-        "walltime": None,
-        "job-extra": [],
-        "name": None,
-        "interface": None,
-        "death-timeout": None,
-        "local-directory": None,
-        "extra": [],
-        "env-extra": [],
-        "log-directory": None,
-        "shebang": None,
-        "job-cpu": None,
-        "job-mem": None,
-        "resource-spec": None,
-        "mem": None,
-        "lsf-units": None,
-        "use-stdin": None,
-    }
-
-    generic_cluster_conf["scheduler_options"] = {
+    scheduler_options = {
         "interface": config_scheduler_interface,
         "port": config_scheduler_port,
     }
 
-    with dask.config.set({"jobqueue.generic-config": generic_cluster_conf}):
+    default_config_name = Cluster(cores=2, memory="2GB").job_cls.config_name
 
-        with Cluster(cores=2, memory="2GB", config_name="generic-config",) as cluster:
+    with dask.config.set(
+        {"jobqueue.%s.scheduler-options" % default_config_name: scheduler_options}
+    ):
+
+        with Cluster(cores=2, memory="2GB") as cluster:
             scheduler_options = cluster.scheduler_spec["options"]
             assert scheduler_options.get("interface") == config_scheduler_interface
             assert scheduler_options.get("port") == config_scheduler_port
@@ -65,7 +44,6 @@ def test_import_scheduler_options_from_config(Cluster):
         with Cluster(
             cores=2,
             memory="2GB",
-            config_name="generic-config",
             scheduler_options={"interface": pass_scheduler_interface},
         ) as cluster:
             scheduler_options = cluster.scheduler_spec["options"]
