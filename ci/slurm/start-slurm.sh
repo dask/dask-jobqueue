@@ -9,7 +9,7 @@ while [ `echo $bla | grep "sacctmgr: error" | wc -l` -ne 0 ]
     echo "$bla"
     echo "Waiting for SLURM cluster to become ready";
     sleep 2
-    bla=$(`./register_cluster.sh 2>&1)
+    bla=$(./register_cluster.sh 2>&1)
   done
 echo "SLURM properly configured"
 
