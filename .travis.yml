@@ -8,16 +8,16 @@ services:
   - docker
 matrix:
   include:
-    - python: "3.6"
-      env:
-        - JOBQUEUE=sge
-    - python: "3.6"
-      env:
-        # JOBQUEUE=none is for tests that do not need a cluster to run
-        - JOBQUEUE=none
-    - python: "3.6"
-      env:
-        - JOBQUEUE=pbs
+#     - python: "3.6"
+#       env:
+#         - JOBQUEUE=sge
+#     - python: "3.6"
+#       env:
+#         # JOBQUEUE=none is for tests that do not need a cluster to run
+#         - JOBQUEUE=none
+#     - python: "3.6"
+#       env:
+#         - JOBQUEUE=pbs
     - python: "3.6"
       env:
         - JOBQUEUE=slurm
