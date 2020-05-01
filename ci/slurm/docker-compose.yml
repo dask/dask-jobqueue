@@ -24,6 +24,7 @@ services:
       - etc_munge:/etc/munge
       - etc_slurm:/etc/slurm
       - var_log_slurm:/var/log/slurm
+    restart: on-failure
     expose:
       - "6819"
     depends_on:
