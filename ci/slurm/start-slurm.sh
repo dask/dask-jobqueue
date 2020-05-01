@@ -8,6 +8,7 @@ while [ `echo $bla | grep "sacctmgr: error" | wc -l` -ne 0 ]
     echo Cluster is not ready
     echo "$bla"
     docker-compose ps
+    docker-compose logs
     # docker-compose ps | grep slurmdbd && docker-compose start slurmdbd || echo slurmdbd alive
     echo "Waiting for SLURM cluster to become ready";
     sleep 2
