@@ -6,6 +6,12 @@ notifications:
 
 services:
   - docker
+
+addons:
+  apt:
+    packages:
+      - docker-ce
+
 matrix:
   include:
 #     - python: "3.6"
@@ -25,6 +31,7 @@ matrix:
 before_install:
   - set -e
   - pwd
+  - pip install docker-compose
   # Init jobqueue environment: load init and test methods
   - source ci/${JOBQUEUE}.sh
   - jobqueue_before_install
