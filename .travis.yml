@@ -7,11 +7,6 @@ notifications:
 services:
   - docker
 
-addons:
-  apt:
-    packages:
-      - docker-ce
-
 matrix:
   include:
 #     - python: "3.6"
