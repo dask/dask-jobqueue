@@ -17,11 +17,12 @@ function jobqueue_install {
     docker cp . jobqueue-htcondor-mini:/dask-jobqueue 
 
     docker exec --user root jobqueue-htcondor-mini /bin/bash -c "
-    	yum -y install python3-psutil; # psutil has no wheel , install gcc even slower
+    	python3 -c 'import psutil' 2>/dev/null || yum -y install python3-psutil; # psutil has no wheel , install gcc even slower
 	cd /dask-jobqueue; 
 	pip3 install -e .;
 	pip3 install pytest;
 	rm -f /var/log/condor/*
+	chown -R submituser:submituser /dask-jobqueue 
     "
 }
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] || jobqueue_install # excute if called as script
