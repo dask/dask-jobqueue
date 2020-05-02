@@ -2,7 +2,7 @@
 
 docker-compose up --build -d
 
-sleep 60
+sleep 30
 
 bla=$(./register_cluster.sh 2>&1)
 while [ `echo $bla | grep "sacctmgr: error" | wc -l` -ne 0 ]
@@ -10,9 +10,9 @@ while [ `echo $bla | grep "sacctmgr: error" | wc -l` -ne 0 ]
     echo Cluster is not ready
     echo "$bla"
     echo "Waiting for SLURM cluster to become ready";
-    sleep 20
+    sleep 30
     docker-compose ps
-    docker-compose logs --timestamps --tail=30 slurmdbd mysql slurmctld
+    docker-compose logs --timestamps slurmdbd mysql slurmctld
     bla=$(./register_cluster.sh 2>&1)
   done
 echo "SLURM properly configured"
