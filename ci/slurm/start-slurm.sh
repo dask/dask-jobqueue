@@ -1,11 +1,14 @@
 #!/bin/bash
 
-while [ `./register_cluster.sh 2>&1 | grep "sacctmgr: error" | wc -l` -ne 0 ]
+slept_for=0
+sleep_for=2
+while [ "$(./register_cluster.sh 2>&1 | grep -c 'sacctmgr: error' -)" -ne 0 ]
   do
-    echo "Waiting for SLURM cluster to become ready";
-    sleep 2
+    sleep $sleep_for
+    slept_for=$((slept_for + sleep_for))
+    echo "Waited ${slept_for}s for SLURM cluster to become ready";
   done
-echo "SLURM properly configured"
+echo "SLURM properly configured after ${slept_for}s"
 
 # On some clusters the login node does not have the same interface as the
 # compute nodes. The next three lines allow to test this edge case by adding
