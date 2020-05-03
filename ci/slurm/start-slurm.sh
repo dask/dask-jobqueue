@@ -4,9 +4,9 @@ slept_for=0
 sleep_for=2
 while [ "$(./register_cluster.sh 2>&1 | grep -c 'sacctmgr: error' -)" -ne 0 ]
   do
+    echo "Waited ${slept_for}s for SLURM cluster to become ready";
     sleep $sleep_for
     slept_for=$((slept_for + sleep_for))
-    echo "Waited ${slept_for}s for SLURM cluster to become ready";
   done
 echo "SLURM properly configured after ${slept_for}s"
 
