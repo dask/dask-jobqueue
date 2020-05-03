@@ -1,29 +1,31 @@
 #!/usr/bin/env bash
 
 function jobqueue_before_install {
+    set -e
     set -x
 
     docker version
     docker-compose version
 
     # compose slurm app
-    cd ./ci/slurm || return 1
+    cd ./ci/slurm
     ./docker-setup-slurm.sh
-    cd - || return 1
+    cd -
 
     # document docker env
     docker ps -a
     docker images --digests
 
     # start slurm
-    cd ./ci/slurm || return 1
+    cd ./ci/slurm
     ./start-slurm.sh
-    cd - || return 1
+    cd -
 
     # show network setup (only possible after slurm is up)
     show_network_interfaces
 
     set +x
+    set +e
 }
 
 function show_network_interfaces {
