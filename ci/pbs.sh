@@ -14,7 +14,6 @@ function jobqueue_before_install {
     cd -
 
     # document docker env
-    docker exec -it -u pbsuser pbs_master pbsnodes -a
     docker ps -a
     docker images --digests
 
