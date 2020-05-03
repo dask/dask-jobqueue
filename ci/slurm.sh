@@ -4,6 +4,7 @@ function jobqueue_before_install {
     set -e
     set -x
 
+    # document docker versions
     docker version
     docker-compose version
 
