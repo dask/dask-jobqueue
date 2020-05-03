@@ -1,15 +1,29 @@
 #!/usr/bin/env bash
 
 function jobqueue_before_install {
+    set -e
+    set -x
+
+    # document docker versions
     docker version
     docker-compose version
+
+    # compose sge app
+    cd ./ci/sge
+    ./docker-setup-sge.sh
+    cd -
+
+    # document docker env
+    docker ps -a
+    docker images --digests
+
     # start sge cluster
     cd ./ci/sge
     ./start-sge.sh
     cd -
 
-    docker ps -a
-    docker images
+    set +x
+    set +e
 }
 
 function jobqueue_install {
