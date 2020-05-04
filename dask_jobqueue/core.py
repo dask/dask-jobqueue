@@ -8,6 +8,7 @@ import subprocess
 import sys
 import weakref
 import abc
+import inspect
 
 import dask
 from dask.utils import ignoring
@@ -627,8 +628,24 @@ class JobQueueCluster(SpecCluster):
             kwargs["maximum"] = maximum_jobs * self._dummy_job.worker_processes
         return super().adapt(*args, **kwargs)
 
+    @classmethod
+    def _allowed_parameters(cls, func):
+        sig = inspect.signature(func)
+        return {
+            k: v for k, v in sig.parameters.items() if v.kind == v.POSITIONAL_OR_KEYWORD
+        }
+
     def validate_job_kwargs(self):
-        # TODO
-        # self._job_kwargs
-        # Check self.job_cls.__init__ signature and Job.__init__.signature
-        pass
+        allowed_parameters = set(self._allowed_parameters(Job.__init__)).union(
+            self._allowed_parameters(self.job_cls.__init__)
+        )
+        # We don't want to list self as an allowed parameter
+        allowed_parameters.remove("self")
+        wrong_parameter_names = set(self._job_kwargs).difference(allowed_parameters)
+        wrong_parameters = {k: self._job_kwargs[k] for k in wrong_parameter_names}
+        if wrong_parameters:
+            raise ValueError(
+                "Wrong parameters: {}.\nHere are the list of allowed parameters: {}".format(
+                    wrong_parameters, sorted(allowed_parameters)
+                )
+            )
