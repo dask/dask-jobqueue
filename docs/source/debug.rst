@@ -40,6 +40,7 @@ The typical error you might see is a ``ModuleNotFoundError``, even if you loaded
 the right module just before:
 
 .. code-block:: text
+
    Loading tensorflow-gpu/py3/2.1.0
      Loading requirement: cuda/10.1.2 cudnn/10.1-v7.5.1.10 nccl/2.5.6-2-cuda
        gcc/4.8.5 openmpi/4.0.2-cuda
@@ -74,6 +75,7 @@ the following job script (pay attention to the last line which will show which
 ``python`` is used):
 
 .. code-block:: sh
+
    #!/usr/bin/env bash
    
    #SBATCH -J <job_name>
