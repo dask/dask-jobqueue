@@ -17,11 +17,22 @@ from dask_jobqueue import (
     SGECluster,
     LSFCluster,
     OARCluster,
+    HTCondorCluster,
 )
 from dask_jobqueue.core import Job
 from dask_jobqueue.local import LocalCluster
 
 from dask_jobqueue.sge import SGEJob
+
+all_clusters = [
+    PBSCluster,
+    MoabCluster,
+    SLURMCluster,
+    SGECluster,
+    LSFCluster,
+    OARCluster,
+    HTCondorCluster,
+]
 
 
 def test_errors():
@@ -52,10 +63,7 @@ def test_command_template():
         assert " --preload mymodule" in cluster._dummy_job._command_template
 
 
-@pytest.mark.parametrize(
-    "Cluster",
-    [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster, OARCluster],
-)
+@pytest.mark.parametrize("Cluster", all_clusters)
 def test_shebang_settings(Cluster):
     default_shebang = "#!/usr/bin/env bash"
     python_shebang = "#!/usr/bin/python"
@@ -68,9 +76,7 @@ def test_shebang_settings(Cluster):
         assert job_script.startswith(default_shebang)
 
 
-@pytest.mark.parametrize(
-    "Cluster", [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster]
-)
+@pytest.mark.parametrize("Cluster", all_clusters)
 def test_dashboard_link(Cluster):
     with Cluster(cores=1, memory="1GB") as cluster:
         assert re.match(r"http://\d+\.\d+\.\d+.\d+:\d+/status", cluster.dashboard_link)
@@ -199,10 +205,7 @@ def test_jobqueue_cluster_call(tmpdir):
         cluster._call([sys.executable, path_with_error.strpath])
 
 
-@pytest.mark.parametrize(
-    "Cluster",
-    [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster, OARCluster],
-)
+@pytest.mark.parametrize("Cluster", all_clusters)
 def test_cluster_has_cores_and_memory(Cluster):
     base_regex = r"{}.+".format(Cluster.__name__)
     with pytest.raises(ValueError, match=base_regex + r"cores=\d, memory='\d+GB'"):
@@ -256,10 +259,7 @@ def test_cluster_without_job_cls():
         MyCluster(cores=1, memory="1GB")
 
 
-@pytest.mark.parametrize(
-    "Cluster",
-    [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster, OARCluster],
-)
+@pytest.mark.parametrize("Cluster", all_clusters)
 def test_default_number_of_worker_processes(Cluster):
     with Cluster(cores=4, memory="4GB") as cluster:
         assert " --nprocs 4" in cluster.job_script()
@@ -270,10 +270,7 @@ def test_default_number_of_worker_processes(Cluster):
         assert " --nthreads 2" in cluster.job_script()
 
 
-@pytest.mark.parametrize(
-    "Cluster",
-    [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster, OARCluster],
-)
+@pytest.mark.parametrize("Cluster", all_clusters)
 def test_scheduler_options(Cluster):
     net_if_addrs = psutil.net_if_addrs()
     interface = list(net_if_addrs.keys())[0]
@@ -287,10 +284,7 @@ def test_scheduler_options(Cluster):
         assert scheduler_options["port"] == port
 
 
-@pytest.mark.parametrize(
-    "Cluster",
-    [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster, OARCluster],
-)
+@pytest.mark.parametrize("Cluster", all_clusters)
 def test_scheduler_options_interface(Cluster):
     net_if_addrs = psutil.net_if_addrs()
     scheduler_interface = list(net_if_addrs.keys())[0]
@@ -326,10 +320,7 @@ def test_scheduler_options_interface(Cluster):
         assert worker_options["interface"] == worker_interface
 
 
-@pytest.mark.parametrize(
-    "Cluster",
-    [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster, OARCluster],
-)
+@pytest.mark.parametrize("Cluster", all_clusters)
 def test_cluster_error_scheduler_arguments_should_use_scheduler_options(Cluster):
     scheduler_host = socket.gethostname()
     message_template = "pass {!r} through 'scheduler_options'"
@@ -345,10 +336,7 @@ def test_cluster_error_scheduler_arguments_should_use_scheduler_options(Cluster)
             pass
 
 
-@pytest.mark.parametrize(
-    "Cluster",
-    [PBSCluster, MoabCluster, SLURMCluster, SGECluster, LSFCluster, OARCluster],
-)
+@pytest.mark.parametrize("Cluster", all_clusters)
 def test_import_scheduler_options_from_config(Cluster):
 
     net_if_addrs = psutil.net_if_addrs()
