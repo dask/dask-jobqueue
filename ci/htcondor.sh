@@ -3,7 +3,7 @@
 function jobqueue_before_install {
     docker version
 
-    docker run -d --name jobqueue-htcondor-mini htcondor/mini:el7 # might fail if called as script
+    docker run --rm -d --name jobqueue-htcondor-mini tillkit/dask-jobqueue-ci:htcondor #TODO: changeme on final
 
     docker ps -a
     docker images
@@ -11,18 +11,13 @@ function jobqueue_before_install {
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] || jobqueue_before_install # excute if called as script
 
 function jobqueue_install {
-    docker exec --user root jobqueue-htcondor-mini  /bin/bash -c "
-    	rm -rf /dask-jobqueue
-   "
     docker cp . jobqueue-htcondor-mini:/dask-jobqueue 
 
     docker exec --user root jobqueue-htcondor-mini /bin/bash -c "
-    	python3 -c 'import psutil' 2>/dev/null || yum -y install python3-psutil; # psutil has no wheel , install gcc even slower
 	cd /dask-jobqueue; 
-	pip3 install -e .;
-	pip3 install pytest;
-	rm -f /var/log/condor/*
+	pip3 install --upgrade --upgrade-strategy eager -e .;
 	chown -R submituser:submituser /dask-jobqueue 
+	pip3 freeze
     "
 }
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] || jobqueue_install # excute if called as script
@@ -40,3 +35,8 @@ function jobqueue_after_script {
    "
 }
 [[ "${BASH_SOURCE[0]}" != "${0}" ]] || jobqueue_after_script # excute if called as script
+
+function jobqueue_cleanup {
+    docker stop jobqueue-htcondor-mini
+}
+[[ "${BASH_SOURCE[0]}" != "${0}" ]] || jobqueue_cleanup # excute if called as script
