@@ -1,0 +1,3 @@
+#!/bin/bash
+docker build --target slave -t $DOCKER_REPO:$DOCKER_TAG-slave .
+docker push $DOCKER_REPO:$DOCKER_TAG-slave
