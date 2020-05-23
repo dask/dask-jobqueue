@@ -3,7 +3,7 @@ version: "3.4"
 services:
 
   master:
-    image: tillkit/dask-jobqueue-ci:sge
+    image: daskdev/dask-jobqueue:sge
     build:
       context: .
       target: master
@@ -17,7 +17,7 @@ services:
     command: bash /run-master.sh
 
   slave-one:
-    image: tillkit/dask-jobqueue-ci:sge-slave 
+    image: daskdev/dask-jobqueue:sge-slave
     build:
       context: .
       target: slave
@@ -35,7 +35,7 @@ services:
       - master
 
   slave-two:
-    image: tillkit/dask-jobqueue-ci:sge-slave 
+    image: daskdev/dask-jobqueue:sge-slave
     build:
       context: .
       target: slave

@@ -3,7 +3,7 @@ version: "2"
 services:
 
   master:
-    image: tillkit/dask-jobqueue-ci:pbs 
+    image: daskdev/dask-jobqueue:pbs
     build: .
     container_name: pbs_master
     hostname: pbs_master
@@ -12,7 +12,7 @@ services:
     command: bash /run-master.sh
 
   slave_one:
-    image: tillkit/dask-jobqueue-ci:pbs 
+    image: daskdev/dask-jobqueue:pbs
     build: .
     container_name: pbs_slave_1
     hostname: pbs_slave_1
@@ -28,7 +28,7 @@ services:
       - master
 
   slave_two:
-    image: tillkit/dask-jobqueue-ci:pbs 
+    image: daskdev/dask-jobqueue:pbs
     build: .
     container_name: pbs_slave_2
     hostname: pbs_slave_2
@@ -42,4 +42,3 @@ services:
       - PBS_MASTER=pbs_master
     depends_on:
       - master
-
