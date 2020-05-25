@@ -9,6 +9,9 @@ import pytest
 
 import dask
 
+from distributed.security import Security
+from distributed import Client
+
 from dask_jobqueue import (
     JobQueueCluster,
     PBSCluster,
@@ -410,3 +413,32 @@ def test_wrong_parameter_error(Cluster):
             wrong_parameter="asdf",
             another_wrong_parameter="asdf",
         )
+
+
+@pytest.mark.asyncio
+async def test_security():
+    dirname = os.path.dirname(__file__)
+    key = os.path.join(dirname, "key.pem")
+    cert = os.path.join(dirname, "ca.pem")
+    print(key)
+    print(cert)
+    security = Security(
+        tls_ca_file=cert,
+        tls_scheduler_key=key,
+        tls_scheduler_cert=cert,
+        tls_worker_key=key,
+        tls_worker_cert=cert,
+        tls_client_key=key,
+        tls_client_cert=cert,
+        require_encryption=True,
+    )
+
+    async with LocalCluster(
+        cores=1, memory="1GB", security=security, protocol="tls", asynchronous=True
+    ) as cluster:
+        await cluster
+        cluster.scale(jobs=1)
+        with Client(cluster, security=security, asynchronous=True) as client:
+            future = client.submit(lambda x: x + 1, 10)
+            result = await future
+            assert result == 11

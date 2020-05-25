@@ -221,7 +221,8 @@ class Job(ProcessInterface, abc.ABC):
                 key: value for key, value in security_dict.items() if value is not None
             }
             security_dict = {
-                key.replace("worker_", ""): value
+                # TODO: maybe a way to do that through a distributed function?
+                key.replace("worker_", "").replace("_", "-"): value
                 for key, value in security_dict.items()
             }
             security_command_line_list = [
@@ -537,6 +538,7 @@ class JobQueueCluster(SpecCluster):
             scheduler=scheduler,
             worker=worker,
             loop=loop,
+            security=security,
             silence_logs=silence_logs,
             asynchronous=asynchronous,
             name=name,
