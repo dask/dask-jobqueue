@@ -215,18 +215,12 @@ class Job(ProcessInterface, abc.ABC):
         if protocol:
             extra = extra + ["--protocol", protocol]
         if security:
-            to_keep = ["tls_ca_file", "tls_worker_key", "tls_worker_cert"]
-            security_dict = {key: getattr(security, key, None) for key in to_keep}
-            security_dict = {
-                key: value for key, value in security_dict.items() if value is not None
-            }
-            security_dict = {
-                # TODO: maybe a way to do that through a distributed function?
-                key.replace("worker_", "").replace("_", "-"): value
-                for key, value in security_dict.items()
-            }
+            worker_security_dict = security.get_tls_config_for_role("worker")
             security_command_line_list = [
-                ["--" + key, value] for key, value in security_dict.items()
+                ["--tls-" + key.replace("_", "-"), value]
+                for key, value in worker_security_dict.items()
+                # 'ciphers' parameter does not have a command-line equivalent
+                if key != "ciphers"
             ]
             security_command_line = sum(security_command_line_list, [])
             extra = extra + security_command_line
