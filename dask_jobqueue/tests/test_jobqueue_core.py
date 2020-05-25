@@ -393,3 +393,20 @@ def test_import_scheduler_options_from_config(Cluster):
             scheduler_options = cluster.scheduler_spec["options"]
             assert scheduler_options.get("interface") == pass_scheduler_interface
             assert scheduler_options.get("port") is None
+
+
+@pytest.mark.parametrize("Cluster", all_clusters)
+def test_wrong_parameter_error(Cluster):
+    match = re.compile(
+        "Wrong parameters.+wrong_parameter.+another_wrong_parameter.+"
+        "list of allowed parameters.+cores.+memory",
+        re.DOTALL,
+    )
+    with pytest.raises(ValueError, match=match):
+        create_cluster_func(
+            Cluster,
+            cores=1,
+            memory="1GB",
+            wrong_parameter="asdf",
+            another_wrong_parameter="asdf",
+        )

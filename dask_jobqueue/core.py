@@ -641,7 +641,9 @@ class JobQueueCluster(SpecCluster):
         )
         # We don't want to list self as an allowed parameter
         allowed_parameters.remove("self")
-        wrong_parameter_names = set(self._job_kwargs).difference(allowed_parameters)
+        wrong_parameter_names = [
+            kw for kw in self._job_kwargs if kw not in allowed_parameters
+        ]
         wrong_parameters = {k: self._job_kwargs[k] for k in wrong_parameter_names}
         if wrong_parameters:
             raise ValueError(
