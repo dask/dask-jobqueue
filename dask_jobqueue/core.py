@@ -564,7 +564,7 @@ class JobQueueCluster(SpecCluster):
                 raise
             message_orig = match.group(1)
             raise ValueError(
-                'Got {}. Very likely wrong parameters were passed as "job_kwargs" in {} constructor:\n'
+                'Got {}. Very likely this unexpected parameter was passed in "job_kwargs" in the {} constructor:\n'
                 "job_kwargs={}".format(
                     message_orig, self.__class__.__name__, self._job_kwargs
                 )
