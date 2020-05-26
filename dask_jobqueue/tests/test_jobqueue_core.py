@@ -401,17 +401,14 @@ def test_import_scheduler_options_from_config(Cluster):
 @pytest.mark.parametrize("Cluster", all_clusters)
 def test_wrong_parameter_error(Cluster):
     match = re.compile(
-        "Wrong parameters.+wrong_parameter.+another_wrong_parameter.+"
-        "list of allowed parameters.+cores.+memory",
+        "unexpected keyword argument.+wrong_parameter.+"
+        "{}.+job_kwargs.+cores.+memory.+"
+        "wrong_parameter.+wrong_parameter_value".format(Cluster.__name__),
         re.DOTALL,
     )
     with pytest.raises(ValueError, match=match):
         create_cluster_func(
-            Cluster,
-            cores=1,
-            memory="1GB",
-            wrong_parameter="asdf",
-            another_wrong_parameter="asdf",
+            Cluster, cores=1, memory="1GB", wrong_parameter="wrong_parameter_value",
         )
 
 

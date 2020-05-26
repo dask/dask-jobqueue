@@ -8,7 +8,6 @@ import subprocess
 import sys
 import weakref
 import abc
-import inspect
 
 import dask
 from dask.utils import ignoring
@@ -518,7 +517,6 @@ class JobQueueCluster(SpecCluster):
         job_kwargs["protocol"] = protocol
         job_kwargs["security"] = security
         self._job_kwargs = job_kwargs
-        self.validate_job_kwargs()
 
         worker = {"cls": self.job_cls, "options": self._job_kwargs}
         if "processes" in self._job_kwargs and self._job_kwargs["processes"] > 1:
@@ -554,11 +552,23 @@ class JobQueueCluster(SpecCluster):
             address = self.scheduler.address  # Have we already connected?
         except AttributeError:
             address = "tcp://<insert-scheduler-address-here>:8786"
-        return self.job_cls(
-            address or "tcp://<insert-scheduler-address-here>:8786",
-            name="name",
-            **self._job_kwargs
-        )
+        try:
+            return self.job_cls(
+                address or "tcp://<insert-scheduler-address-here>:8786",
+                name="name",
+                **self._job_kwargs
+            )
+        except TypeError as exc:
+            match = re.search("(unexpected keyword argument.+)", str(exc))
+            if not match:
+                raise
+            message_orig = match.group(1)
+            raise ValueError(
+                'Got {}. Very likely wrong parameters were passed as "job_kwargs" in {} constructor:\n'
+                "job_kwargs={}".format(
+                    message_orig, self.__class__.__name__, self._job_kwargs
+                )
+            ) from exc
 
     @property
     def job_header(self):
@@ -623,27 +633,3 @@ class JobQueueCluster(SpecCluster):
         if maximum_jobs is not None:
             kwargs["maximum"] = maximum_jobs * self._dummy_job.worker_processes
         return super().adapt(*args, **kwargs)
-
-    @classmethod
-    def _allowed_parameters(cls, func):
-        sig = inspect.signature(func)
-        return {
-            k: v for k, v in sig.parameters.items() if v.kind == v.POSITIONAL_OR_KEYWORD
-        }
-
-    def validate_job_kwargs(self):
-        allowed_parameters = set(self._allowed_parameters(Job.__init__)).union(
-            self._allowed_parameters(self.job_cls.__init__)
-        )
-        # We don't want to list self as an allowed parameter
-        allowed_parameters.remove("self")
-        wrong_parameter_names = [
-            kw for kw in self._job_kwargs if kw not in allowed_parameters
-        ]
-        wrong_parameters = {k: self._job_kwargs[k] for k in wrong_parameter_names}
-        if wrong_parameters:
-            raise ValueError(
-                "Wrong parameters: {}.\nHere are the list of allowed parameters: {}".format(
-                    wrong_parameters, sorted(allowed_parameters)
-                )
-            )
