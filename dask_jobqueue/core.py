@@ -559,9 +559,9 @@ class JobQueueCluster(SpecCluster):
                 **self._job_kwargs
             )
         except TypeError as exc:
-            # Very likely this error happened because an unexpected parameter
-            # was used in the JobQueueCluster constructor, construct a more
-            # user-friendly error message.
+            # Very likely this error happened in the self.job_cls constructor
+            # because an unexpected parameter was used in the JobQueueCluster
+            # constructor. The next few lines builds a more user-friendly error message.
             match = re.search("(unexpected keyword argument.+)", str(exc))
             if not match:
                 raise
