@@ -430,8 +430,8 @@ def test_security():
     with LocalCluster(
         cores=1, memory="1GB", security=security, protocol="tls"
     ) as cluster:
-        assert cluster.security is security
-        assert cluster.scheduler_spec["options"]["security"] is security
+        assert cluster.security == security
+        assert cluster.scheduler_spec["options"]["security"] == security
         job_script = cluster.job_script()
         assert "--tls-key {}".format(key) in job_script
         assert "--tls-cert {}".format(cert) in job_script
