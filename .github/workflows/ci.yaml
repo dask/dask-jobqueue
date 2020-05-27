@@ -24,21 +24,25 @@ jobs:
           auto-activate-base: false
 
       - name: Setup
+        shell: bash -l {0}
         run: |
           source ci/${{ matrix.jobqueue }}.sh
           jobqueue_before_install
 
       - name: Install
+        shell: bash -l {0}
         run: |
           source ci/${{ matrix.jobqueue }}.sh
           jobqueue_install
 
       - name: Test
+        shell: bash -l {0}
         run: |
           source ci/${{ matrix.jobqueue }}.sh
           jobqueue_script
 
       - name: Cleanup
+        shell: bash -l {0}
         run: |
           source ci/${{ matrix.jobqueue }}.sh
           jobqueue_after_script
