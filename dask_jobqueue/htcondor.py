@@ -101,8 +101,10 @@ Queue
                 "jobqueue.%s.submit-command-extra" % self.config_name, []
             )
 
-        self.submit_command = HTCondorJob.submit_command + " ".join(
-            shlex.quote(arg) for arg in submit_command_extra
+        self.submit_command = (
+            HTCondorJob.submit_command
+            + " "
+            + " ".join(shlex.quote(arg) for arg in submit_command_extra)
         )
 
         if cancel_command_extra is None:
@@ -110,8 +112,10 @@ Queue
                 "jobqueue.%s.cancel-command-extra" % self.config_name, []
             )
 
-        self.cancel_command = HTCondorJob.cancel_command + " ".join(
-            shlex.quote(arg) for arg in cancel_command_extra
+        self.cancel_command = (
+            HTCondorJob.cancel_command
+            + " "
+            + " ".join(shlex.quote(arg) for arg in cancel_command_extra)
         )
 
     def env_lines_to_dict(self, env_lines):
