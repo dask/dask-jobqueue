@@ -4,7 +4,7 @@ function jobqueue_before_install {
   # Install miniconda
   ./ci/conda_setup.sh
   export PATH="$HOME/miniconda/bin:$PATH"
-  conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION dask distributed flake8 black pytest pytest-asyncio
+  conda install --yes -c conda-forge python=3.6 dask distributed flake8 black pytest pytest-asyncio
 }
 
 function jobqueue_install {
