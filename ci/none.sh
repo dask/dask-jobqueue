@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 function jobqueue_before_install {
+  true  # Pass
 }
 
 function jobqueue_install {
