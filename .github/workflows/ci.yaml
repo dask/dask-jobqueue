@@ -1,0 +1,35 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        jobqueue: ["htcondor", "pbs", "sge", "slurm", "none"]
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+
+      - name: Setup
+        run: |
+          source ci/${{ matrix.jobqueue }}.sh
+          jobqueue_before_install
+
+      - name: Install
+        run: |
+          source ci/${{ matrix.jobqueue }}.sh
+          jobqueue_install
+
+      - name: Test
+        run: |
+          source ci/${{ matrix.jobqueue }}.sh
+          jobqueue_script
+
+      - name: Cleanup
+        run: |
+          source ci/${{ matrix.jobqueue }}.sh
+          jobqueue_after_script
