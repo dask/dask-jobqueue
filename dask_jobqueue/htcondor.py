@@ -101,8 +101,8 @@ Queue
                 "jobqueue.%s.submit-command-extra" % self.config_name, []
             )
 
-        self.submit_command = (
-            HTCondorJob.submit_command + " " + shell_quote_list(submit_command_extra)
+        self.submit_command = HTCondorJob.submit_command + " ".join(
+            shlex.quote(arg) for arg in submit_command_extra
         )
 
         if cancel_command_extra is None:
@@ -110,8 +110,8 @@ Queue
                 "jobqueue.%s.cancel-command-extra" % self.config_name, []
             )
 
-        self.cancel_command = (
-            HTCondorJob.cancel_command + " " + shell_quote_list(cancel_command_extra)
+        self.cancel_command = HTCondorJob.cancel_command + " ".join(
+            shlex.quote(arg) for arg in cancel_command_extra
         )
 
     def env_lines_to_dict(self, env_lines):
@@ -158,23 +158,6 @@ Queue
 
 def _double_up_quotes(instr):
     return instr.replace("'", "''").replace('"', '""')
-
-
-def shell_quote_list(args):
-    """Quote a string using shell quoting rules.
-
-    Returns
-    -------
-    str
-        The quoted arguments as a single string, separated by spaces.
-
-    Examples
-    --------
-    >>> shell_quote_list(["one", "two with spaces", "three"])
-    'one \'two with spaces\' three'
-
-    """
-    return " ".join(shlex.quote(arg) for arg in args)
 
 
 def quote_arguments(args):
