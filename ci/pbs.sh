@@ -25,15 +25,15 @@ function jobqueue_script {
 
 function jobqueue_after_script {
     docker exec -u pbsuser pbs_master qstat -fx
-    docker exec pbs_master bash -c 'cat /var/spool/pbs/sched_logs/*'
-    docker exec pbs_master bash -c 'cat /var/spool/pbs/server_logs/*'
-    docker exec pbs_master bash -c 'cat /var/spool/pbs/server_priv/accounting/*'
-    docker exec pbs_slave_1 bash -c 'cat /var/spool/pbs/mom_logs/*'
-    docker exec pbs_slave_1 bash -c 'cat /var/spool/pbs/spool/*'
-    docker exec pbs_slave_1 bash -c 'cat /tmp/*.e*'
-    docker exec pbs_slave_1 bash -c 'cat /tmp/*.o*'
-    docker exec pbs_slave_2 bash -c 'cat /var/spool/pbs/mom_logs/*'
-    docker exec pbs_slave_2 bash -c 'cat /var/spool/pbs/spool/*'
-    docker exec pbs_slave_2 bash -c 'cat /tmp/*.e*'
-    docker exec pbs_slave_2 bash -c 'cat /tmp/*.o*'
+    docker exec pbs_master bash -c 'cat /var/spool/pbs/sched_logs/*|| true'
+    docker exec pbs_master bash -c 'cat /var/spool/pbs/server_logs/*|| true'
+    docker exec pbs_master bash -c 'cat /var/spool/pbs/server_priv/accounting/*|| true'
+    docker exec pbs_slave_1 bash -c 'cat /var/spool/pbs/mom_logs/*|| true'
+    docker exec pbs_slave_1 bash -c 'cat /var/spool/pbs/spool/*|| true'
+    docker exec pbs_slave_1 bash -c 'cat /tmp/*.e*|| true'
+    docker exec pbs_slave_1 bash -c 'cat /tmp/*.o*|| true'
+    docker exec pbs_slave_2 bash -c 'cat /var/spool/pbs/mom_logs/*|| true'
+    docker exec pbs_slave_2 bash -c 'cat /var/spool/pbs/spool/*|| true'
+    docker exec pbs_slave_2 bash -c 'cat /tmp/*.e*|| true'
+    docker exec pbs_slave_2 bash -c 'cat /tmp/*.o*|| true'
 }
