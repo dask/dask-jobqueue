@@ -84,7 +84,7 @@ def test_basic(loop):
 
 
 @pytest.mark.env("htcondor")
-def test_extra_args(loop):
+def test_extra_args_broken_submit(loop):
     with HTCondorCluster(
         cores=1,
         memory="100MB",
@@ -92,9 +92,13 @@ def test_extra_args(loop):
         loop=loop,
         submit_command_extra=["-name", "wrong.docker"],
         cancel_command_extra=["-name", "wrong.docker"],
-    ) as badcluster:
-        _ = badcluster
+    ) as cluster:
+        with pytest.raises(ValueError, match="Could not parse job id"):
+            cluster._dummy_job.start()
 
+
+@pytest.mark.env("htcondor")
+def test_extra_args_working_submit(loop):
     schedd_name = Job._call(
         ["condor_status", "-schedd", "-af", "Name", "-limit", "1"]
     ).strip()
@@ -105,8 +109,62 @@ def test_extra_args(loop):
         loop=loop,
         submit_command_extra=["-name", schedd_name],
         cancel_command_extra=["-name", schedd_name],
-    ) as goodcluster:
-        _ = goodcluster
+    ) as cluster:
+        with Client(cluster) as client:
+
+            cluster.scale(2)
+
+            start = time()
+            client.wait_for_workers(2)
+
+            future = client.submit(lambda x: x + 1, 10)
+            assert future.result(QUEUE_WAIT) == 11
+
+            workers = list(client.scheduler_info()["workers"].values())
+            w = workers[0]
+            assert w["memory_limit"] == 1e8
+            assert w["nthreads"] == 1
+
+            cluster.scale(0)
+
+            start = time()
+            while client.scheduler_info()["workers"]:
+                sleep(0.100)
+                assert time() < start + QUEUE_WAIT
+
+
+@pytest.mark.env("htcondor")
+def test_extra_args_broken_cancel(loop):
+    schedd_name = Job._call(
+        ["condor_status", "-schedd", "-af", "Name", "-limit", "1"]
+    ).strip()
+    with HTCondorCluster(
+        cores=1,
+        memory="100MB",
+        disk="100MB",
+        loop=loop,
+        submit_command_extra=["-name", schedd_name],
+        cancel_command_extra=["-name", "wrong.docker"],
+    ) as cluster:
+        with Client(cluster) as client:
+
+            cluster.scale(2)
+
+            client.wait_for_workers(2)
+
+            cluster.scale(0)
+
+            start = time()
+            while client.scheduler_info()["workers"]:
+                sleep(0.100)
+
+                # TODO There's gotta be a better way to check if condor_rm succeeded
+                if time() > start + QUEUE_WAIT:
+                    return
+
+            assert (
+                time() > start + QUEUE_WAIT
+            ), "killing workers with broken cancel_command didn't fail"
 
 
 def test_config_name_htcondor_takes_custom_config():
