@@ -8,6 +8,7 @@ from distributed import Client
 import dask
 
 from dask_jobqueue import HTCondorCluster
+from dask_jobqueue.core import Job
 
 QUEUE_WAIT = 30  # seconds
 
@@ -80,6 +81,32 @@ def test_basic(loop):
             while client.scheduler_info()["workers"]:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
+
+
+@pytest.mark.env("htcondor")
+def test_extra_args(loop):
+    with HTCondorCluster(
+        cores=1,
+        memory="100MB",
+        disk="100MB",
+        loop=loop,
+        submit_command_extra=["-name", "wrong.docker"],
+        cancel_command_extra=["-name", "wrong.docker"],
+    ) as badcluster:
+        _ = badcluster
+
+    schedd_name = Job._call(
+        ["condor_status", "-schedd", "-af", "Name", "-limit", "1"]
+    ).strip()
+    with HTCondorCluster(
+        cores=1,
+        memory="100MB",
+        disk="100MB",
+        loop=loop,
+        submit_command_extra=["-name", schedd_name],
+        cancel_command_extra=["-name", schedd_name],
+    ) as goodcluster:
+        _ = goodcluster
 
 
 def test_config_name_htcondor_takes_custom_config():
