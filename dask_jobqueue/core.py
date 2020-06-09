@@ -353,11 +353,10 @@ class Job(ProcessInterface, abc.ABC):
         logger.debug("Stopping worker: %s job: %s", self.name, self.job_id)
         self._close_job(self.job_id)
 
-    @classmethod
-    def _close_job(cls, job_id):
+    def _close_job(self, job_id):
         if job_id:
             with ignoring(RuntimeError):  # deleting job when job already gone
-                cls._call(shlex.split(cls.cancel_command) + [job_id])
+                self._call(shlex.split(self.cancel_command) + [job_id])
             logger.debug("Closed job %s", job_id)
 
     @staticmethod
