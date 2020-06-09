@@ -3,7 +3,8 @@
 function jobqueue_before_install {
     docker version
 
-    docker run -d --name jobqueue-htcondor-mini htcondor/mini:el7 # might fail if called as script
+    # some condor lookups expect an FQDN to have a . in it
+    docker run -d --name jobqueue-htcondor-mini --hostname jobqueue-htcondor-mini.docker htcondor/mini:el7 # might fail if called as script
 
     docker ps -a
     docker images
