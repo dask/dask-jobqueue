@@ -1,0 +1,53 @@
+version: "3.4"
+
+services:
+  cm:
+    hostname: cm.htcondor
+    environment:
+      - USE_POOL_PASSWORD=yes
+    volumes:
+      - secrets:/root/secrets
+    image: htcondor/cm:el7
+
+  submit:
+    build:
+      context: .
+      target: submit
+    hostname: submit.htcondor
+    environment:
+      - CONDOR_HOST=cm
+      - USE_POOL_PASSWORD=yes
+    depends_on:
+      - cm
+    volumes:
+      - secrets:/root/secrets
+      - ../..:/dask-jobqueue
+
+  execute1:
+    build:
+      context: .
+      target: execute
+    hostname: execute1.htcondor
+    environment:
+      - CONDOR_HOST=cm
+      - USE_POOL_PASSWORD=yes
+    depends_on:
+      - cm
+    volumes:
+      - secrets:/root/secrets
+
+  execute2:
+    build:
+      context: .
+      target: execute
+    hostname: execute2.htcondor
+    environment:
+      - CONDOR_HOST=cm
+      - USE_POOL_PASSWORD=yes
+    depends_on:
+      - cm
+    volumes:
+      - secrets:/root/secrets
+
+volumes:
+  secrets:
