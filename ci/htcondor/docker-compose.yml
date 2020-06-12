@@ -8,6 +8,7 @@ services:
     volumes:
       - secrets:/root/secrets
     image: htcondor/cm:el7
+    command: bash -c 'condor_store_cred -p password -f /root/secrets/pool_password ; exec bash -x /start.sh'
 
   submit:
     build:
