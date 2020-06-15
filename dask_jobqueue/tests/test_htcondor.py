@@ -158,13 +158,15 @@ def test_extra_args_broken_cancel(loop):
             while client.scheduler_info()["workers"]:
                 sleep(0.100)
 
-                # TODO There's gotta be a better way to check if condor_rm succeeded
-                if time() > start + QUEUE_WAIT:
-                    return
+                workers = Job._call(
+                    ["condor_q", "-const", "!isUndefined(DaskWorkerID)", "-af", "jobid"]
+                ).strip()
+                assert (
+                    not workers
+                ), "killing workers with broken cancel_command didn't fail"
 
-            assert (
-                time() > start + QUEUE_WAIT
-            ), "killing workers with broken cancel_command didn't fail"
+                if time() > start + QUEUE_WAIT // 3:
+                    return
 
 
 def test_config_name_htcondor_takes_custom_config():
