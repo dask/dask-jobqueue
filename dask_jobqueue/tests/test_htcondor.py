@@ -161,9 +161,7 @@ def test_extra_args_broken_cancel(loop):
                 workers = Job._call(
                     ["condor_q", "-const", "!isUndefined(DaskWorkerID)", "-af", "jobid"]
                 ).strip()
-                assert (
-                    not workers
-                ), "killing workers with broken cancel_command didn't fail"
+                assert workers, "killing workers with broken cancel_command didn't fail"
 
                 if time() > start + QUEUE_WAIT // 3:
                     return
