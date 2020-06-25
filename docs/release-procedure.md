@@ -21,6 +21,9 @@ git tag -a x.x.x -m 'Version x.x.x'
 git push --tags upstream
 ````
 
+* Create a [new Github release](https://github.com/dask/dask-jobqueue/releases/new)
+based on the tag that has just been pushed.
+
 * Build the wheel/dist and upload to PyPI:
 
 ````
