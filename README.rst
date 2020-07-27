@@ -1,7 +1,7 @@
 Deploy Dask on Job Queueing systems
 ===================================
 
-|Build Status| |Doc Status| |Gitter| |Version Status|
+|Build Status| |Doc Status| |Gitter| |Version Status| |Docker Images Build Status|
 
 Easy deployment of Dask Distributed on job queuing systems such as PBS, Slurm,
 or SGE.  See documentation_ for more information.
