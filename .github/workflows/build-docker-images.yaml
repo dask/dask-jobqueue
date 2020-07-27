@@ -41,7 +41,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Publish secondary images to DockerHub Registry
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push' && ${{ matrix.jobqueue }} == 'sge'
+        if: matrix.jobqueue == 'sge' && github.ref == 'refs/heads/master' && github.event_name == 'push'
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
           name: daskdev/dask-jobqueue:${{ matrix.jobqueue }}-slave

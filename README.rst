@@ -23,3 +23,5 @@ New BSD. See `License File <https://github.com/dask/dask-jobqueue/blob/master/LI
    :target: https://gitter.im/dask/dask?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 .. |Version Status| image:: https://img.shields.io/pypi/v/dask-jobqueue.svg
    :target: https://pypi.python.org/pypi/dask-jobqueue/
+.. |Docker Images Build Status| image:: https://img.shields.io/github/workflow/status/dask/dask-jobqueue/docker-images-build?logo=docker   
+   :target: https://github.com/dask/dask-jobqueue/actions?query=workflow%3Adocker-images-build
