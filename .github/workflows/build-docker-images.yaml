@@ -32,4 +32,12 @@ jobs:
           docker ps -a 
           docker images
           
+      - name: Publish to DockerHub Registry
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: daskdev/dask-jobqueue:${{ matrix.jobqueue }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          
       
