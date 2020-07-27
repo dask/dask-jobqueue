@@ -1,4 +1,4 @@
-name: dask-jobqueue-docker-images-build
+name: docker-images-build
 
 on:
   push:
@@ -32,12 +32,22 @@ jobs:
           docker ps -a 
           docker images
           
-      - name: Publish to DockerHub Registry
+      - name: Publish main images to DockerHub Registry
         if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
           name: daskdev/dask-jobqueue:${{ matrix.jobqueue }}
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Publish secondary images to DockerHub Registry
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push' && ${{ matrix.jobqueue }} == 'sge'
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: daskdev/dask-jobqueue:${{ matrix.jobqueue }}-slave
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+
           
       
