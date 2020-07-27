@@ -25,7 +25,7 @@ jobs:
       - name:  Building Image 
         shell: bash -l {0}
         run: |
-          cd ./ci/{{ matrix.jobqueue }}
+          cd ./ci/${{ matrix.jobqueue }}
           docker-compose build 
       - name: List images
         run: |
