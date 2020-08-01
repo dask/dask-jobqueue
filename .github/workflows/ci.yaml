@@ -9,6 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         jobqueue: ["htcondor", "pbs", "sge", "slurm", "none"]
+        python-version: ["3.6", "3.7", "3.8"]
 
     steps:
       - name: Checkout source
@@ -18,7 +19,7 @@ jobs:
         uses: goanpeca/setup-miniconda@v1
         with:
           miniconda-version: "latest"
-          python-version: 3.6
+          python-version: ${{ matrix.python-version }}
           environment-file: ci/environment.yml
           activate-environment: dask-jobqueue
           auto-activate-base: false
