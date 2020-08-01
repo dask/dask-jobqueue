@@ -18,7 +18,7 @@ jobs:
         uses: goanpeca/setup-miniconda@v1
         with:
           miniconda-version: "latest"
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.6
           environment-file: ci/environment.yml
           activate-environment: dask-jobqueue
           auto-activate-base: false
