@@ -5,6 +5,7 @@ on:
     branches: "master"
   schedule:
     - cron: "0 0 * * *" # Daily “At 00:00”
+  workflow_dispatch: # allows you to trigger manually
 
 jobs:
   build:
