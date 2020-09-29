@@ -5,6 +5,9 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
     strategy:
       fail-fast: false
       matrix:
@@ -17,32 +20,32 @@ jobs:
       - name: Setup Conda Environment
         uses: goanpeca/setup-miniconda@v1
         with:
-          miniconda-version: "latest"
-          python-version: 3.6
-          environment-file: ci/environment.yml
+          channels: conda-forge
+          mamba-version: "*"
           activate-environment: dask-jobqueue
           auto-activate-base: false
+         
+      - name: Setup conda environment 
+        run: |
+          mamba env update -f ci/environment.yml
+          mamba list
 
       - name: Setup
-        shell: bash -l {0}
         run: |
           source ci/${{ matrix.jobqueue }}.sh
           jobqueue_before_install
 
       - name: Install
-        shell: bash -l {0}
         run: |
           source ci/${{ matrix.jobqueue }}.sh
           jobqueue_install
 
       - name: Test
-        shell: bash -l {0}
         run: |
           source ci/${{ matrix.jobqueue }}.sh
           jobqueue_script
 
       - name: Cleanup
-        shell: bash -l {0}
         run: |
           source ci/${{ matrix.jobqueue }}.sh
           jobqueue_after_script
