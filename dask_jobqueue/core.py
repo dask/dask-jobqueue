@@ -59,6 +59,8 @@ job_parameters = """
         Section to use from jobqueue.yaml configuration file.
     name : str
         Name of Dask worker.  This is typically set by the Cluster
+    dask_worker_prefix : str
+        String to prepend to dask_worker_command for environments that have multiple tiers of submittal nodes.  
 """.strip()
 
 
@@ -149,6 +151,7 @@ class Job(ProcessInterface, abc.ABC):
         python=sys.executable,
         job_name=None,
         config_name=None,
+        dask_worker_prefix=None,
     ):
         self.scheduler = scheduler
         self.job_id = None
@@ -237,9 +240,13 @@ class Job(ProcessInterface, abc.ABC):
         self.header_skip = set(header_skip)
 
         # dask-worker command line build
+        
         dask_worker_command = "%(python)s -m distributed.cli.dask_worker" % dict(
             python=python
         )
+        if(dask_worker_prefix) : 
+            dask_worker_command = dask_worker_prefix + " " + dask_worker_command
+
         command_args = [dask_worker_command, self.scheduler]
         command_args += ["--nthreads", self.worker_process_threads]
         if processes is not None and processes > 1:
