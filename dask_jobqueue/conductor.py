@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 conductor_cluster_parameters = """manager_rest_address: str
         The Dask manager service REST URL. For example: https://daskmanager.hostname.com:10000
-        Specify this value, or specify the ascd_rest_address and instance_group parameters 
+        Specify this value, or specify the ascd_rest_address and instance_group parameters
         to look up this value by the instance group name
 
     ascd_rest_address: str
@@ -37,7 +37,7 @@ conductor_cluster_parameters = """manager_rest_address: str
         Alternatively, set the ``CONDUCTOR_REST_URL`` environment variable.
     ascd_rest_cacert_path: str
         Path to the CA certificate file for the IBM Spectrum Conductor cluster.
-        Required to look up the Dask manager service REST URL by instance group name when SSL is enabled 
+        Required to look up the Dask manager service REST URL by instance group name when SSL is enabled
         for the IBM Spectrum Conductor cluster, and when SSL is enabled for the Dask manager service.
         Alternatively, set the ``ASCD_REST_CACERT_PATH`` environment variable.
     instance_group: str
@@ -81,7 +81,7 @@ def log_rest_error(resp, level=logging.ERROR):
     msg = None
     try:
         msg = _("The Dask manager returned an error. Code: %d. Message: %s") % (
-				resp.status_code, resp.json()['message'])
+            resp.status_code, resp.json()['message'])
     except Exception:
         msg = _("The Dask manager returned an error. Code: %d.") % (resp.status_code)
 
@@ -126,7 +126,7 @@ class ConductorJob(Job):
         **kwargs
     ):
         super().__init__(*args, config_name=config_name, cores=-1, memory=-1, shebang="", **kwargs)
-        self._max_retries = int(dask.config.get("jobqueue.%s.job-max-retries" % config_name, 5)) #Default 5
+        self._max_retries = int(dask.config.get("jobqueue.%s.job-max-retries" % config_name, 5))
 
     async def start(self):
         await self._submit_job(None)
@@ -137,7 +137,7 @@ class ConductorJob(Job):
 
     async def close(self):
         """
-            Override Job close method to do nothing. Workers will close by themselves and be handled 
+            Override Job close method to do nothing. Workers will close by themselves and be handled
             through EGO callback mechanism.
         """
         if self.status == "running" and self.job_id == "NOT_STARTED":
@@ -184,7 +184,8 @@ class ConductorJob(Job):
         if len(self.failed_activities) >= self._max_retries:
             self.status = "failed"
             logger.error(_("The job could not start any workers after %d tries. "
-                           "See worker logs for the following activity IDs for more details: %s"), len(self.failed_activities), str(self.failed_activities))
+                           "See worker logs for the following activity IDs for more details: %s"),
+                           len(self.failed_activities), str(self.failed_activities))
             return True
         else:
             logger.debug("Job failed to start worker. Request a new worker.")
@@ -237,7 +238,7 @@ class ConductorCluster(JobQueueCluster):
     Cluster that runs on IBM Spectrum Conductor.
 
     The ``ConductorCluster`` class interfaces with the Dask manager service running in an instance group on an
-    IBM Spectrum Conductor cluster. If initialized on a host inside the IBM Spectrum Conductor cluster, 
+    IBM Spectrum Conductor cluster. If initialized on a host inside the IBM Spectrum Conductor cluster,
     the configuration from the deployed instance group will be used by default.
 
     Parameters:
@@ -248,7 +249,8 @@ class ConductorCluster(JobQueueCluster):
 
     Examples:
     ----------
-    To create a ``ConductorCluster`` from within an integrated notebook on the IBM Spectrum Conductor cluster, no arguments are required.
+    To create a ``ConductorCluster`` from within an integrated notebook on the IBM Spectrum Conductor cluster,
+    no arguments are required.
     All configuration options with be automatically set according to the instance group configuration:
 
     >> from daskconductor.conductor import ConductorCluster
@@ -262,7 +264,8 @@ class ConductorCluster(JobQueueCluster):
     To create a ``ConductorCluster`` when you know the instance group name:
 
     >> from daskconductor.conductor import ConductorCluster
-    >> cluster = ConductorCluster(instance_group_name="ig1", ascd_rest_address="http://ascd.example.com:8280/platform/rest/conductor/v1", 
+    >> cluster = ConductorCluster(instance_group_name="ig1", 
+        ascd_rest_address="http://ascd.example.com:8280/platform/rest/conductor/v1", 
         username="MyUser", password="MyPassword")
 
     """.format(
@@ -462,7 +465,7 @@ class ConductorCluster(JobQueueCluster):
                                                    dashboard_address=dashboard_address,
                                                    config_name=config_name,
                                                    # We will start the n_workers after registering with Dask manager
-                                                   n_workers=0, 
+                                                   n_workers=0,
                                                    **kwargs)
         except ValueError:
             # In dask-jobqueue 0.7.1 there is a breaking change where dashboard_address must be passed through a new
@@ -484,9 +487,8 @@ class ConductorCluster(JobQueueCluster):
                                                    config_name=config_name,
                                                    scheduler_options=scheduler_options,
                                                    # We will start the n_workers after registering with Dask manager
-                                                   n_workers=0, 
+                                                   n_workers=0,
                                                    **kwargs)
-
 
         # At this point we have a scheduler id, so re-initialize the logs with the new filename
         self._reinitialize_logging_with_scheduler_id()
@@ -507,7 +509,8 @@ class ConductorCluster(JobQueueCluster):
                 dask.config.set({'jobqueue.%s.job-max-retries' % config_name: job_max_retries})
 
             # Register the plugin
-            plugin = ConductorPlugin(scheduler=self.scheduler, cluster=self, manager_rest_address=self.manager_rest_address)
+            plugin = ConductorPlugin(scheduler=self.scheduler, cluster=self, 
+                                     manager_rest_address=self.manager_rest_address)
             self.scheduler.add_plugin(plugin)
 
             # Initialize authentication info
@@ -710,16 +713,16 @@ class ConductorCluster(JobQueueCluster):
 
         resp = None
         if method == "GET":
-            resp = requests.get(url, headers=headers, verify=cacert_path, 
+            resp = requests.get(url, headers=headers, verify=cacert_path,
                                 cookies=self._saved_cookies, auth=auth)
         elif method == "POST":
-            resp = requests.post(url, data=data, headers=headers, verify=cacert_path, 
+            resp = requests.post(url, data=data, headers=headers, verify=cacert_path,
                                  cookies=self._saved_cookies, auth=auth)
         elif method == "PUT":
-            resp = requests.put(url, data=data, headers=headers, verify=cacert_path, 
+            resp = requests.put(url, data=data, headers=headers, verify=cacert_path,
                                 cookies=self._saved_cookies, auth=auth)
         elif method == "DELETE":
-            resp = requests.delete(url, data=data, headers=headers, verify=cacert_path, 
+            resp = requests.delete(url, data=data, headers=headers, verify=cacert_path,
                                    cookies=self._saved_cookies, auth=auth)
 
         return resp
@@ -840,8 +843,8 @@ class ConductorCluster(JobQueueCluster):
                     resp = self._submit_ascd_get_instances_rest_call(next_ascd_host_rest_address)
 
                     if resp is None:
-                        logger.error(_("""Could not find the Dask manager address for the instance group %s from the 
-                                       ascd REST service at %s."""), self.instance_group, next_ascd_host_rest_address)
+                        logger.error(_("Could not find the Dask manager address for the instance group %s from the "
+                                       "ascd REST service at %s."), self.instance_group, next_ascd_host_rest_address)
                         return None
 
                     if resp is not False:
@@ -854,7 +857,7 @@ class ConductorCluster(JobQueueCluster):
 
         # If we get here we have exhausted all of the options
         if attempted_lookup:
-            logger.error(_("Could not find the Dask manager address for the instance group %s from any ascd host."), 
+            logger.error(_("Could not find the Dask manager address for the instance group %s from any ascd host."),
                          self.instance_group)
 
     def _submit_ascd_get_instances_rest_call(self, base_address):
@@ -1087,9 +1090,9 @@ class ConductorCluster(JobQueueCluster):
                         # Add a new worker referencing the existing job
                         self.workers.update({worker_address: job})
                     else:
-                        logger.warn(_("The job with activity ID %s is not running.") % activity_id )
+                        logger.warn(_("The job with activity ID %s is not running.") % activity_id)
                 else:
-                    # We get to this case when the ConductorCluster has scaled down and then receives an incoming worker
+                    # We get to this case when the ConductorCluster has scaled down, then receives an incoming worker
                     # previously requested. Retire the worker and return the slot since we no longer need it
                     logger.info(_("There are no jobs waiting to be launched. Closing the Dask worker %s."), worker_name)
                     self.loop.add_callback(self.retire_workers, workers=[worker_address])
@@ -1170,6 +1173,7 @@ class ConductorCluster(JobQueueCluster):
             host = socket.getfqdn()
             return format_dashboard_link(host, port)
 
+
 class ConductorPlugin(SchedulerPlugin):
     """
         Scheduler plugin for integration with IBM Spectrum Conductor
@@ -1194,8 +1198,8 @@ class ConductorPlugin(SchedulerPlugin):
         self.distributed_version = self._get_distributed_version()
         if version.parse(self.distributed_version) < version.parse(self.min_distributed_version):
             raise ValueError(_("The distributed version %s is not supported. "
-                               "The ConductorPlugin requires distributed version %s or higher."), 
-                               self.distributed_version, self.min_distributed_version)
+                               "The ConductorPlugin requires distributed version %s or higher."),
+                             self.distributed_version, self.min_distributed_version)
 
         self.scheduler.handlers.update({"reclaim-workers": self.reclaim_workers,
                                         "check-alive": self.check_alive,
@@ -1294,12 +1298,12 @@ class ConductorPlugin(SchedulerPlugin):
                     if is_failed:
                         await self.cluster.clean_failed_workers()
                 else:
-                    # This will happen when the scheduler scales down its requested workers at the same time that EGO 
-                    # allocates a new worker. TThe resulting worker will not be added to the scheduler and the activity 
-                    # will be stopped when the activity is stopped. 
+                    # This will happen when the scheduler scales down its requested workers at the same time that EGO
+                    # allocates a new worker. TThe resulting worker will not be added to the scheduler and the activity
+                    # will be stopped when the activity is stopped.
                     # We get here because the worker was never added to the scheduler
-                    logger.debug("The activity with ID %s has exited, but the scheduler does not have any worker with this "
-                                 "ID or any pending workers.", id)
+                    logger.debug("The activity with ID %s has exited, but the scheduler does not have any worker "
+                                 "with this ID or any pending workers.", id)
             else:
                 logger.warn("Multiple workers matching activity ID %s were found.", id)
 
@@ -1325,7 +1329,7 @@ class ConductorPlugin(SchedulerPlugin):
 
     def _workers_to_reclaim(self, hostname=None, num_jobs=0):
         """
-            Suggest workers to reclaim on the specified host based on workers which have the least number of tasks 
+            Suggest workers to reclaim on the specified host based on workers which have the least number of tasks
             in progress followed by the least amount of data in memory.
 
             Parameters:
@@ -1345,17 +1349,19 @@ class ConductorPlugin(SchedulerPlugin):
             return []
 
         # Find the workers running on the specified host
-        workers_on_host = list(filter(lambda ws: getattr(ws, 'name').startswith("Worker__" + hostname), self.scheduler.workers.values()))
+        workers_on_host = list(filter(lambda ws: getattr(ws, 'name').startswith("Worker__" + hostname), 
+                                      self.scheduler.workers.values()))
 
         if(num_jobs >= len(workers_on_host)):
             logger.info(_("Reclaiming all Dask worker jobs on the host %s."), hostname)
             return workers_on_host
 
-        workers_sorted_by_activity = sorted(workers_on_host, key=lambda ws: get_activity_id_from_worker_name(getattr(ws, "name")))
+        workers_sorted_by_activity = sorted(workers_on_host, key=lambda ws: 
+                                            get_activity_id_from_worker_name(getattr(ws, "name")))
 
-        # When ConductorCluster is configured with multiple processes or threads per Job(EGO activity), each may have 
-        # multiple workers associated. In the case of reclaim, we need to reclaim all workers for a single slot, 
-        # which maps to an activity. Aggregate the worker stats by activity ID so that we can determine which 
+        # When ConductorCluster is configured with multiple processes or threads per Job(EGO activity), each may have
+        # multiple workers associated. In the case of reclaim, we need to reclaim all workers for a single slot,
+        # which maps to an activity. Aggregate the worker stats by activity ID so that we can determine which
         # overall activities are the least busy
         activities = []
         activity = {"id": None, "has_what": 0, "processing": 0, "addresses": []}
@@ -1371,15 +1377,16 @@ class ConductorPlugin(SchedulerPlugin):
         if activity["id"] is not None:
             activities.append(activity)
 
-        #Sort activities by processing and has_what
+        # Sort activities by processing and has_what
         activites_sorted_by_workload = sorted(activities, key=lambda a: (a["has_what"], a["processing"]), reverse=False)
-        logger.info(_("Reclaiming %d of the %d Dask worker jobs on the host %s."), num_jobs, 
+        logger.info(_("Reclaiming %d of the %d Dask worker jobs on the host %s."), num_jobs,
                     len(activites_sorted_by_workload), hostname)
 
-        #Return all addresses for the activities
+        # Return all addresses for the activities
         addresses = []
         for a in activites_sorted_by_workload[0: num_jobs]:
-            logger.debug("Reclaiming the EGO activity with ID %s, which has %d workers." % (a["id"] , len(a["addresses"])))
+            logger.debug("Reclaiming the EGO activity with ID %s, which has %d workers." % (
+                a["id"] , len(a["addresses"])))
             addresses += a["addresses"]
 
         logger.info(_("As part of the reclaim, %d workers will be closed."), len(addresses))
