@@ -185,7 +185,7 @@ class ConductorJob(Job):
             self.status = "failed"
             logger.error(_("The job could not start any workers after %d tries. "
                            "See worker logs for the following activity IDs for more details: %s"),
-                           len(self.failed_activities), str(self.failed_activities))
+                        len(self.failed_activities), str(self.failed_activities))
             return True
         else:
             logger.debug("Job failed to start worker. Request a new worker.")
@@ -264,8 +264,8 @@ class ConductorCluster(JobQueueCluster):
     To create a ``ConductorCluster`` when you know the instance group name:
 
     >> from daskconductor.conductor import ConductorCluster
-    >> cluster = ConductorCluster(instance_group_name="ig1", 
-        ascd_rest_address="http://ascd.example.com:8280/platform/rest/conductor/v1", 
+    >> cluster = ConductorCluster(instance_group_name="ig1",
+        ascd_rest_address="http://ascd.example.com:8280/platform/rest/conductor/v1",
         username="MyUser", password="MyPassword")
 
     """.format(
@@ -509,7 +509,7 @@ class ConductorCluster(JobQueueCluster):
                 dask.config.set({'jobqueue.%s.job-max-retries' % config_name: job_max_retries})
 
             # Register the plugin
-            plugin = ConductorPlugin(scheduler=self.scheduler, cluster=self, 
+            plugin = ConductorPlugin(scheduler=self.scheduler, cluster=self,
                                      manager_rest_address=self.manager_rest_address)
             self.scheduler.add_plugin(plugin)
 
@@ -1098,8 +1098,8 @@ class ConductorCluster(JobQueueCluster):
                     self.loop.add_callback(self.retire_workers, workers=[worker_address])
 
         except KeyError:
-            # We get into this case when the ConductorCluster closes the pending job at the same time that the worker is being added
-            # Retire the worker and return the slot since we no longer need it
+            # We get into this case when the ConductorCluster closes the pending job at the same time that
+            # the worker is being added. Retire the worker and return the slot since we no longer need it
             logger.info(_("There are no jobs waiting to be launched. Closing the Dask worker %s."), worker_name)
             self.loop.add_callback(self.retire_workers, workers=[worker_address])
 
@@ -1349,14 +1349,14 @@ class ConductorPlugin(SchedulerPlugin):
             return []
 
         # Find the workers running on the specified host
-        workers_on_host = list(filter(lambda ws: getattr(ws, 'name').startswith("Worker__" + hostname), 
+        workers_on_host = list(filter(lambda ws: getattr(ws, 'name').startswith("Worker__" + hostname),
                                       self.scheduler.workers.values()))
 
         if(num_jobs >= len(workers_on_host)):
             logger.info(_("Reclaiming all Dask worker jobs on the host %s."), hostname)
             return workers_on_host
 
-        workers_sorted_by_activity = sorted(workers_on_host, key=lambda ws: 
+        workers_sorted_by_activity = sorted(workers_on_host, key=lambda ws:
                                             get_activity_id_from_worker_name(getattr(ws, "name")))
 
         # When ConductorCluster is configured with multiple processes or threads per Job(EGO activity), each may have
