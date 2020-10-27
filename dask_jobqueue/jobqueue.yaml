@@ -200,3 +200,35 @@ jobqueue:
     
     # Scheduler options
     scheduler-options: {}
+    
+  conductor:
+    name: dask-worker
+    #Dask worker options
+    type: CPU                # Worker type CPU or GPU
+    gpu-mode: null           # GPU mode DEFAULT or EXCLUSIVE
+    worker-command: null     # Worker command if not dask-worker or dask-cuda-worker
+    start-workers: 0         # Number of workers to start initially
+    adapt: true              # Adaptive workers, true or false
+    min-workers: 0           # Minimum number of workers to keep started
+    max-workers: null        # Maximum number of workers to start
+    slots: 1                 # Number of slots per worker
+    threads: 1
+    memlimit: 1GB
+    processes: 1
+    conda-env-path: null     # Conda env path to use for Dask workers
+  
+    interface: null
+    resources: null
+    death-timeout: 20
+    lifetime: null
+    local-directory: null
+    
+    extra: []
+    env-extra: []
+    log-directory: null
+    silence-logs: error
+   
+    #Conductor options
+    instance-group: null    #Instance group name on IBM Spectrum Conductor
+    failed-job-limit: 5     #Max number of times to attempt to start job before failing
+    job-max-retries: 5
