@@ -184,8 +184,8 @@ class ConductorJob(Job):
         if len(self.failed_activities) >= self._max_retries:
             self.status = "failed"
             logger.error(_("The job could not start any workers after %d tries. "
-                           "See worker logs for the following activity IDs for more details: %s"),
-                        len(self.failed_activities), str(self.failed_activities))
+                           "See worker logs for the following activity IDs for more details: "
+                           "%s"), len(self.failed_activities), str(self.failed_activities))
             return True
         else:
             logger.debug("Job failed to start worker. Request a new worker.")
