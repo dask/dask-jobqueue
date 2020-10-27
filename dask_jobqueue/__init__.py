@@ -8,7 +8,6 @@ from .sge import SGECluster
 from .lsf import LSFCluster
 from .oar import OARCluster
 from .htcondor import HTCondorCluster
-from .conductor import ConductorCluster
 
 from ._version import get_versions
 
