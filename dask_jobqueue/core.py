@@ -390,7 +390,10 @@ class Job(ProcessInterface, abc.ABC):
         )
 
         proc = await asyncio.create_subprocess_exec(
-            cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, **kwargs
+            cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            **kwargs
         )
 
         out, err = await proc.communicate()
