@@ -302,7 +302,6 @@ class Job(ProcessInterface, abc.ABC):
             yield fn
 
     async def _submit_job(self, script_filename):
-        # Should we make this async friendly?
         return self._call(shlex.split(self.submit_command) + [script_filename])
 
     @property
