@@ -760,10 +760,10 @@ class ConductorCluster(JobQueueCluster):
 
         try:
             pickle_protocol = pickle.HIGHEST_PROTOCOL
-        except:
-            #Older distributed packages did not have the HIGHEST_PROTOCOL defined
+        except AttributeError:
+            # Older distributed packages did not have the HIGHEST_PROTOCOL defined
             pickle_protocol = -1
-            
+
         data = {
             "id": self.scheduler.id,
             "address": self.scheduler.address,
@@ -1571,7 +1571,8 @@ class ConductorPlugin(SchedulerPlugin):
         if state == "ERROR" or exit_code != "0":
             logger.warn(
                 _(
-                    "The worker with the activity ID %s on host %s did not exit successfully. Exit code: %s. Reason: %s."
+                    "The worker with the activity ID %s on host %s did not exit successfully. "
+                    "Exit code: %s. Reason: %s."
                 ),
                 id,
                 hostname,
