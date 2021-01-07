@@ -771,7 +771,7 @@ class ConductorCluster(JobQueueCluster):
             "dashboard": self.dashboard_link,
             "worker": self.worker_specs,
             "pickleprotocol": pickle_protocol,
-            "distributedversion": self.distributed_version
+            "distributedversion": self.distributed_version,
         }
 
         resp = self._submit_dask_manager_rest_request("POST", url, data=data)
