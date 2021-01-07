@@ -3,6 +3,7 @@ from dask_jobqueue.core import Job, JobQueueCluster, job_parameters, cluster_par
 from distributed import SchedulerPlugin, versions
 from distributed.deploy.spec import NoOpAwaitable
 from distributed.utils import format_dashboard_link
+from distributed.protocol import pickle
 
 import logging
 import json
@@ -336,6 +337,8 @@ class ConductorCluster(JobQueueCluster):
         job_max_retries=None,
         **kwargs
     ):
+
+        self.distributed_version = None
 
         # Get the worker parameters from the config if they are not explicitly specified
         if n_workers is None:
@@ -755,12 +758,20 @@ class ConductorCluster(JobQueueCluster):
         os_username = pwd.getpwuid(os.getuid()).pw_name
         url = self.manager_rest_address + "/dask/manager/schedulers"
 
+        try:
+            pickle_protocol = pickle.HIGHEST_PROTOCOL
+        except:
+            #Older distributed packages did not have the HIGHEST_PROTOCOL defined
+            pickle_protocol = -1
+            
         data = {
             "id": self.scheduler.id,
             "address": self.scheduler.address,
             "username": os_username,
             "dashboard": self.dashboard_link,
             "worker": self.worker_specs,
+            "pickleprotocol": pickle_protocol,
+            "distributedversion": self.distributed_version
         }
 
         resp = self._submit_dask_manager_rest_request("POST", url, data=data)
@@ -1470,6 +1481,7 @@ class ConductorPlugin(SchedulerPlugin):
                 self.distributed_version,
                 self.min_distributed_version,
             )
+        self.cluster.distributed_version = self.distributed_version
 
         self.scheduler.handlers.update(
             {
@@ -1521,7 +1533,7 @@ class ConductorPlugin(SchedulerPlugin):
                 )
 
     # Handler methods
-    async def reclaim_workers(self, comm, reclaim=None):
+    async def reclaim_workers(self, comm, reclaim=None, **kwargs):
         """
         Method to handle reclaim requests from the dask manager service
         """
@@ -1531,14 +1543,14 @@ class ConductorPlugin(SchedulerPlugin):
         reclaim_candidate_workers = self._reclaim_workers(reclaim)
         await self.cluster.retire_workers(workers=reclaim_candidate_workers)
 
-    async def check_alive(self, comm):
+    async def check_alive(self, comm, **kwargs):
         """
         Method to handle check alive request from the Dask manager service
         """
         await comm.write({"op": "alive"})
         comm.close()
 
-    async def activity_exit(self, comm, activity=None):
+    async def activity_exit(self, comm, activity=None, **kwargs):
         # Close the comm first - don't need to send any response
         comm.close()
 
@@ -1554,13 +1566,15 @@ class ConductorPlugin(SchedulerPlugin):
         state = activity_map.get("state", None)
         exit_code = activity_map.get("status", None)
         exit_msg = activity_map.get("reason", None)
+        hostname = activity_map.get("hostname", None)
 
         if state == "ERROR" or exit_code != "0":
             logger.warn(
                 _(
-                    "The worker with the activity ID %s did not exit successfully. Exit code: %s. Reason: %s."
+                    "The worker with the activity ID %s on host %s did not exit successfully. Exit code: %s. Reason: %s."
                 ),
                 id,
+                hostname,
                 exit_code,
                 exit_msg,
             )
