@@ -589,6 +589,20 @@ class JobQueueCluster(SpecCluster):
     @property
     def job_name(self):
         return self._dummy_job.job_name
+    
+    def _new_worker_name(self, worker_number):
+        """Provide unique Worker names based on Cluster increment and name.
+        
+        When using Job Arrays, consider adding something analogous to:
+        ```python
+        SLURMCluster(..., name="project-${JOB_ID}", job_extra=["--array=0-50"], env_extra=[
+            "JOB_ID=${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}",
+        ])
+        ```
+        
+        NOTE: When using `.scale` or `.adapt`, jobs will scale by `n_jobs * len(array)`.
+        """
+        return "{name}-{number}".format(name=self._name, number=worker_number)
 
     def scale(self, n=None, jobs=0, memory=None, cores=None):
         """Scale cluster to specified configurations.
