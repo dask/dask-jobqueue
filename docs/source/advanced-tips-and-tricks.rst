@@ -74,12 +74,14 @@ How to handle job queueing system walltime killing workers
 
 In dask-jobqueue, every worker processes run inside a job, and all jobs have a time limit in job queueing systems.
 Reaching walltime can be troublesome in several cases:
+
 - when you don't have a lot of room on you HPC platform and have only a few workers at a time (less than what you were hopping for when using scale or adapt). These workers will be killed (and others started) before you workload ends.
 - when you really don't know how long your workload will take: all your workers could be killed before reaching the end. In this case, you'll want to use adaptive clusters so that Dask ensures some workers are always up.
 
 If you don't set the proper parameters, you'll run into KilleWorker exceptions in those two cases.
 
 The solution to this problem is to tell Dask up front that the workers have a finit life time:
+
 - Use `--lifetime` worker option. This will enables infinite workloads using adaptive. Workers will be properly shut down before the scheduling system kills them, and all their states moved.
 - Use `--lifetime-stagger` when dealing with many workers (say > 20): this will allow to avoid workers all terminating at the same time, and so to ease rebalancing tasks and scheduling burden.
 
