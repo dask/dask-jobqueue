@@ -12,6 +12,7 @@ import abc
 import dask
 from dask.utils import ignoring
 
+from distributed.core import Status
 from distributed.deploy.spec import ProcessInterface, SpecCluster
 from distributed.deploy.local import nprocesses_nthreads
 from distributed.scheduler import Scheduler
@@ -449,7 +450,7 @@ class JobQueueCluster(SpecCluster):
         config_name=None,
         **job_kwargs
     ):
-        self.status = "created"
+        self.status = Status.created
 
         default_job_cls = getattr(type(self), "job_cls", None)
         self.job_cls = default_job_cls
@@ -588,6 +589,16 @@ class JobQueueCluster(SpecCluster):
     @property
     def job_name(self):
         return self._dummy_job.job_name
+
+    def _new_worker_name(self, worker_number):
+        """Returns new worker name.
+
+        Base worker name on cluster name. This makes it easier to use job
+        arrays within Dask-Jobqueue.
+        """
+        return "{cluster_name}-{worker_number}".format(
+            cluster_name=self._name, worker_number=worker_number
+        )
 
     def scale(self, n=None, jobs=0, memory=None, cores=None):
         """Scale cluster to specified configurations.
