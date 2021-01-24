@@ -15,6 +15,10 @@ jobs:
         jobqueue: ["htcondor", "pbs", "sge", "slurm", "none"]
 
     steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.7.0
+        with:
+            access_token: ${{ github.token }}
       - name: Checkout source
         uses: actions/checkout@v2
 
