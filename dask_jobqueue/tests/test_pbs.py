@@ -68,6 +68,7 @@ def test_job_script(Cluster):
         assert "#PBS -q" not in job_script
         assert "#PBS -A" not in job_script
 
+        job_script = cluster.job_script(pretty=False)
         assert (
             "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
             in job_script
@@ -91,6 +92,7 @@ def test_job_script(Cluster):
         assert "#PBS -l walltime=" in job_script
         assert "#PBS -A DaskOnPBS" in job_script
 
+        job_script = cluster.job_script(pretty=False)
         assert (
             "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
             in job_script

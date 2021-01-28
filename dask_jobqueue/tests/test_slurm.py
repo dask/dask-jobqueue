@@ -70,6 +70,7 @@ def test_job_script():
 
         assert "export " not in job_script
 
+        job_script = cluster.job_script(pretty=False)
         assert (
             "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
             in job_script
@@ -101,6 +102,7 @@ def test_job_script():
         assert 'export LANGUAGE="en_US.utf8"' in job_script
         assert 'export LC_ALL="en_US.utf8"' in job_script
 
+        job_script = cluster.job_script(pretty=False)
         assert (
             "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
             in job_script

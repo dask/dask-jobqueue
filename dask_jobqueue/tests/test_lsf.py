@@ -77,6 +77,7 @@ def test_job_script():
         assert "#BSUB -q" not in cluster.job_header
         assert "#BSUB -P" not in cluster.job_header
 
+        job_script = cluster.job_script(pretty=False)
         assert (
             "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
             in job_script
@@ -103,6 +104,7 @@ def test_job_script():
         assert "#BSUB -W" in cluster.job_header
         assert "#BSUB -P DaskOnLSF" in cluster.job_header
 
+        job_script = cluster.job_script(pretty=False)
         assert (
             "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
             in job_script

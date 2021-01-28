@@ -209,7 +209,6 @@ class Job(ProcessInterface, abc.ABC):
 
         # This attribute should be set in the derived class
         self.job_header = None
-
         if interface:
             extra = extra + ["--interface", interface]
         if protocol:
@@ -241,23 +240,35 @@ class Job(ProcessInterface, abc.ABC):
         dask_worker_command = "%(python)s -m distributed.cli.dask_worker" % dict(
             python=python
         )
-        command_args = [dask_worker_command, self.scheduler]
-        command_args += ["--nthreads", self.worker_process_threads]
+        command_args = [
+            [dask_worker_command],
+            [self.scheduler],
+            ["--nthreads", self.worker_process_threads],
+        ]
         if processes is not None and processes > 1:
-            command_args += ["--nprocs", processes]
+            command_args.append(["--nprocs", processes])
 
-        command_args += ["--memory-limit", self.worker_process_memory]
-        command_args += ["--name", str(name)]
-        command_args += ["--nanny" if nanny else "--no-nanny"]
+        command_args.append(["--memory-limit", self.worker_process_memory])
+        command_args.append(["--name", str(name)])
+        command_args.append(["--nanny" if nanny else "--no-nanny"])
 
         if death_timeout is not None:
-            command_args += ["--death-timeout", death_timeout]
+            command_args.append(["--death-timeout", death_timeout])
         if local_directory is not None:
-            command_args += ["--local-directory", local_directory]
+            command_args.append(["--local-directory", local_directory])
         if extra is not None:
-            command_args += extra
+            split_extra_chunks = [
+                f"--{chunk}" for chunk in " ".join(extra).split("--") if chunk
+            ]
+            command_args.extend([[c] for c in split_extra_chunks])
 
-        self._command_template = " ".join(map(str, command_args))
+        _cmd_chunks_separator = " \\\n    "
+        self._command_template = _cmd_chunks_separator.join(
+            " ".join(map(str, chunk)) for chunk in command_args
+        )
+        self._command_template_flat = " ".join(
+            shlex.split(self._command_template.replace("\\", ""))
+        )
 
         self.log_directory = log_directory
         if self.log_directory is not None:
@@ -276,7 +287,7 @@ class Job(ProcessInterface, abc.ABC):
             )
         return config_name
 
-    def job_script(self):
+    def job_script(self, pretty=True):
         """ Construct a job submission script """
         header = "\n".join(
             [
@@ -289,7 +300,9 @@ class Job(ProcessInterface, abc.ABC):
             "shebang": self.shebang,
             "job_header": header,
             "env_header": self._env_header,
-            "worker_command": self._command_template,
+            "worker_command": self._command_template
+            if pretty
+            else self._command_template_flat,
         }
         return self._script_template % pieces
 
@@ -448,7 +461,7 @@ class JobQueueCluster(SpecCluster):
         protocol="tcp://",
         # Job keywords
         config_name=None,
-        **job_kwargs
+        **job_kwargs,
     ):
         self.status = Status.created
 
@@ -562,7 +575,7 @@ class JobQueueCluster(SpecCluster):
                 # exactly the same script as the script submitted for each Dask
                 # worker
                 name="dummy-name",
-                **self._job_kwargs
+                **self._job_kwargs,
             )
         except TypeError as exc:
             # Very likely this error happened in the self.job_cls constructor
@@ -583,8 +596,8 @@ class JobQueueCluster(SpecCluster):
     def job_header(self):
         return self._dummy_job.job_header
 
-    def job_script(self):
-        return self._dummy_job.job_script()
+    def job_script(self, pretty=True):
+        return self._dummy_job.job_script(pretty)
 
     @property
     def job_name(self):

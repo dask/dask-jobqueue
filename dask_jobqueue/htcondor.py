@@ -108,9 +108,12 @@ Queue
                     env_dict[k] = v
         return env_dict
 
-    def job_script(self):
+    def job_script(self, pretty=True):
         """ Construct a job submission script """
-        quoted_arguments = quote_arguments(["-c", self._command_template])
+        _cmd_template = (
+            self._command_template if pretty else self._command_template_flat
+        )
+        quoted_arguments = quote_arguments(["-c", _cmd_template])
         quoted_environment = quote_environment(self.env_dict)
         job_header_lines = "\n".join(
             "%s = %s" % (k, v) for k, v in self.job_header_dict.items()
