@@ -3,7 +3,7 @@
 docker-compose up -d --no-build
 
 START=$(date +%s)
-MAX_WAIT_SECONDS=120
+MAX_WAIT_SECONDS=300
 
 while [ `docker exec sge_master qhost | grep lx26-amd64 | wc -l` -ne 2 ]
 do
