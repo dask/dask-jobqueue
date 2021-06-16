@@ -19,7 +19,7 @@ class SGEJob(Job):
         queue=None,
         project=None,
         resource_spec=None,
-        walltime=None,
+        walltime="not-set-by-user",
         job_extra=None,
         config_name=None,
         **base_class_kwargs
@@ -36,7 +36,7 @@ class SGEJob(Job):
             resource_spec = dask.config.get(
                 "jobqueue.%s.resource-spec" % self.config_name
             )
-        if walltime is None:
+        if walltime == "not-set-by-user":
             walltime = dask.config.get("jobqueue.%s.walltime" % self.config_name)
         if job_extra is None:
             job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name)
