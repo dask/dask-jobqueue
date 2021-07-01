@@ -1,4 +1,4 @@
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 import logging
 import math
 import os
@@ -10,7 +10,6 @@ import weakref
 import abc
 
 import dask
-from dask.utils import ignoring
 
 from distributed.core import Status
 from distributed.deploy.spec import ProcessInterface, SpecCluster
@@ -357,7 +356,7 @@ class Job(ProcessInterface, abc.ABC):
     @classmethod
     def _close_job(cls, job_id):
         if job_id:
-            with ignoring(RuntimeError):  # deleting job when job already gone
+            with suppress(RuntimeError):  # deleting job when job already gone
                 cls._call(shlex.split(cls.cancel_command) + [job_id])
             logger.debug("Closed job %s", job_id)
 
