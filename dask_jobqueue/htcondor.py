@@ -56,7 +56,7 @@ class HTCondorJob(Job):
         self.env_extra = env_extra
 
     def job_script(self):
-        """ Construct a job submission script """
+        """Construct a job submission script"""
         return self.template_env.get_template("htcondor_script.sh").render(
             shebang=self.shebang,
             worker_command=self._command_template,
@@ -90,8 +90,8 @@ class HTCondorJob(Job):
 
 
 def env_lines_to_dict(env_lines):
-    """ Convert an array of export statements (what we get from env-extra
-    in the config) into a dict """
+    """Convert an array of export statements (what we get from env-extra
+    in the config) into a dict"""
     env_dict = {}
     for env_line in env_lines:
         split_env_line = shlex.split(env_line)
