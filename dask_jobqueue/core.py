@@ -276,7 +276,7 @@ class Job(ProcessInterface, abc.ABC):
         return config_name
 
     def job_script(self):
-        """ Construct a job submission script """
+        """Construct a job submission script"""
         header = "\n".join(
             [
                 line
@@ -294,7 +294,7 @@ class Job(ProcessInterface, abc.ABC):
 
     @contextmanager
     def job_file(self):
-        """ Write job submission script to temporary file """
+        """Write job submission script to temporary file"""
         with tmpfile(extension="sh") as fn:
             with open(fn, "w") as f:
                 logger.debug("writing job script: \n%s", self.job_script())
@@ -316,7 +316,7 @@ class Job(ProcessInterface, abc.ABC):
         return mem
 
     async def start(self):
-        """ Start workers and point them to our local scheduler """
+        """Start workers and point them to our local scheduler"""
         logger.debug("Starting worker: %s", self.name)
 
         with self.job_file() as fn:
