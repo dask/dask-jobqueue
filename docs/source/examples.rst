@@ -180,3 +180,27 @@ specified for certain steps in the processing. For example:
     result_stage_2 = client.compute(stage_2,
                                     resources={tuple(stage_1): {'GPU': 1},
                                                tuple(stage_2): {'ssdGB': 100}})
+Remote SLURM Deployment
+-----------------
+
+All the above SLURMCluster examples are also possible over the SLURM REST API with the use of
+RemoteSlurmCluster. See https://slurm.schedmd.com/rest_api.html for more information.
+
+This only works for environments where the scheduler is able to communicate with the SLURM REST API
+and the workers get scheduled on SLURM nodes that also can communicate with the scheduler.
+(f.e. the scheduler is inside a docker container but still within the HPC cluster network)
+
+.. code-block:: python
+
+   from dask_jobqueue import RemoteSLURMCluster
+
+   cluster = RemoteSLURMCluster(
+                          api_url='http://<your-slurm-http-rest-api-url>/',
+                          cores=8,
+                          processes=4,
+                          memory="16GB",
+                          project="woodshole",
+                          walltime="01:00:00",
+                          queue="normal")
+
+

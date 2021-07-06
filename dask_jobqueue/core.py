@@ -106,6 +106,7 @@ class Job(ProcessInterface, abc.ABC):
     --------
     PBSCluster
     SLURMCluster
+    RemoteSLURMCluster
     SGECluster
     OARCluster
     LSFCluster
@@ -413,8 +414,8 @@ class JobQueueCluster(SpecCluster):
     __doc__ = """ Deploy Dask on a Job queuing system
 
     This is a superclass, and is rarely used directly.  It is more common to
-    use an object like SGECluster, SLURMCluster, PBSCluster, LSFCluster, or
-    others.
+    use an object like SGECluster, SLURMCluster, RemoteSLURMCluster, PBSCluster,
+     LSFCluster, or others.
 
     However, it can be used directly if you have a custom ``Job`` type.
     This class relies heavily on being passed a ``Job`` type that is able to

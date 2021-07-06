@@ -3,6 +3,7 @@ from . import config
 from .core import JobQueueCluster
 from .moab import MoabCluster
 from .pbs import PBSCluster
+from .remote_slurm import RemoteSLURMCluster
 from .slurm import SLURMCluster
 from .sge import SGECluster
 from .lsf import LSFCluster
