@@ -1,2 +1,6 @@
 -r ./requirements.txt
+black
+flake8
 pre-commit
+pytest
+pytest-asyncio
