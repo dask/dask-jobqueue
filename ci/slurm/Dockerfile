@@ -1,4 +1,4 @@
-FROM giovtorres/slurm-docker-cluster
+FROM alexandervaneck/slurm-docker-cluster:20.11.8.1
 
 RUN yum install -y iproute
 
