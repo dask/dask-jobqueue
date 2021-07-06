@@ -9,16 +9,16 @@
 #BSUB -q {{ queue }}
 {%- endif %}
 {% if project is not none -%}
-#BSUB -P {{ project }}
+#BSUB -P "{{ project }}"
 {%- endif %}
-{%- set ncpus = ncpus | set_ncpus(worker_cores, logger) -%}
+{% set ncpus = ncpus | set_ncpus(worker_cores, logger) -%}
 {% if ncpus is not none -%}
 #BSUB -n {{ ncpus }}
 {% if ncpus > 1 -%}
 #BSUB -R "span[hosts=1]"
 {%- endif %}
 {%- endif %}
-{%- set mem = mem | set_mem(worker_memory, logger) -%}
+{% set mem = mem | set_mem(worker_memory, logger) -%}
 {% if mem is not none -%}
 #BSUB -M {{ mem | format_memory(lsf_units) }}
 {%- endif %}

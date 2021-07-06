@@ -57,7 +57,7 @@ class LSFJob(Job):
             use_stdin = dask.config.get("jobqueue.%s.use-stdin" % self.config_name)
         self.use_stdin = use_stdin
 
-        self.job_header = self.template_env.get_template("lsf_job_header").render(
+        self.job_header = self.template_env.get_template("lsf_job_header.j2").render(
             name=self.name,
             job_name=self.job_name,
             log_directory=self.log_directory,

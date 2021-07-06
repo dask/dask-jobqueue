@@ -44,7 +44,7 @@ class SLURMJob(Job):
         if job_extra is None:
             job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name)
 
-        self.job_header = self.template_env.get_template("slurm_job_header").render(
+        self.job_header = self.template_env.get_template("slurm_job_header.j2").render(
             job_name=self.job_name,
             log_directory=self.log_directory,
             queue=queue,

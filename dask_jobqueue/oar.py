@@ -45,7 +45,7 @@ class OARJob(Job):
         if job_extra is None:
             job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name)
 
-        self.job_header = self.template_env.get_template("oar_job_header").render(
+        self.job_header = self.template_env.get_template("oar_job_header.j2").render(
             job_name=self.job_name,
             queue=queue,
             project=project,

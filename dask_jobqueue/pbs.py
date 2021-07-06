@@ -86,7 +86,7 @@ class PBSJob(Job):
         # Try to find a project name from environment variable
         project = project or os.environ.get("PBS_ACCOUNT")
 
-        self.job_header = self.template_env.get_template("pbs_job_header").render(
+        self.job_header = self.template_env.get_template("pbs_job_header.j2").render(
             job_name=self.job_name,
             queue=queue,
             project=project,

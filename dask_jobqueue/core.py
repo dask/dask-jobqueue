@@ -230,7 +230,7 @@ class Job(ProcessInterface, abc.ABC):
         self._env_header = "\n".join(filter(None, env_extra))
         self.header_skip = set(header_skip)
 
-        self._command_template = self.template_env.get_template("command").render(
+        self._command_template = self.template_env.get_template("command.j2").render(
             python=python,
             scheduler=self.scheduler,
             threads=self.worker_process_threads,
