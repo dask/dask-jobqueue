@@ -32,7 +32,7 @@ class RemoteSLURMJob(SLURMJob):
                     urljoin(self.api_url, "jobs/submit"), json={"script": script}
                 )
                 response.raise_for_status()
-        except aiohttp.ClientResponseError as e:
+        except aiohttp.ClientError as e:
             logger.exception("SLURMJob request failed.")
             raise RuntimeError from e
         else:
@@ -52,7 +52,7 @@ class RemoteSLURMJob(SLURMJob):
                     urljoin(self.api_url, f"job/{self.job_id}")
                 )
                 response.raise_for_status()
-        except aiohttp.ClientResponseError as e:
+        except aiohttp.ClientError as e:
             logger.exception("SLURMJob request failed.")
             raise RuntimeError from e
         else:
