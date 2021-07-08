@@ -22,7 +22,7 @@ Stream_Output = True
 Stream_Error = True
 {%- endif %}
 
-Environment = "{{ env_extra | env_lines_to_dict | quote_environment }} JOB_ID=$F(MY.JobId)"
+Environment = "{{ env_extra | env_lines_to_dict | quote_environment }}"
 Arguments = "-c '{{ worker_command }}'"
 Executable = {{ executable }}
 
