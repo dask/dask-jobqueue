@@ -74,11 +74,11 @@ class SLURMJob(Job):
             "#SBATCH --cpus-per-task=%d" % (self.job_cpu or self.worker_cores)
         )
         # Memory
-        self.memory = self.job_mem
+        memory = self.job_mem
         if self.job_mem is None:
-            self.memory = slurm_format_bytes_ceil(self.worker_memory)
-        if self.memory is not None:
-            header_lines.append("#SBATCH --mem=%s" % self.memory)
+            memory = slurm_format_bytes_ceil(self.worker_memory)
+        if memory is not None:
+            header_lines.append("#SBATCH --mem=%s" % memory)
 
         if self.walltime is not None:
             header_lines.append("#SBATCH -t %s" % self.walltime)
