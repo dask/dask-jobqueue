@@ -26,10 +26,12 @@ function show_network_interfaces {
 
 function jobqueue_install {
     docker exec slurmctld /bin/bash -c "cd /dask-jobqueue; pip install -e ."
+    docker exec slurmrestd /bin/bash -c "cd /dask-jobqueue; pip install -e ."
 }
 
 function jobqueue_script {
     docker exec slurmctld /bin/bash -c "pytest /dask-jobqueue/dask_jobqueue --verbose -E slurm -s"
+    docker exec slurmrestd /bin/bash -c "pytest /dask-jobqueue/dask_jobqueue --verbose -E slurm_remote -s"
 }
 
 function jobqueue_after_script {

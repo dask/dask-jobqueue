@@ -30,17 +30,22 @@ class SLURMJob(Job):
         super().__init__(
             scheduler=scheduler, name=name, config_name=config_name, **base_class_kwargs
         )
+        self.queue = queue
+        self.project = project
+        self.job_cpu = job_cpu
+        self.job_mem = job_mem
+        self.walltime = walltime
 
-        if queue is None:
-            queue = dask.config.get("jobqueue.%s.queue" % self.config_name)
-        if project is None:
-            project = dask.config.get("jobqueue.%s.project" % self.config_name)
-        if walltime is None:
-            walltime = dask.config.get("jobqueue.%s.walltime" % self.config_name)
-        if job_cpu is None:
-            job_cpu = dask.config.get("jobqueue.%s.job-cpu" % self.config_name)
-        if job_mem is None:
-            job_mem = dask.config.get("jobqueue.%s.job-mem" % self.config_name)
+        if self.queue is None:
+            self.queue = dask.config.get("jobqueue.%s.queue" % self.config_name)
+        if self.project is None:
+            self.project = dask.config.get("jobqueue.%s.project" % self.config_name)
+        if self.walltime is None:
+            self.walltime = dask.config.get("jobqueue.%s.walltime" % self.config_name)
+        if self.job_cpu is None:
+            self.job_cpu = dask.config.get("jobqueue.%s.job-cpu" % self.config_name)
+        if self.job_mem is None:
+            self.job_mem = dask.config.get("jobqueue.%s.job-mem" % self.config_name)
         if job_extra is None:
             job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name)
 
@@ -57,26 +62,26 @@ class SLURMJob(Job):
                 "#SBATCH -o %s/%s-%%J.out"
                 % (self.log_directory, self.job_name or "worker")
             )
-        if queue is not None:
-            header_lines.append("#SBATCH -p %s" % queue)
-        if project is not None:
-            header_lines.append("#SBATCH -A %s" % project)
+        if self.queue is not None:
+            header_lines.append("#SBATCH -p %s" % self.queue)
+        if self.project is not None:
+            header_lines.append("#SBATCH -A %s" % self.project)
 
         # Init resources, always 1 task,
         # and then number of cpu is processes * threads if not set
         header_lines.append("#SBATCH -n 1")
         header_lines.append(
-            "#SBATCH --cpus-per-task=%d" % (job_cpu or self.worker_cores)
+            "#SBATCH --cpus-per-task=%d" % (self.job_cpu or self.worker_cores)
         )
         # Memory
-        memory = job_mem
-        if job_mem is None:
-            memory = slurm_format_bytes_ceil(self.worker_memory)
-        if memory is not None:
-            header_lines.append("#SBATCH --mem=%s" % memory)
+        self.memory = self.job_mem
+        if self.job_mem is None:
+            self.memory = slurm_format_bytes_ceil(self.worker_memory)
+        if self.memory is not None:
+            header_lines.append("#SBATCH --mem=%s" % self.memory)
 
-        if walltime is not None:
-            header_lines.append("#SBATCH -t %s" % walltime)
+        if self.walltime is not None:
+            header_lines.append("#SBATCH -t %s" % self.walltime)
         header_lines.extend(["#SBATCH %s" % arg for arg in job_extra])
 
         # Declare class attribute that shall be overridden

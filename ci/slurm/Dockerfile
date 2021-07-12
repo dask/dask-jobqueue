@@ -17,12 +17,16 @@ RUN apt-get update && apt-get install -y \
     # Slurm (slurmdbd) Database
     slurmdbd \
     mariadb-server \
+    # Slurm (slurmrestd) REST API
+    slurmrestd \
     && \
     apt autoremove -y && \
     apt clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN mkdir /var/lib/slurmd && chown -R slurm:slurm /var/*/slurm*
+# create dir for slurmrestd socket
+RUN mkdir /var/run/slurm && \
+    chown -R slurm:slurm /var/*/slurm*
 RUN mkdir /run/munge && chown -R munge:munge /run/munge
 
 RUN curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \

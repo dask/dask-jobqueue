@@ -54,6 +54,32 @@ services:
     cap_add:
       - NET_ADMIN
 
+  slurmrestd:
+    image: daskdev/dask-jobqueue:slurm
+    build: .
+    command: ["slurmrestd"]
+    container_name: slurmrestd
+    hostname: slurmrestd
+    security_opt:
+      # see https://bugs.schedmd.com/show_bug.cgi?id=10949
+      - seccomp=unconfined
+    volumes:
+      - etc_munge:/etc/munge
+      - etc_slurm:/etc/slurm
+      - slurm_jobdir:/data
+      - var_log_slurm:/var/log/slurm
+      - var_run_slurm:/var/run/slurm
+      - ../..:/dask-jobqueue
+    expose:
+      - "6818"
+    depends_on:
+      - "slurmdbd"
+    networks:
+      common-network:
+        ipv4_address: 10.1.1.13
+    cap_add:
+      - NET_ADMIN
+
   c1:
     image: daskdev/dask-jobqueue:slurm
     build: .
@@ -102,6 +128,7 @@ volumes:
   slurm_jobdir:
   var_lib_mysql:
   var_log_slurm:
+  var_run_slurm:
 
 networks:
   common-network:

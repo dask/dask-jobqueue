@@ -1,19 +1,22 @@
 import logging
 from contextlib import contextmanager
+from typing import Dict, Generator
 from urllib.parse import urljoin
 
 import aiohttp
 
 from .core import cluster_parameters, job_parameters
-from .slurm import SLURMCluster, SLURMJob
+from .slurm import SLURMCluster, SLURMJob, slurm_format_bytes_ceil
 
 logger = logging.getLogger(__name__)
 
 
 class RemoteSLURMJob(SLURMJob):
     def __init__(self, *args, **kwargs):
-        self.api_url = kwargs.pop("api_url")
-        self.__class__.api_url = self.api_url
+        self.api_socket_path = kwargs.pop("api_socket_path")
+        self.remote_job_extra = (
+            kwargs.pop("remote_job_extra") if "remote_job_extra" in kwargs else {}
+        )
         super().__init__(*args, **kwargs)
 
     @contextmanager
@@ -24,19 +27,57 @@ class RemoteSLURMJob(SLURMJob):
         """
         yield self.job_script()
 
+    @property
+    def _job_configuration(self) -> Dict:
+        configuration = {
+            "environment": {"name": "test"},
+            "tasks": 1,
+            "cpus_per_task": self.job_cpu or self.worker_cores,
+        }
+
+        if self.job_name is not None:
+            configuration["name"] = self.job_name
+        if self.log_directory is not None:
+            configuration[
+                "standard_error"
+            ] = f"{self.log_directory}/{self.job_name or 'worker'}-%%J.err"
+            configuration[
+                "standard_output"
+            ] = f"{self.log_directory}/{self.job_name or 'worker'}-%%J.out"
+        if self.queue is not None:
+            configuration["partition"] = self.queue
+        if self.project is not None:
+            configuration["account"] = self.project
+
+        self.memory = self.job_mem
+        if self.job_mem is None:
+            self.memory = slurm_format_bytes_ceil(self.worker_memory)
+        if self.memory is not None:
+            configuration["memory_per_node"] = self.memory
+
+        if self.walltime is not None:
+            configuration["time_limit"] = self.walltime
+
+        configuration.update(self.remote_job_extra)
+
+        return configuration
+
     async def _submit_job(self, script):
         # https://slurm.schedmd.com/rest_api.html#slurmctldSubmitJob
         try:
-            async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession(
+                connector=aiohttp.UnixConnector(path=self.api_socket_path)
+            ) as session:
                 response = await session.post(
-                    urljoin(self.api_url, "jobs/submit"), json={"script": script}
+                    "http://localhost/slurm/v0.0.36/job/submit",
+                    json={"script": script, "job": self._job_configuration},
                 )
                 response.raise_for_status()
         except aiohttp.ClientError as e:
             logger.exception("SLURMJob request failed.")
             raise RuntimeError from e
         else:
-            return response.json()
+            return await response.json()
 
     def _job_id_from_submit_output(self, out):
         # out is the JSON output from _submit_job request.post
@@ -47,16 +88,18 @@ class RemoteSLURMJob(SLURMJob):
         logger.debug("Stopping worker: %s job: %s", self.name, self.job_id)
         # https://slurm.schedmd.com/rest_api.html#slurmctldCancelJob
         try:
-            async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession(
+                connector=aiohttp.UnixConnector(path=self.api_socket_path)
+            ) as session:
                 response = await session.delete(
-                    urljoin(self.api_url, f"job/{self.job_id}")
+                    f"http://localhost/slurm/v0.0.36/job/{self.job_id}"
                 )
                 response.raise_for_status()
         except aiohttp.ClientError as e:
             logger.exception("SLURMJob request failed.")
             raise RuntimeError from e
         else:
-            return response
+            return await response.json()
 
     @classmethod
     def _close_job(cls, job_id):
@@ -92,7 +135,7 @@ class RemoteSLURMCluster(SLURMCluster):
     --------
     >>> from dask_jobqueue import SLURMCluster
     >>> cluster = RemoteSLURMCluster(
-    ...     api_url='http://a-url.com/slurm/',
+    ...     api_socket_path='/var/run/slurmrestd.socket.',
     ...     queue='regular',
     ...     project="myproj",
     ...     cores=24,
@@ -110,9 +153,9 @@ class RemoteSLURMCluster(SLURMCluster):
         job=job_parameters, cluster=cluster_parameters
     )
 
-    def __init__(self, *args, **kwargs):
-        if "api_url" not in kwargs:
-            raise ValueError("api_url is missing from RemoteSlurmCluster.")
+    def __init__(self, api_socket_path: str, *args, **kwargs):
+        # Set api args into kwargs, they'll be passed through `**job_kwargs` into RemoteSLURMJob
+        kwargs["api_socket_path"] = api_socket_path
 
         super().__init__(*args, **kwargs)
 
