@@ -81,6 +81,9 @@ cluster_parameters = """
         port the web dashboard should use or ``scheduler_options={'host': 'your-host'}``
         to specify the host the Dask scheduler should run on. See
         :class:`distributed.Scheduler` for more details.
+    scheduler_cls : type
+        Changes the class of the used Dask Scheduler. Defaults to  Dask's
+        :class:`distributed.Scheduler`.
 """.strip()
 
 
@@ -444,6 +447,7 @@ class JobQueueCluster(SpecCluster):
         dashboard_address=None,
         host=None,
         scheduler_options=None,
+        scheduler_cls=Scheduler,  # Use local scheduler for now
         # Options for both scheduler and workers
         interface=None,
         protocol="tcp://",
@@ -510,7 +514,7 @@ class JobQueueCluster(SpecCluster):
             scheduler_options["interface"] = interface
 
         scheduler = {
-            "cls": Scheduler,  # Use local scheduler for now
+            "cls": scheduler_cls,
             "options": scheduler_options,
         }
 
