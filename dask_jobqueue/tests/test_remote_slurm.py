@@ -79,12 +79,9 @@ def remote_cluster(request):
 def test_basic(loop, remote_cluster):
     with remote_cluster as cluster:
         with Client(cluster, loop=loop) as client:
-            print("Scaling...")
             cluster.scale(2)
-            print("Starting scale wait...")
             client.wait_for_workers(2)
 
-            print("Submitting func...")
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
 
@@ -93,11 +90,9 @@ def test_basic(loop, remote_cluster):
             assert w["memory_limit"] == 2e9
             assert w["nthreads"] == 2
 
-            print("Scaling down...")
             cluster.scale(0)
 
             start = time()
-            print("Starting wait for scale down...")
             while client.scheduler_info()["workers"]:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
