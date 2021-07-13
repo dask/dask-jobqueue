@@ -169,4 +169,27 @@ class RemoteSLURMCluster(SLURMCluster):
             **kwargs,
         )
 
+    @classmethod
+    def with_http_api_client(
+        cls,
+        http_api_url: str,
+        http_api_user_name: str,
+        http_api_user_token: str,
+        *args,
+        **kwargs,
+    ) -> "RemoteSLURMCluster":
+        kwargs["api_url"] = (
+            http_api_url if http_api_url.endswith("/") else f"{http_api_url}/"
+        )
+        return cls(
+            api_client_session_kwargs=dict(
+                headers={
+                    "X-SLURM-USER-NAME": http_api_user_name,
+                    "X-SLURM-USER-TOKEN": http_api_user_token,
+                }
+            ),
+            *args,
+            **kwargs,
+        )
+
     job_cls = RemoteSLURMJob

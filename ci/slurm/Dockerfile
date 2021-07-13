@@ -25,8 +25,13 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/*
 
 # create dir for slurmrestd socket
-RUN mkdir /var/run/slurm && \
+# Add JWT key to controller in StateSaveLocation
+RUN mkdir /var/run/slurm /var/lib/slurmd && \
+    dd if=/dev/random of=/var/lib/slurmd/jwt_hs256.key bs=32 count=1 && \
+    chown slurm:slurm /var/lib/slurmd/jwt_hs256.key && \
+    chmod 0600 /var/lib/slurmd/jwt_hs256.key && \
     chown -R slurm:slurm /var/*/slurm*
+
 RUN mkdir /run/munge && chown -R munge:munge /run/munge
 
 RUN curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \

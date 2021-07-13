@@ -55,7 +55,7 @@ then
     echo "-- slurmdbd is now active ..."
 
     echo "---> Starting the Slurm REST API Daemon (slurmrestd) ..."
-    gosu slurm slurmrestd unix:/var/run/slurm/slurmrestd.socket -a rest_auth/local -vvvvvv
+    gosu slurm slurmrestd unix:/var/run/slurm/slurmrestd.socket -a rest_auth/local -vvvvvv & gosu slurm slurmrestd 0.0.0.0:6818 -a rest_auth/jwt -vvvvvv
 fi
 
 if [ "$1" = "slurmd" ]
