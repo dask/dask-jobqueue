@@ -1,7 +1,6 @@
 import logging
 from contextlib import contextmanager
-from typing import Any, Dict, Generator
-from urllib.parse import urljoin
+from typing import Any, Dict
 
 import aiohttp
 
