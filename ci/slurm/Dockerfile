@@ -43,6 +43,7 @@ RUN conda install --yes -c conda-forge python=3.6 dask distributed flake8 pytest
 
 COPY --chown=slurm:slurm slurm.conf /etc/slurm/slurm.conf
 COPY --chown=slurm:slurm slurmdbd.conf /etc/slurm/slurmdbd.conf
+COPY --chown=slurm:slurm slurmrestd.conf /etc/slurm/slurmrestd.conf
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
