@@ -73,7 +73,7 @@ services:
     expose:
       - "6818"
     depends_on:
-      - "slurmdbd"
+      - "slurmctld"
     networks:
       common-network:
         ipv4_address: 10.1.1.13

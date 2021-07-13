@@ -45,17 +45,17 @@ then
     echo "---> Starting the MUNGE Authentication service (munged) ..."
     gosu munge /etc/init.d/munge start
 
-    echo "---> Waiting for slurmdbd to become active before starting slurmctld ..."
+    echo "---> Waiting for slurmctld to become active before starting slurmrestd..."
 
-    until 2>/dev/null >/dev/tcp/slurmdbd/6819
+    until 2>/dev/null >/dev/tcp/slurmctld/6817
     do
-        echo "-- slurmdbd is not available.  Sleeping ..."
+        echo "-- slurmctld is not available.  Sleeping ..."
         sleep 2
     done
-    echo "-- slurmdbd is now active ..."
+    echo "-- slurmctld is now active ..."
 
     echo "---> Starting the Slurm REST API Daemon (slurmrestd) ..."
-    gosu slurm slurmrestd unix:/var/run/slurm/slurmrestd.socket -a rest_auth/local -vvvvvv & gosu slurm slurmrestd 0.0.0.0:6818 -a rest_auth/jwt -vvvvvv
+    gosu slurm slurmrestd unix:/var/run/slurm/slurmrestd.socket -a rest_auth/local -vvvvvv & gosu slurm slurmrestd 0.0.0.0:6818 -f /etc/slurm/slurmrestd.conf -vvvvvv
 fi
 
 if [ "$1" = "slurmd" ]
