@@ -190,12 +190,16 @@ This only works for environments where the scheduler is able to communicate with
 and the workers get scheduled on SLURM nodes that also can communicate with the scheduler.
 (f.e. the scheduler is inside a docker container but still within the HPC cluster network)
 
+Currently slurmrestd only supports 2 authentication methods; Unix socket auth and JWT auth.
+
+Unix socket authentication:
+
 .. code-block:: python
 
    from dask_jobqueue import RemoteSLURMCluster
 
-   cluster = RemoteSLURMCluster(
-                          api_url='http://<your-slurm-http-rest-api-url>/',
+   cluster = RemoteSLURMCluster.with_socket_api_client(
+                          socket_api_path='/var/run/slurmrestd.socket',
                           cores=8,
                           processes=4,
                           memory="16GB",
@@ -203,4 +207,44 @@ and the workers get scheduled on SLURM nodes that also can communicate with the 
                           walltime="01:00:00",
                           queue="normal")
 
+HTTP JWT Authentication:
+
+To generate a token see https://slurm.schedmd.com/jwt.html.
+
+.. code-block:: python
+
+   from dask_jobqueue import RemoteSLURMCluster
+
+   cluster = RemoteSLURMCluster.with_http_api_client(
+                          http_api_url='<host:port>',
+                          http_api_user_name='slurm',
+                          http_api_user_token='<a token>',
+                          cores=8,
+                          processes=4,
+                          memory="16GB",
+                          project="woodshole",
+                          walltime="01:00:00",
+                          queue="normal")
+
+It's also possible to set other headers or authentication methods if slurmrestd starts supporting
+these in the future. The `api_client_session_kwargs` will be passed to aihttp.ClientSession to
+instantiate an authenticated session.
+
+.. code-block:: python
+
+   from dask_jobqueue import RemoteSLURMCluster
+
+   cluster = RemoteSLURMCluster(
+                          api_client_session_kwargs=dict(
+                                headers={
+                                    "X-SLURM-USER-NAME": http_api_user_name,
+                                    "X-SLURM-USER-TOKEN": http_api_user_token,
+                                }
+                            ),
+                            cores=8,
+                            processes=4,
+                            memory="16GB",
+                            project="woodshole",
+                            walltime="01:00:00",
+                            queue="normal")
 
