@@ -1,6 +1,6 @@
 import logging
 from contextlib import contextmanager
-from typing import Dict, Generator
+from typing import Any, Dict, Generator
 from urllib.parse import urljoin
 
 import aiohttp
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class RemoteSLURMJob(SLURMJob):
     def __init__(self, *args, **kwargs):
-        self.api_client_session = kwargs.pop("api_client_session")
+        self.api_client_session_kwargs = kwargs.pop("api_client_session_kwargs")
         self.api_url = kwargs.pop("api_url")
         self.remote_job_extra = (
             kwargs.pop("remote_job_extra") if "remote_job_extra" in kwargs else {}
@@ -65,16 +65,15 @@ class RemoteSLURMJob(SLURMJob):
 
     async def _submit_job(self, script):
         # https://slurm.schedmd.com/rest_api.html#slurmctldSubmitJob
-        try:
-            response = await self.api_client_session.post(
-                f"{self.api_url}slurm/v0.0.36/job/submit",
-                json={"script": script, "job": self._job_configuration},
-            )
-            response.raise_for_status()
-        except aiohttp.ClientError as e:
-            logger.exception("SLURMJob request failed.")
-            raise RuntimeError from e
-        else:
+        client_session = aiohttp.ClientSession(
+            raise_for_status=True, **self.api_client_session_kwargs
+        )
+        response = await client_session.post(
+            f"{self.api_url}slurm/v0.0.36/job/submit",
+            json={"script": script, "job": self._job_configuration},
+            raise_for_status=False,
+        )
+        async with response:
             return await response.json()
 
     def _job_id_from_submit_output(self, out):
@@ -85,15 +84,14 @@ class RemoteSLURMJob(SLURMJob):
     async def close(self):
         logger.debug("Stopping worker: %s job: %s", self.name, self.job_id)
         # https://slurm.schedmd.com/rest_api.html#slurmctldCancelJob
-        try:
-            response = await self.api_client_session.delete(
-                f"{self.api_url}slurm/v0.0.36/job/{self.job_id}"
-            )
-            response.raise_for_status()
-        except aiohttp.ClientError as e:
-            logger.exception("SLURMJob request failed.")
-            raise RuntimeError from e
-        else:
+        client_session = aiohttp.ClientSession(
+            raise_for_status=True, **self.api_client_session_kwargs
+        )
+        response = await client_session.delete(
+            f"{self.api_url}slurm/v0.0.36/job/{self.job_id}",
+            raise_for_status=False,
+        )
+        async with response:
             return await response.json()
 
     @classmethod
@@ -150,12 +148,12 @@ class RemoteSLURMCluster(SLURMCluster):
 
     def __init__(
         self,
-        api_client_session: aiohttp.ClientSession,
+        api_client_session_kwargs: Dict[str, Any],
         *args,
         **kwargs,
     ):
         # Set into kwargs, they'll be passed through `**job_kwargs` into RemoteSLURMJob
-        kwargs["api_client_session"] = api_client_session
+        kwargs["api_client_session_kwargs"] = api_client_session_kwargs
         super().__init__(*args, **kwargs)
 
     @classmethod
@@ -164,7 +162,7 @@ class RemoteSLURMCluster(SLURMCluster):
     ) -> "RemoteSLURMCluster":
         kwargs["api_url"] = "http://localhost/"
         return cls(
-            api_client_session=aiohttp.ClientSession(
+            api_client_session_kwargs=dict(
                 connector=aiohttp.UnixConnector(path=socket_api_path)
             ),
             *args,
