@@ -14,9 +14,7 @@ class RemoteSLURMJob(SLURMJob):
     def __init__(self, *args, **kwargs):
         self.api_client_session_kwargs = kwargs.pop("api_client_session_kwargs")
         self.api_url = kwargs.pop("api_url")
-        self.remote_job_extra = (
-            kwargs.pop("remote_job_extra") if "remote_job_extra" in kwargs else {}
-        )
+        self.remote_job_extra = kwargs.pop("remote_job_extra", {})
         super().__init__(*args, **kwargs)
 
     @contextmanager
