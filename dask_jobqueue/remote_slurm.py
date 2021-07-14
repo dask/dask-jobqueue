@@ -102,9 +102,9 @@ class RemoteSLURMCluster(SLURMCluster):
 
     Parameters
     ----------
-    api_url: str
-        A url (ending in /) pointing to the SLURM REST API
-        See https://slurm.schedmd.com/rest_api.html
+    api_client_session_kwargs: Dict
+        A dictionary with key/values for aiohttp.ClientSession. to set up a client session 
+        with specific headers or connectors.
     queue : str
         Destination queue for each worker job. Passed to `#SBATCH -p` option.
     project : str
@@ -125,7 +125,9 @@ class RemoteSLURMCluster(SLURMCluster):
     --------
     >>> from dask_jobqueue import SLURMCluster
     >>> cluster = RemoteSLURMCluster(
-    ...     api_socket_path='/var/run/slurmrestd.socket.',
+    ...     api_client_session_kwargs=dict(
+                connector=aiohttp.UnixConnector(path='/path/to/slurmrestd.socket')
+            ),
     ...     queue='regular',
     ...     project="myproj",
     ...     cores=24,
