@@ -103,8 +103,8 @@ class RemoteSLURMCluster(SLURMCluster):
     Parameters
     ----------
     api_client_session_kwargs: Dict
-        A dictionary with key/values for aiohttp.ClientSession. to set up a client session 
-        with specific headers or connectors.
+        A dictionary with key/values for aiohttp.ClientSession. to set up a client session
+         with specific headers or connectors.
     queue : str
         Destination queue for each worker job. Passed to `#SBATCH -p` option.
     project : str
