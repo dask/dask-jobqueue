@@ -207,4 +207,4 @@ extlinks = {
 # In an ideal world, this would get fixed in this PR:
 # https://github.com/readthedocs/sphinx_rtd_theme/pull/747/files
 def setup(app):
-    app.add_stylesheet("basic.css")
+    app.add_css_file("basic.css")
