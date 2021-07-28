@@ -68,7 +68,6 @@ class RemoteSLURMJob(SLURMJob):
         response = await client_session.post(
             f"{self.api_url}slurm/v0.0.36/job/submit",
             json={"script": script, "job": self._job_configuration},
-            raise_for_status=False,
         )
         async with response:
             return await response.json()
@@ -86,7 +85,6 @@ class RemoteSLURMJob(SLURMJob):
         )
         response = await client_session.delete(
             f"{self.api_url}slurm/v0.0.36/job/{self.job_id}",
-            raise_for_status=False,
         )
         async with response:
             return await response.json()
