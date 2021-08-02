@@ -62,20 +62,20 @@ class RemoteSLURMJob(SLURMJob):
 
     async def _submit_job(self, script):
         # https://slurm.schedmd.com/rest_api.html#slurmctldSubmitJob
-        client_session = aiohttp.ClientSession(
+        async with aiohttp.ClientSession(
             raise_for_status=True, **self.api_client_session_kwargs
-        )
-        # Unfortunately for certain message (like Authentication Failure) SLURM
-        # will respond with a 'Content-Type' of application/json but then the response will
-        # not be parsable JSON.
-        # This now only works if we set `AIOHTTP_NO_EXTENSIONS=1`
-        # See https://github.com/aio-libs/aiohttp/issues/1843
-        response = await client_session.post(
-            f"{self.api_url}slurm/v0.0.36/job/submit",
-            json={"script": script, "job": self._job_configuration},
-        )
-        async with response:
-            return await response.json()
+        ) as client_session:
+            # Unfortunately for certain message (like Authentication Failure) SLURM
+            # will respond with a 'Content-Type' of application/json but then the response will
+            # not be parsable JSON.
+            # This now only works if we set `AIOHTTP_NO_EXTENSIONS=1`
+            # See https://github.com/aio-libs/aiohttp/issues/1843
+            response = await client_session.post(
+                f"{self.api_url}slurm/v0.0.36/job/submit",
+                json={"script": script, "job": self._job_configuration},
+            )
+            async with response:
+                return await response.json()
 
     def _job_id_from_submit_output(self, out):
         # out is the JSON output from _submit_job request.post
@@ -85,14 +85,14 @@ class RemoteSLURMJob(SLURMJob):
     async def close(self):
         logger.debug("Stopping worker: %s job: %s", self.name, self.job_id)
         # https://slurm.schedmd.com/rest_api.html#slurmctldCancelJob
-        client_session = aiohttp.ClientSession(
+        async with aiohttp.ClientSession(
             raise_for_status=True, **self.api_client_session_kwargs
-        )
-        response = await client_session.delete(
-            f"{self.api_url}slurm/v0.0.36/job/{self.job_id}",
-        )
-        async with response:
-            return await response.json()
+        ) as client_session:
+            response = await client_session.delete(
+                f"{self.api_url}slurm/v0.0.36/job/{self.job_id}",
+            )
+            async with response:
+                return await response.json()
 
     @classmethod
     def _close_job(cls, job_id):
