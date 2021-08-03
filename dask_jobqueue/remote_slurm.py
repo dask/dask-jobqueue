@@ -38,10 +38,10 @@ class RemoteSLURMJob(SLURMJob):
         if self.log_directory is not None:
             configuration[
                 "standard_error"
-            ] = f"{self.log_directory}/{self.job_name or 'worker'}-%%J.err"
+            ] = f"{self.log_directory}/{self.job_name or 'worker'}-%J.err"
             configuration[
                 "standard_output"
-            ] = f"{self.log_directory}/{self.job_name or 'worker'}-%%J.out"
+            ] = f"{self.log_directory}/{self.job_name or 'worker'}-%J.out"
         if self.queue is not None:
             configuration["partition"] = self.queue
         if self.project is not None:
