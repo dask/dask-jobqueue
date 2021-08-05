@@ -62,9 +62,9 @@ class RemoteSLURMJob(SLURMJob):
 
     async def _submit_job(self, script):
         # https://slurm.schedmd.com/rest_api.html#slurmctldSubmitJob
-        logger.debug(f'Sending script to SLURM API: {script}')
+        logger.debug(f"Sending script to SLURM API: {script}")
         async with aiohttp.ClientSession(
-            raise_for_status=True, **self.api_client_session_kwargs
+            **self.api_client_session_kwargs
         ) as client_session:
             # Unfortunately for certain message (like Authentication Failure) SLURM
             # will respond with a 'Content-Type' of application/json but then the response will
@@ -76,25 +76,37 @@ class RemoteSLURMJob(SLURMJob):
                 json={"script": script, "job": self._job_configuration},
             )
             async with response:
-                return await response.json()
+                try:
+                    response.raise_for_status()
+                except aiohttp.ClientResponseError:
+                    body = await response.read()
+                    logger.exception(f"Request failed, response: {body}")
+                else:
+                    return await response.json()
 
     def _job_id_from_submit_output(self, out):
         # out is the JSON output from _submit_job request.post
         # See https://slurm.schedmd.com/rest_api.html#v0.0.36_job_submission_response
-        logger.debug(f'SLURM API responded: {out}.')
+        logger.debug(f"SLURM API responded: {out}.")
         return out["job_id"]
 
     async def close(self):
         logger.debug("Stopping worker: %s job: %s", self.name, self.job_id)
         # https://slurm.schedmd.com/rest_api.html#slurmctldCancelJob
         async with aiohttp.ClientSession(
-            raise_for_status=True, **self.api_client_session_kwargs
+            **self.api_client_session_kwargs
         ) as client_session:
             response = await client_session.delete(
                 f"{self.api_url}slurm/v0.0.36/job/{self.job_id}",
             )
             async with response:
-                return await response.json()
+                try:
+                    response.raise_for_status()
+                except aiohttp.ClientResponseError:
+                    body = await response.read()
+                    logger.exception(f"Request failed, response: {body}")
+                else:
+                    return await response.json()
 
     @classmethod
     def _close_job(cls, job_id):
