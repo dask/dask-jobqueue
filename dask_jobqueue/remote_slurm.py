@@ -62,6 +62,7 @@ class RemoteSLURMJob(SLURMJob):
 
     async def _submit_job(self, script):
         # https://slurm.schedmd.com/rest_api.html#slurmctldSubmitJob
+        logger.debug(f'Sending script to SLURM API: {script}')
         async with aiohttp.ClientSession(
             raise_for_status=True, **self.api_client_session_kwargs
         ) as client_session:
@@ -80,6 +81,7 @@ class RemoteSLURMJob(SLURMJob):
     def _job_id_from_submit_output(self, out):
         # out is the JSON output from _submit_job request.post
         # See https://slurm.schedmd.com/rest_api.html#v0.0.36_job_submission_response
+        logger.debug(f'SLURM API responded: {out}.')
         return out["job_id"]
 
     async def close(self):
