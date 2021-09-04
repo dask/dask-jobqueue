@@ -8,7 +8,7 @@ from time import sleep, time
 import dask
 import pytest
 from dask.distributed import Client
-from distributed.utils import parse_bytes
+from dask.utils import format_bytes, parse_bytes
 
 from dask_jobqueue import LSFCluster, lsf
 
@@ -43,7 +43,26 @@ def test_header():
         assert "#BSUB -M 100000" in cluster.job_header
         assert "#BSUB -M 28000" not in cluster.job_header
         assert "#BSUB -W" in cluster.job_header
-        assert "#BSUB -P DaskOnLSF" in cluster.job_header
+        assert '#BSUB -P "DaskOnLSF"' in cluster.job_header
+
+    with LSFCluster(
+        queue="general",
+        project="Dask On LSF",
+        processes=4,
+        cores=8,
+        memory="28GB",
+        ncpus=24,
+        mem=100000000000,
+    ) as cluster:
+
+        assert "#BSUB -q general" in cluster.job_header
+        assert "#BSUB -J dask-worker" in cluster.job_header
+        assert "#BSUB -n 24" in cluster.job_header
+        assert "#BSUB -n 8" not in cluster.job_header
+        assert "#BSUB -M 100000" in cluster.job_header
+        assert "#BSUB -M 28000" not in cluster.job_header
+        assert "#BSUB -W" in cluster.job_header
+        assert '#BSUB -P "Dask On LSF"' in cluster.job_header
 
     with LSFCluster(cores=4, memory="8GB") as cluster:
 
@@ -81,7 +100,8 @@ def test_job_script():
             "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
             in job_script
         )
-        assert "--nthreads 2 --nprocs 4 --memory-limit 7.00GB" in job_script
+        formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
+        assert f"--nthreads 2 --nprocs 4 --memory-limit {formatted_bytes}" in job_script
 
     with LSFCluster(
         queue="general",
@@ -101,13 +121,38 @@ def test_job_script():
         assert "#BSUB -M 100000" in cluster.job_header
         assert "#BSUB -M 28000" not in cluster.job_header
         assert "#BSUB -W" in cluster.job_header
-        assert "#BSUB -P DaskOnLSF" in cluster.job_header
+        assert '#BSUB -P "DaskOnLSF"' in cluster.job_header
 
         assert (
             "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
             in job_script
         )
-        assert "--nthreads 2 --nprocs 4 --memory-limit 7.00GB" in job_script
+        formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
+        assert f"--nthreads 2 --nprocs 4 --memory-limit {formatted_bytes}" in job_script
+
+    with LSFCluster(
+        walltime="1:00",
+        cores=1,
+        memory="16GB",
+        project="Dask On LSF",
+        job_extra=["-R rusage[mem=16GB]"],
+    ) as cluster:
+
+        job_script = cluster.job_script()
+
+        assert "#BSUB -J dask-worker" in cluster.job_header
+        assert "#BSUB -n 1" in cluster.job_header
+        assert "#BSUB -R rusage[mem=16GB]" in cluster.job_header
+        assert "#BSUB -M 16000000" in cluster.job_header
+        assert "#BSUB -W 1:00" in cluster.job_header
+        assert '#BSUB -P "Dask On LSF"' in cluster.job_header
+
+        assert (
+            "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
+            in job_script
+        )
+        formatted_bytes = format_bytes(parse_bytes("16GB")).replace(" ", "")
+        assert f"--nthreads 1 --memory-limit {formatted_bytes}" in job_script
 
 
 @pytest.mark.env("lsf")
@@ -121,7 +166,7 @@ def test_basic(loop):
         loop=loop,
     ) as cluster:
         with Client(cluster) as client:
-            cluster.start_workers(2)
+            cluster.scale(2)
             assert cluster.pending_jobs or cluster.running_jobs
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11

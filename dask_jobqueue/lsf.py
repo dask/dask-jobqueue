@@ -71,7 +71,7 @@ class LSFJob(Job):
         if queue is not None:
             header_lines.append("#BSUB -q %s" % queue)
         if project is not None:
-            header_lines.append("#BSUB -P %s" % project)
+            header_lines.append('#BSUB -P "%s"' % project)
         if ncpus is None:
             # Compute default cores specifications
             ncpus = self.worker_cores
@@ -113,7 +113,7 @@ class LSFJob(Job):
 
 
 def lsf_format_bytes_ceil(n, lsf_units="mb"):
-    """ Format bytes as text
+    """Format bytes as text
 
     Convert bytes to megabytes which LSF requires.
 
@@ -135,9 +135,7 @@ def lsf_format_bytes_ceil(n, lsf_units="mb"):
 
 
 def lsf_detect_units():
-    """ Try to autodetect the unit scaling on an LSF system
-
-    """
+    """Try to autodetect the unit scaling on an LSF system"""
     # Search for automatically, Using docs from LSF 9.1.3 for search/defaults
     unit = "kb"  # Default fallback unit
     try:

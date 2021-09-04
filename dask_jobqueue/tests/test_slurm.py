@@ -5,6 +5,7 @@ import pytest
 from distributed import Client
 
 import dask
+from dask.utils import format_bytes, parse_bytes
 
 from dask_jobqueue import SLURMCluster
 
@@ -60,7 +61,8 @@ def test_job_script():
         job_script = cluster.job_script()
         assert "#SBATCH" in job_script
         assert "#SBATCH -J dask-worker" in job_script
-        assert "--memory-limit 7.00GB " in job_script
+        formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
+        assert f"--memory-limit {formatted_bytes}" in job_script
         assert "#SBATCH -n 1" in job_script
         assert "#SBATCH --cpus-per-task=8" in job_script
         assert "#SBATCH --mem=27G" in job_script
@@ -74,7 +76,8 @@ def test_job_script():
             "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
             in job_script
         )
-        assert "--nthreads 2 --nprocs 4 --memory-limit 7.00GB" in job_script
+        formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
+        assert f"--nthreads 2 --nprocs 4 --memory-limit {formatted_bytes}" in job_script
 
     with SLURMCluster(
         walltime="00:02:00",
@@ -105,7 +108,8 @@ def test_job_script():
             "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
             in job_script
         )
-        assert "--nthreads 2 --nprocs 4 --memory-limit 7.00GB" in job_script
+        formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
+        assert f"--nthreads 2 --nprocs 4 --memory-limit {formatted_bytes}" in job_script
 
 
 @pytest.mark.env("slurm")
@@ -212,3 +216,28 @@ def test_different_interfaces_on_scheduler_and_workers(loop):
             client.wait_for_workers(1)
 
             assert future.result(QUEUE_WAIT) == 11
+
+
+@pytest.mark.env("slurm")
+def test_worker_name_uses_cluster_name(loop):
+    # The environment variable setup below is similar to a job array setup
+    # where you would use SLURM_ARRAY_JOB_ID to make sure that Dask workers
+    # belonging to the same job array have different worker names
+    with SLURMCluster(
+        cores=1,
+        memory="2GB",
+        name="test-$MY_ENV_VARIABLE",
+        env_extra=["MY_ENV_VARIABLE=my-env-variable-value"],
+        loop=loop,
+    ) as cluster:
+        with Client(cluster) as client:
+            cluster.scale(jobs=2)
+            print(cluster.job_script())
+            client.wait_for_workers(2)
+            worker_names = [
+                w["id"] for w in client.scheduler_info()["workers"].values()
+            ]
+            assert sorted(worker_names) == [
+                "test-my-env-variable-value-0",
+                "test-my-env-variable-value-1",
+            ]

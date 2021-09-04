@@ -4,12 +4,56 @@ Changelog
 Development version
 -------------------
 
+0.7.3 / 2021-07-22
+------------------
+
+- Override _new_worker_name to make it easier to use job arrays (:pr:`480`)
+- Drop support for Python 3.5 (:pr:`456`)
+- Remove `FutureWarning`s from dask utils functions. (:pr:`503` and :pr:`506`)
+
+0.7.2 / 2020-12-07
+------------------
+
+- Use ``Status`` enum (:pr:`476`)
+- Bump GHA ``setup-miniconda`` version (:pr:`474`)
+- Build docker images for scheduled runs (:pr:`468`)
+- Blacken after likely a black change
+- Add GH action to periodically build docker images (:pr:`455`)
+- Fix link format inside an italicised text (:pr:`460`)
+- ``MoabCluster``: fix bug where ``MoabCluster`` was using the ``jobqueue.pbs``
+  config section rather than the ``jobqueue.moab`` section (:pr:`450`)
+- Updating ``start_workers`` to scale in examples (:pr:`453`)
+- Fixing typo in ``core.py`` (:pr:`454`)
+- Improve doc about GiB vs GB
+- Fix math typo in GiB definition (:pr:`445`)
+- Improve doc about customising dashboard link
+- Remove Travis mentions following Github Actions switch (:pr:`444`)
+- Improve error message.
+- Tweak name in ``cluster.job_script()`` (:pr:`439`)
+- Switch from Travis to GitHub Actions (:pr:`435`)
+- All cluster classes: fix a bug that would allow to pass any named parameter
+  without an error (:pr:`398`)
+- Use pre-built docker images to speed up CI (:pr:`432`)
+- Rename common work-arounds section.
+- Kick-off doc section about common work-arounds (:pr:`430`)
+- Clean up parametrized tests (:pr:`429`)
+- All cluster classes: ``scheduler_options`` parameter can be set through the
+  config file in the ``scheduler-options`` section (:pr:`405`)
+- Add minimal HTCondor CI support (:pr:`420`)
+- Add content about the python executable used by workers in SLURM (:pr:`409`)
+- Remove ``config_name`` from cluster classes (:pr:`426`)
+- Fix mysql version to get Slurm CI green (:pr:`423`)
+- Fix URL for miniconda download (:pr:`412`)
+
+
+0.7.1 / 2020-03-26
+------------------
+
 - all cluster classes: add ``scheduler_options`` allows to pass parameters to
   the Dask scheduler. For example ``scheduler_options={'interface': 'eth0',
   dashboard_addresses=':12435')`` (:pr:`384`). Breaking change: using ``port``
   or ``dashboard_addresses`` arguments raises an error. They have to be passed
-  through ``scheduler_options``. ``scheduler_options`` can be set through the
-  config file in the ``scheduler-options`` section (:pr:`405`).
+  through ``scheduler_options``.
 - all cluster classes: ``processes`` parameter default has changed. By default,
   ``processes ~= sqrt(cores)`` so that the number of processes and the number
   of threads per process is roughly the same. Old default was to use one
@@ -17,8 +61,6 @@ Development version
   ``threads_per_process=cores``. (:pr:`375`)
 - all cluster classes: ``interface`` was ignored when set in a config file.
   (:pr:`366`)
-- all cluster classes: fix a bug that would allow to pass any named parameter without an error (:pr:`398`)
-- all cluster classes: fix a bug where ``security`` was not correctly passed through (:pr:`398`)
 - ``LSFCluster``: switch to ``use_stdin=True`` by default (:pr:`388`).
 - ``LSFCluster``: add ``use_stdin`` to ``LSFCluster``. This switches between
   ``bsub < job_script`` and ``bsub job_script`` to launch a ``LSF`` job
@@ -120,5 +162,3 @@ Development version
 - Adds an LSF job queue system implementation.
 - Adds some convenient methods to JobQueueCluster objects: ``__repr__``,
   ``stop_jobs()``, ``close()``.
-
-

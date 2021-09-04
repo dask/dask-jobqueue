@@ -1,4 +1,4 @@
-from contextlib import contextmanager
+from contextlib import contextmanager, suppress
 import logging
 import math
 import os
@@ -10,12 +10,14 @@ import weakref
 import abc
 
 import dask
-from dask.utils import ignoring
 
+from dask.utils import format_bytes, parse_bytes
+
+from distributed.core import Status
 from distributed.deploy.spec import ProcessInterface, SpecCluster
 from distributed.deploy.local import nprocesses_nthreads
 from distributed.scheduler import Scheduler
-from distributed.utils import format_bytes, parse_bytes, tmpfile
+from distributed.utils import tmpfile
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +77,7 @@ cluster_parameters = """
         A dask.distributed security object if you're using TLS/SSL
     scheduler_options : dict
         Used to pass additional arguments to Dask Scheduler. For example use
-        ``scheduler_options={'dasboard_address': ':12435'}`` to specify which
+        ``scheduler_options={'dashboard_address': ':12435'}`` to specify which
         port the web dashboard should use or ``scheduler_options={'host': 'your-host'}``
         to specify the host the Dask scheduler should run on. See
         :class:`distributed.Scheduler` for more details.
@@ -276,7 +278,7 @@ class Job(ProcessInterface, abc.ABC):
         return config_name
 
     def job_script(self):
-        """ Construct a job submission script """
+        """Construct a job submission script"""
         header = "\n".join(
             [
                 line
@@ -294,7 +296,7 @@ class Job(ProcessInterface, abc.ABC):
 
     @contextmanager
     def job_file(self):
-        """ Write job submission script to temporary file """
+        """Write job submission script to temporary file"""
         with tmpfile(extension="sh") as fn:
             with open(fn, "w") as f:
                 logger.debug("writing job script: \n%s", self.job_script())
@@ -316,7 +318,7 @@ class Job(ProcessInterface, abc.ABC):
         return mem
 
     async def start(self):
-        """ Start workers and point them to our local scheduler """
+        """Start workers and point them to our local scheduler"""
         logger.debug("Starting worker: %s", self.name)
 
         with self.job_file() as fn:
@@ -342,7 +344,7 @@ class Job(ProcessInterface, abc.ABC):
         if job_id is None:
             msg = (
                 "You need to use a 'job_id' named group in your regexp, e.g. "
-                "r'(?P<job_id>\\d+)', in your regexp. Your regexp was: "
+                "r'(?P<job_id>\\d+)'. Your regexp was: "
                 "{!r}".format(self.job_id_regexp)
             )
             raise ValueError(msg)
@@ -354,15 +356,15 @@ class Job(ProcessInterface, abc.ABC):
         self._close_job(self.job_id, self.cancel_command)
 
     @classmethod
-    def _close_job(self, job_id, cancel_command):
+    def _close_job(cls, job_id, cancel_command):
         if job_id:
-            with ignoring(RuntimeError):  # deleting job when job already gone
-                self._call(shlex.split(cancel_command) + [job_id])
+            with suppress(RuntimeError):  # deleting job when job already gone
+                cls._call(shlex.split(cancel_command) + [job_id])
             logger.debug("Closed job %s", job_id)
 
     @staticmethod
     def _call(cmd, **kwargs):
-        """ Call a command using subprocess.Popen.
+        """Call a command using subprocess.Popen.
 
         This centralizes calls out to the command line, providing consistent
         outputs, logging, and an opportunity to go asynchronous in the future.
@@ -449,7 +451,7 @@ class JobQueueCluster(SpecCluster):
         config_name=None,
         **job_kwargs
     ):
-        self.status = "created"
+        self.status = Status.created
 
         default_job_cls = getattr(type(self), "job_cls", None)
         self.job_cls = default_job_cls
@@ -589,8 +591,18 @@ class JobQueueCluster(SpecCluster):
     def job_name(self):
         return self._dummy_job.job_name
 
+    def _new_worker_name(self, worker_number):
+        """Returns new worker name.
+
+        Base worker name on cluster name. This makes it easier to use job
+        arrays within Dask-Jobqueue.
+        """
+        return "{cluster_name}-{worker_number}".format(
+            cluster_name=self._name, worker_number=worker_number
+        )
+
     def scale(self, n=None, jobs=0, memory=None, cores=None):
-        """ Scale cluster to specified configurations.
+        """Scale cluster to specified configurations.
 
         Parameters
         ----------
@@ -612,7 +624,7 @@ class JobQueueCluster(SpecCluster):
     def adapt(
         self, *args, minimum_jobs: int = None, maximum_jobs: int = None, **kwargs
     ):
-        """ Scale Dask cluster automatically based on scheduler activity.
+        """Scale Dask cluster automatically based on scheduler activity.
 
         Parameters
         ----------

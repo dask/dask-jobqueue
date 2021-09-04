@@ -3,7 +3,7 @@ import re
 import shlex
 
 import dask
-from distributed.utils import parse_bytes
+from dask.utils import parse_bytes
 
 from .core import JobQueueCluster, Job, job_parameters, cluster_parameters
 
@@ -119,8 +119,8 @@ Queue
         )
 
     def env_lines_to_dict(self, env_lines):
-        """ Convert an array of export statements (what we get from env-extra
-        in the config) into a dict """
+        """Convert an array of export statements (what we get from env-extra
+        in the config) into a dict"""
         env_dict = {}
         for env_line in env_lines:
             split_env_line = shlex.split(env_line)
@@ -133,7 +133,7 @@ Queue
         return env_dict
 
     def job_script(self):
-        """ Construct a job submission script """
+        """Construct a job submission script"""
         quoted_arguments = quote_arguments(["-c", self._command_template])
         quoted_environment = quote_environment(self.env_dict)
         job_header_lines = "\n".join(
