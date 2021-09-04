@@ -325,7 +325,7 @@ class Job(ProcessInterface, abc.ABC):
             out = await self._submit_job(fn)
             self.job_id = self._job_id_from_submit_output(out)
 
-        weakref.finalize(self, self._close_job, self.job_id)
+        weakref.finalize(self, self._close_job, self.job_id, self.cancel_command)
 
         logger.debug("Starting job: %s", self.job_id)
         await super().start()
