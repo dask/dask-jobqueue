@@ -94,8 +94,11 @@ def test_extra_args_broken_submit(loop):
         loop=loop,
         submit_command_extra=["-name", "wrong.docker"],
     ) as cluster:
-        with pytest.raises(Exception) as e_info:
-            cluster._dummy_job.start()
+        with pytest.raises(Exception):
+            with Client(cluster) as client:
+                cluster.scale(2)
+
+                client.wait_for_workers(2)
 
 
 @pytest.mark.env("htcondor")
@@ -112,9 +115,7 @@ def test_extra_args_broken_cancel(loop):
             cluster.scale(2)
 
             client.wait_for_workers(2)
-            workers = Job._call(
-                ["condor_q", "-const", "!isUndefined(DaskWorkerID)", "-af", "jobid"]
-            ).strip()
+            workers = Job._call(["condor_q", "-af", "jobpid"]).strip()
             assert workers, "we got dask workers"
 
             cluster.scale(0)
@@ -123,9 +124,7 @@ def test_extra_args_broken_cancel(loop):
             while client.scheduler_info()["workers"]:
                 sleep(0.100)
 
-                workers = Job._call(
-                    ["condor_q", "-const", "!isUndefined(DaskWorkerID)", "-af", "jobid"]
-                ).strip()
+                workers = Job._call(["condor_q", "-af", "jobpid"]).strip()
                 assert workers, "killing workers with broken cancel_command didn't fail"
 
                 if time() > start + QUEUE_WAIT // 3:
