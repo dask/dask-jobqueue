@@ -86,25 +86,6 @@ def test_basic(loop):
 
 
 @pytest.mark.env("htcondor")
-def test_extra_args_broken_submit(loop):
-    with HTCondorCluster(
-        cores=1,
-        memory="100MB",
-        disk="100MB",
-        loop=loop,
-        submit_command_extra=["-name", "wrong.docker"],
-    ) as cluster:
-        with pytest.raises(Exception):
-            with Client(cluster) as client:
-                cluster.scale(2)
-
-                client.wait_for_workers(2, timeout="20 seconds")
-
-        with pytest.raises(Exception):
-            cluster.scale(0)
-
-
-@pytest.mark.env("htcondor")
 def test_extra_args_broken_cancel(loop):
     with HTCondorCluster(
         cores=1,
