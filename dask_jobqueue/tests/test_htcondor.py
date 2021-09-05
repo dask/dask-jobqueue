@@ -67,7 +67,7 @@ def test_basic(loop):
             cluster.scale(2)
 
             start = time()
-            client.wait_for_workers(2, timeout="20 seconds")
+            client.wait_for_workers(2)
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
