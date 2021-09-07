@@ -20,12 +20,12 @@ function jobqueue_install {
 }
 
 function jobqueue_script {
-    #real test
     docker exec sge_master /bin/bash -c "cd /dask-jobqueue; pytest dask_jobqueue --verbose -s -E sge"
 }
 
 function jobqueue_after_script {
-    docker exec sge_master bash -c 'cat /tmp/sge*'
-    docker exec slave_one bash -c 'cat /tmp/exec*'
-    docker exec slave_two bash -c 'cat /tmp/exec*'
+    echo "Daemon logs"
+    docker exec sge_master bash -c 'cat /tmp/sge*' || echo "No sge_master logs"
+    docker exec slave_one bash -c 'cat /tmp/exec*' || echo "No slave_one logs"
+    docker exec slave_two bash -c 'cat /tmp/exec*' || echo "No slave_two logs"
 }
