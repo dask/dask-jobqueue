@@ -20,11 +20,6 @@ function jobqueue_install {
 }
 
 function jobqueue_script {
-    #debug commands
-    docker exec sge_master qconf -sq dask.q
-    docker exec sge_master qsub -V -b y -cwd sleep 10
-    docker exec sge_master qstat
-
     #real test
     docker exec sge_master /bin/bash -c "cd /dask-jobqueue; pytest dask_jobqueue --verbose -s -E sge"
 }
