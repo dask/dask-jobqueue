@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # start sge
-sudo service gridengine-exec restart
+#sudo service gridengine-exec restart
 
-sleep 4
+sleep 2
 
 sudo service gridengine-exec restart
 
