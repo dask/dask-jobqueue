@@ -5,6 +5,9 @@
 sudo service gridengine-master restart
 
 while ! ping -c1 slave_one &>/dev/null; do :; done
+#Sometimes conf is inaccessible at first
+while ! qconf -sconf &>/dev/null; do sleep 0.1; done
+cat /var/lib/gridengine//default/common/act_qmaster
 
 qconf -Msconf /scheduler.txt
 qconf -Ahgrp /hosts.txt

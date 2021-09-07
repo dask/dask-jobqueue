@@ -14,7 +14,7 @@ services:
     #network_mode: host
     volumes:
       - ../..:/dask-jobqueue
-    command: bash /run-master.sh
+    command: bash /dask-jobqueue/ci/sge/run-master.sh
 
   slave-one:
     image: daskdev/dask-jobqueue:sge-slave
@@ -28,7 +28,7 @@ services:
     #network_mode: host
     volumes:
       - ../..:/dask-jobqueue
-    command: bash /run-slave.sh
+    command: bash /dask-jobqueue/ci/sge/run-slave.sh
     links:
       - "master:sge_master"
     depends_on:
@@ -46,7 +46,7 @@ services:
     #network_mode: host
     volumes:
       - ../..:/dask-jobqueue
-    command: bash /run-slave.sh
+    command: bash /dask-jobqueue/ci/sge/run-slave.sh
     links:
       - "master:sge_master"
     depends_on:

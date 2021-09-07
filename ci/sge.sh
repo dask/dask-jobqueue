@@ -12,6 +12,7 @@ function jobqueue_before_install {
 
     docker ps -a
     docker images
+    docker exec sge_master qconf -sq dask.q
 }
 
 function jobqueue_install {
@@ -23,7 +24,8 @@ function jobqueue_script {
 }
 
 function jobqueue_after_script {
-    docker exec sge_master bash -c 'cat /tmp/sge*'
-    docker exec slave_one bash -c 'cat /tmp/exec*'
-    docker exec slave_two bash -c 'cat /tmp/exec*'
+    echo "Daemon logs"
+    docker exec sge_master bash -c 'cat /tmp/sge*' || echo "No sge_master logs"
+    docker exec slave_one bash -c 'cat /tmp/exec*' || echo "No slave_one logs"
+    docker exec slave_two bash -c 'cat /tmp/exec*' || echo "No slave_two logs"
 }
