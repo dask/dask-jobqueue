@@ -5,9 +5,8 @@
 sudo service gridengine-master restart
 
 while ! ping -c1 slave_one &>/dev/null; do :; done
-#Sometimes the folder below is missing at first
-sleep 1
-while ! ls /var/lib/gridengine//default/common/act_qmaster &>/dev/null; do sleep 0.1; done
+#Sometimes conf is inaccessible at first
+while ! qconf -sconf &>/dev/null; do sleep 0.1; done
 ls -l /var/lib/gridengine//default/common/act_qmaster
 cat /var/lib/gridengine//default/common/act_qmaster
 
