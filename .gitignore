@@ -13,3 +13,5 @@ log
 .cache/
 .pytest_cache
 docs/source/generated
+*.lock
+*.dirlock

@@ -15,4 +15,5 @@ API
    OARCluster
    PBSCluster
    SGECluster
+   RemoteSLURMCluster
    SLURMCluster
