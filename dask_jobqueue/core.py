@@ -17,6 +17,7 @@ from distributed.core import Status
 from distributed.deploy.spec import ProcessInterface, SpecCluster
 from distributed.deploy.local import nprocesses_nthreads
 from distributed.scheduler import Scheduler
+from distributed.security import Security
 from distributed.utils import tmpfile
 
 logger = logging.getLogger(__name__)
@@ -450,7 +451,7 @@ class JobQueueCluster(SpecCluster):
         scheduler_cls=Scheduler,  # Use local scheduler for now
         # Options for both scheduler and workers
         interface=None,
-        protocol="tcp://",
+        protocol=None,
         # Job keywords
         config_name=None,
         **job_kwargs
@@ -499,6 +500,17 @@ class JobQueueCluster(SpecCluster):
             scheduler_options = dask.config.get(
                 "jobqueue.%s.scheduler-options" % config_name, {}
             )
+
+        if protocol is None and security is not None:
+            protocol = "tls://"
+        if security is None and protocol is not None and protocol.startswith("tls"):
+            try:
+                security = Security.temporary()
+            except ImportError:
+                raise ImportError(
+                    "In order to use TLS without pregenerated certificates `cryptography` is required,"
+                    "please install it using either pip or conda"
+                )
 
         default_scheduler_options = {
             "protocol": protocol,

@@ -427,9 +427,7 @@ def test_security():
         require_encryption=True,
     )
 
-    with LocalCluster(
-        cores=1, memory="1GB", security=security, protocol="tls"
-    ) as cluster:
+    with LocalCluster(cores=1, memory="1GB", security=security) as cluster:
         assert cluster.security == security
         assert cluster.scheduler_spec["options"]["security"] == security
         job_script = cluster.job_script()
@@ -439,6 +437,22 @@ def test_security():
 
         cluster.scale(jobs=1)
         with Client(cluster, security=security) as client:
+            future = client.submit(lambda x: x + 1, 10)
+            result = future.result()
+            assert result == 11
+
+
+def test_security_temporary():
+    with LocalCluster(cores=1, memory="1GB", protocol="tls") as cluster:
+        assert cluster.security
+        assert cluster.scheduler_spec["options"]["security"] == cluster.security
+        job_script = cluster.job_script()
+        assert "--tls-key {}".format(cluster.security.tls_worker_key) in job_script
+        assert "--tls-cert {}".format(cluster.security.tls_worker_cert) in job_script
+        assert "--tls-ca-file {}".format(cluster.security.tls_ca_file) in job_script
+
+        cluster.scale(jobs=1)
+        with Client(cluster) as client:
             future = client.submit(lambda x: x + 1, 10)
             result = future.result()
             assert result == 11
