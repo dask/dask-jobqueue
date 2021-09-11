@@ -20,6 +20,7 @@ from distributed.core import Status
 from distributed.deploy.spec import ProcessInterface, SpecCluster
 from distributed.deploy.local import nprocesses_nthreads
 from distributed.scheduler import Scheduler
+from distributed.security import Security
 
 logger = logging.getLogger(__name__)
 
@@ -75,8 +76,9 @@ cluster_parameters = """
         scheduler is started locally
     asynchronous : bool
         Whether or not to run this cluster object with the async/await syntax
-    security : Security
-        A dask.distributed security object if you're using TLS/SSL
+    security : Security or Bool
+        A dask.distributed security object if you're using TLS/SSL.  If True,
+        temporary self-signed credentials will be created automatically.
     scheduler_options : dict
         Used to pass additional arguments to Dask Scheduler. For example use
         ``scheduler_options={'dashboard_address': ':12435'}`` to specify which
@@ -508,6 +510,15 @@ class JobQueueCluster(SpecCluster):
 
         if protocol is None and security is not None:
             protocol = "tls://"
+
+        if security is True:
+            try:
+                security = Security.temporary()
+            except ImportError:
+                raise ImportError(
+                    "In order to use TLS without pregenerated certificates `cryptography` is required,"
+                    "please install it using either pip or conda"
+                )
 
         default_scheduler_options = {
             "protocol": protocol,
