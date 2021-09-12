@@ -20,15 +20,17 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     # register an additional marker
     config.addinivalue_line(
-        "markers", "env(name): mark test to run only on named environment"
+        "markers", "env(NAME): only run test if environment NAME matches"
     )
 
 
 def pytest_runtest_setup(item):
     envnames = [mark.args[0] for mark in item.iter_markers(name="env")]
-    if envnames:
-        if item.config.getoption("-E") not in envnames:
-            pytest.skip("test requires env in %r" % envnames)
+    if (item.config.getoption("-E") is None and envnames) or (
+        item.config.getoption("-E") is not None
+        and item.config.getoption("-E") not in envnames
+    ):
+        pytest.skip("test requires env in %r" % envnames)
 
 
 @pytest.fixture(autouse=True)
