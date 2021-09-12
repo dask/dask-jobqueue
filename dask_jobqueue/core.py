@@ -8,6 +8,8 @@ import subprocess
 import sys
 import weakref
 import abc
+import tempfile
+import copy
 
 import dask
 
@@ -221,6 +223,7 @@ class Job(ProcessInterface, abc.ABC):
             extra = extra + ["--protocol", protocol]
         if security:
             worker_security_dict = security.get_tls_config_for_role("worker")
+
             security_command_line_list = [
                 ["--tls-" + key.replace("_", "-"), value]
                 for key, value in worker_security_dict.items()
@@ -533,7 +536,26 @@ class JobQueueCluster(SpecCluster):
         job_kwargs["config_name"] = config_name
         job_kwargs["interface"] = interface
         job_kwargs["protocol"] = protocol
-        job_kwargs["security"] = security
+        job_kwargs["security"] = copy.copy(security)
+
+        if security is not None:
+            worker_security_dict = job_kwargs["security"].get_tls_config_for_role(
+                "worker"
+            )
+            for key, value in worker_security_dict.items():
+                # dump worker in-memory keys for use in job_script
+                if value is not None and "\n" in value:
+                    f = tempfile.NamedTemporaryFile(mode="wt")
+                    # make sure that tmpfile survives by keeping a reference
+                    setattr(self, "_job_" + key, f)
+                    f.write(value)
+                    f.flush()
+                    setattr(
+                        job_kwargs["security"],
+                        "tls_" + ("worker_" if key != "ca_file" else "") + key,
+                        f.name,
+                    )
+
         self._job_kwargs = job_kwargs
 
         worker = {"cls": self.job_cls, "options": self._job_kwargs}

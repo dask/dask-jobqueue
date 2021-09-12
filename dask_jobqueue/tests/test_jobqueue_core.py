@@ -431,6 +431,7 @@ def test_security():
         assert cluster.security == security
         assert cluster.scheduler_spec["options"]["security"] == security
         job_script = cluster.job_script()
+        assert "tls://" in job_script
         assert "--tls-key {}".format(key) in job_script
         assert "--tls-cert {}".format(cert) in job_script
         assert "--tls-ca-file {}".format(cert) in job_script
@@ -447,9 +448,10 @@ def test_security_temporary():
         assert cluster.security
         assert cluster.scheduler_spec["options"]["security"] == cluster.security
         job_script = cluster.job_script()
-        assert "--tls-key {}".format(cluster.security.tls_worker_key) in job_script
-        assert "--tls-cert {}".format(cluster.security.tls_worker_cert) in job_script
-        assert "--tls-ca-file {}".format(cluster.security.tls_ca_file) in job_script
+        assert "tls://" in job_script
+        assert "--tls-key" in job_script
+        assert "--tls-cert" in job_script
+        assert "--tls-ca-file" in job_script
 
         cluster.scale(jobs=1)
         with Client(cluster) as client:
