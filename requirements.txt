@@ -1,3 +1,2 @@
 dask>=2.19
 distributed>=2.19
-cryptography[security]

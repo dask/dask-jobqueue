@@ -16,7 +16,7 @@ function jobqueue_before_install {
 
 function jobqueue_install {
     cd ./ci/htcondor
-    docker-compose exec -T submit /bin/bash -c "cd /dask-jobqueue; pip3 install -e .[security]; chown -R submituser ."
+    docker-compose exec -T submit /bin/bash -c "cd /dask-jobqueue; pip3 install -e .[test]; chown -R submituser ."
     cd -
 }
 

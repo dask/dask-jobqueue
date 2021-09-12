@@ -25,7 +25,7 @@ setup(
     packages=["dask_jobqueue"],
     include_package_data=True,
     install_requires=install_requires,
-    tests_require=["pytest >= 2.7.1"],
+    extras_require={"test": ["pytest >= 2.7.1", "pytest-asyncio", "cryptography"]},
     long_description=long_description,
     zip_safe=False,
 )
