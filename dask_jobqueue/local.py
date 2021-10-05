@@ -72,7 +72,7 @@ class LocalJob(Job):
         return str(self.process.pid)
 
     @classmethod
-    def _close_job(self, job_id):
+    def _close_job(self, job_id, cancel_command):
         os.kill(int(job_id), 9)
         # from distributed.utils_test import terminate_process
         # terminate_process(self.process)

@@ -40,6 +40,8 @@ Queue
         disk=None,
         job_extra=None,
         config_name=None,
+        submit_command_extra=None,
+        cancel_command_extra=None,
         **base_class_kwargs
     ):
         super().__init__(
@@ -93,6 +95,28 @@ Queue
             )
         if self.job_extra:
             self.job_header_dict.update(self.job_extra)
+
+        if submit_command_extra is None:
+            submit_command_extra = dask.config.get(
+                "jobqueue.%s.submit-command-extra" % self.config_name, []
+            )
+
+        self.submit_command = (
+            HTCondorJob.submit_command
+            + " "
+            + " ".join(shlex.quote(arg) for arg in submit_command_extra)
+        )
+
+        if cancel_command_extra is None:
+            cancel_command_extra = dask.config.get(
+                "jobqueue.%s.cancel-command-extra" % self.config_name, []
+            )
+
+        self.cancel_command = (
+            HTCondorJob.cancel_command
+            + " "
+            + " ".join(shlex.quote(arg) for arg in cancel_command_extra)
+        )
 
     def env_lines_to_dict(self, env_lines):
         """Convert an array of export statements (what we get from env-extra
@@ -217,6 +241,10 @@ class HTCondorCluster(JobQueueCluster):
         Total amount of disk per job
     job_extra : dict
         Extra submit file attributes for the job
+    submit_command_extra : list of str
+        Extra arguments to pass to condor_submit
+    cancel_command_extra : list of str
+        Extra arguments to pass to condor_rm
     {job}
     {cluster}
 

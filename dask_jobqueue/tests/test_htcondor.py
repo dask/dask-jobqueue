@@ -1,3 +1,4 @@
+import re
 import sys
 from time import sleep, time
 
@@ -8,6 +9,7 @@ import dask
 from dask.utils import format_bytes, parse_bytes
 
 from dask_jobqueue import HTCondorCluster
+from dask_jobqueue.core import Job
 
 QUEUE_WAIT = 30  # seconds
 
@@ -27,6 +29,8 @@ def test_job_script():
         disk="100MB",
         env_extra=['export LANG="en_US.utf8"', 'export LC_ALL="en_US.utf8"'],
         job_extra={"+Extra": "True"},
+        submit_command_extra=["-verbose"],
+        cancel_command_extra=["-forcex"],
     ) as cluster:
         job_script = cluster.job_script()
         assert "RequestCpus = MY.DaskWorkerCores" in job_script
@@ -40,6 +44,10 @@ def test_job_script():
         assert "LC_ALL=en_US.utf8" in job_script
         assert "export" not in job_script
         assert "+Extra = True" in job_script
+        assert re.search(
+            r"condor_submit\s.*-verbose", cluster._dummy_job.submit_command
+        )
+        assert re.search(r"condor_rm\s.*-forcex", cluster._dummy_job.cancel_command)
 
         assert (
             "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
@@ -75,6 +83,36 @@ def test_basic(loop):
             while client.scheduler_info()["workers"]:
                 sleep(0.100)
                 assert time() < start + QUEUE_WAIT
+
+
+@pytest.mark.env("htcondor")
+def test_extra_args_broken_cancel(loop):
+    with HTCondorCluster(
+        cores=1,
+        memory="100MB",
+        disk="100MB",
+        loop=loop,
+        cancel_command_extra=["-name", "wrong.docker"],
+    ) as cluster:
+        with Client(cluster) as client:
+
+            cluster.scale(2)
+
+            client.wait_for_workers(2)
+            workers = Job._call(["condor_q", "-af", "jobpid"]).strip()
+            assert workers, "we got dask workers"
+
+            cluster.scale(0)
+
+            start = time()
+            while client.scheduler_info()["workers"]:
+                sleep(0.100)
+
+                workers = Job._call(["condor_q", "-af", "jobpid"]).strip()
+                assert workers, "killing workers with broken cancel_command didn't fail"
+
+                if time() > start + QUEUE_WAIT // 3:
+                    return
 
 
 def test_config_name_htcondor_takes_custom_config():

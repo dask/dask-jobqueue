@@ -176,6 +176,8 @@ jobqueue:
     disk: null                  # Total amount of disk per job
     env-extra: []
     job-extra: {}               # Extra submit attributes
+    submit-command-extra: []    # Extra condor_submit arguments
+    cancel-command-extra: []    # Extra condor_rm arguments
     log-directory: null
     shebang: "#!/usr/bin/env condor_submit"
     

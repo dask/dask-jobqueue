@@ -328,7 +328,7 @@ class Job(ProcessInterface, abc.ABC):
             out = await self._submit_job(fn)
             self.job_id = self._job_id_from_submit_output(out)
 
-        weakref.finalize(self, self._close_job, self.job_id)
+        weakref.finalize(self, self._close_job, self.job_id, self.cancel_command)
 
         logger.debug("Starting job: %s", self.job_id)
         await super().start()
@@ -356,13 +356,13 @@ class Job(ProcessInterface, abc.ABC):
 
     async def close(self):
         logger.debug("Stopping worker: %s job: %s", self.name, self.job_id)
-        self._close_job(self.job_id)
+        self._close_job(self.job_id, self.cancel_command)
 
     @classmethod
-    def _close_job(cls, job_id):
+    def _close_job(cls, job_id, cancel_command):
         if job_id:
             with suppress(RuntimeError):  # deleting job when job already gone
-                cls._call(shlex.split(cls.cancel_command) + [job_id])
+                cls._call(shlex.split(cancel_command) + [job_id])
             logger.debug("Closed job %s", job_id)
 
     @staticmethod
