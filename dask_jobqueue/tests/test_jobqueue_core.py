@@ -433,6 +433,7 @@ def test_security():
         assert cluster.security == security
         assert cluster.scheduler_spec["options"]["security"] == security
         job_script = cluster.job_script()
+        assert "tls://" in job_script
         assert "--tls-key {}".format(key) in job_script
         assert "--tls-cert {}".format(cert) in job_script
         assert "--tls-ca-file {}".format(cert) in job_script
@@ -442,3 +443,6 @@ def test_security():
             future = client.submit(lambda x: x + 1, 10)
             result = future.result()
             assert result == 11
+
+    with LocalCluster(cores=1, memory="1GB", security=security) as cluster:
+        assert "tls://" in job_script

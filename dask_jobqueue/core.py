@@ -450,7 +450,7 @@ class JobQueueCluster(SpecCluster):
         scheduler_cls=Scheduler,  # Use local scheduler for now
         # Options for both scheduler and workers
         interface=None,
-        protocol="tcp://",
+        protocol=None,
         # Job keywords
         config_name=None,
         **job_kwargs
@@ -499,6 +499,9 @@ class JobQueueCluster(SpecCluster):
             scheduler_options = dask.config.get(
                 "jobqueue.%s.scheduler-options" % config_name, {}
             )
+
+        if protocol is None and security is not None:
+            protocol = "tls://"
 
         default_scheduler_options = {
             "protocol": protocol,
