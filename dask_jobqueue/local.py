@@ -38,11 +38,7 @@ class LocalJob(Job):
     ):
         # Instantiate args and parameters from parent abstract class
         super().__init__(
-            scheduler=scheduler,
-            name=name,
-            config_name=config_name,
-            shebang="",
-            **kwargs
+            scheduler=scheduler, name=name, config_name=config_name, **kwargs
         )
 
         # Declare class attribute that shall be overridden
@@ -52,10 +48,8 @@ class LocalJob(Job):
 
     async def _submit_job(self, script_filename):
         # Should we make this async friendly?
-        with open(script_filename) as f:
-            text = f.read().strip().split()
         self.process = Subprocess(
-            text, stdout=Subprocess.STREAM, stderr=Subprocess.STREAM
+            script_filename, stdout=Subprocess.STREAM, stderr=Subprocess.STREAM
         )
 
         lines = []

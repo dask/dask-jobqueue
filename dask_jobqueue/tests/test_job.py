@@ -1,15 +1,6 @@
 import asyncio
 from time import time
 
-from dask_jobqueue import (
-    PBSCluster,
-    SGECluster,
-    SLURMCluster,
-    LSFCluster,
-    HTCondorCluster,
-    MoabCluster,
-    OARCluster,
-)
 from dask_jobqueue.local import LocalJob, LocalCluster
 from dask_jobqueue.pbs import PBSJob
 from dask_jobqueue.sge import SGEJob
@@ -41,16 +32,6 @@ job_protected = [
 
 
 all_jobs = [SGEJob, PBSJob, SLURMJob, LSFJob, HTCondorJob, MoabJob, OARJob]
-all_clusters = [
-    SGECluster,
-    PBSCluster,
-    SLURMCluster,
-    LSFCluster,
-    HTCondorCluster,
-    MoabCluster,
-    OARCluster,
-    HTCondorCluster,
-]
 
 
 @pytest.mark.parametrize("job_cls", job_protected)
@@ -174,9 +155,3 @@ async def test_nprocs_scale():
             assert len(cluster.worker_spec) == 3
             cluster.scale(1)
             assert len(cluster.worker_spec) == 1
-
-
-@pytest.mark.parametrize("Cluster", all_clusters)
-def test_docstring_cluster(Cluster):
-    assert "cores :" in Cluster.__doc__
-    assert Cluster.__name__[: -len("Cluster")] in Cluster.__doc__

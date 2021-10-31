@@ -7,6 +7,18 @@ import pytest
 
 import dask_jobqueue.lsf
 
+from dask_jobqueue import (
+    PBSCluster,
+    MoabCluster,
+    SLURMCluster,
+    SGECluster,
+    LSFCluster,
+    OARCluster,
+    HTCondorCluster,
+)
+
+from dask_jobqueue.local import LocalCluster
+
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -22,15 +34,29 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "env(NAME): only run test if environment NAME matches"
     )
+    config.addinivalue_line("markers", "xfail_ci(NAME): know CI failure")
 
 
 def pytest_runtest_setup(item):
-    envnames = [mark.args[0] for mark in item.iter_markers(name="env")]
-    if (item.config.getoption("-E") is None and envnames) or (
-        item.config.getoption("-E") is not None
-        and item.config.getoption("-E") not in envnames
+    env = item.config.getoption("-E")
+    envnames = sum(
+        [
+            mark.args[0] if isinstance(mark.args[0], list) else [mark.args[0]]
+            for mark in item.iter_markers(name="env")
+        ],
+        [],
+    )
+    if (
+        None not in envnames
+        and (env is None and envnames)
+        or (env is not None and env not in envnames)
     ):
         pytest.skip("test requires env in %r" % envnames)
+    else:
+        xfail = {}
+        [xfail.update(mark.args[0]) for mark in item.iter_markers(name="xfail_ci")]
+        if env in xfail:
+            item.add_marker(pytest.mark.xfail(reason=xfail[env]))
 
 
 @pytest.fixture(autouse=True)
@@ -46,3 +72,32 @@ def mock_lsf_version(monkeypatch, request):
     except OSError:
         # Provide a fake implementation of lsf_version()
         monkeypatch.setattr(dask_jobqueue.lsf, "lsf_version", lambda: "10")
+
+
+all_envs = {
+    None: LocalCluster,
+    "pbs": PBSCluster,
+    "moab": MoabCluster,
+    "slurm": SLURMCluster,
+    "sge": SGECluster,
+    "lsf": LSFCluster,
+    "oar": OARCluster,
+    "htcondor": HTCondorCluster,
+}
+
+
+@pytest.fixture
+def EnvSpecificCluster3(pytestconfig):
+    return all_envs[pytestconfig.getoption("-E")]
+
+
+@pytest.fixture(
+    params=[pytest.param(v, marks=[pytest.mark.env(k)]) for (k, v) in all_envs.items()]
+)
+def EnvSpecificCluster(request):
+    return request.param
+
+
+@pytest.fixture(params=list(all_envs.values()))
+def Cluster(request):
+    return request.param

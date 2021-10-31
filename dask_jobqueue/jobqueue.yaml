@@ -195,6 +195,7 @@ jobqueue:
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
     extra: []
+    shebang: "#!/usr/bin/env bash"
 
     env-extra: []
     job-extra: []

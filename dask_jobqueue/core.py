@@ -123,7 +123,7 @@ class Job(ProcessInterface, abc.ABC):
 
 %(job_header)s
 %(env_header)s
-%(worker_command)s
+exec %(worker_command)s
 """.lstrip()
 
     # Following class attributes should be overridden by extending classes.
@@ -304,6 +304,7 @@ class Job(ProcessInterface, abc.ABC):
             with open(fn, "w") as f:
                 logger.debug("writing job script: \n%s", self.job_script())
                 f.write(self.job_script())
+            os.chmod(fn, 0o700)
             yield fn
 
     async def _submit_job(self, script_filename):
