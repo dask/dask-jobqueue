@@ -27,15 +27,26 @@ from dask_jobqueue.local import LocalCluster
 
 from dask_jobqueue.sge import SGEJob
 
-all_clusters = [
-    PBSCluster,
-    MoabCluster,
-    SLURMCluster,
-    SGECluster,
-    LSFCluster,
-    OARCluster,
-    HTCondorCluster,
-]
+all_envs = {
+    "pbs": PBSCluster,
+    "moab": MoabCluster,
+    "slurm": SLURMCluster,
+    "sge": SGECluster,
+    "lsf": LSFCluster,
+    "oar": OARCluster,
+    "htcondor": HTCondorCluster,
+}
+
+
+@pytest.fixture
+def EnvCluster(pytestconfig):
+    if pytestconfig.getoption("-E") is not None:
+        return all_envs[pytestconfig.getoption("-E")]
+    else:
+        return LocalCluster
+
+
+all_clusters = list(all_envs.values())
 
 
 def create_cluster_func(cluster_cls, **kwargs):
@@ -426,10 +437,7 @@ def test_security():
         tls_client_cert=cert,
         require_encryption=True,
     )
-
-    with LocalCluster(
-        cores=1, memory="1GB", security=security, protocol="tls"
-    ) as cluster:
+    with LocalCluster(cores=1, memory="1GB", security=security) as cluster:
         assert cluster.security == security
         assert cluster.scheduler_spec["options"]["security"] == security
         job_script = cluster.job_script()
@@ -444,5 +452,40 @@ def test_security():
             result = future.result()
             assert result == 11
 
-    with LocalCluster(cores=1, memory="1GB", security=security) as cluster:
+
+@pytest.mark.env(["htcondor", "slurm", "pbs", "sge"])
+def test_security_cluster(EnvCluster):
+    dirname = os.path.dirname(__file__)
+    key = os.path.join(dirname, "key.pem")
+    cert = os.path.join(dirname, "ca.pem")
+    security = Security(
+        tls_ca_file=cert,
+        tls_scheduler_key=key,
+        tls_scheduler_cert=cert,
+        tls_worker_key=key,
+        tls_worker_cert=cert,
+        tls_client_key=key,
+        tls_client_cert=cert,
+        require_encryption=True,
+    )
+
+    with create_cluster_func(
+        EnvCluster,
+        cores=1,
+        memory="100MB",
+        security=security,
+        protocol="tls",
+    ) as cluster:
+        assert cluster.security == security
+        assert cluster.scheduler_spec["options"]["security"] == security
+        job_script = cluster.job_script()
         assert "tls://" in job_script
+        assert "--tls-key {}".format(key) in job_script
+        assert "--tls-cert {}".format(cert) in job_script
+        assert "--tls-ca-file {}".format(cert) in job_script
+
+        cluster.scale(jobs=1)
+        with Client(cluster, security=security) as client:
+            future = client.submit(lambda x: x + 1, 10)
+            result = future.result()
+            assert result == 11

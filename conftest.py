@@ -25,7 +25,13 @@ def pytest_configure(config):
 
 
 def pytest_runtest_setup(item):
-    envnames = [mark.args[0] for mark in item.iter_markers(name="env")]
+    envnames = sum(
+        [
+            mark.args[0] if isinstance(mark.args[0], list) else [mark.args[0]]
+            for mark in item.iter_markers(name="env")
+        ],
+        [],
+    )
     if (item.config.getoption("-E") is None and envnames) or (
         item.config.getoption("-E") is not None
         and item.config.getoption("-E") not in envnames
