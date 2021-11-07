@@ -6,6 +6,7 @@ from distributed.utils_test import loop  # noqa: F401
 import pytest
 
 import dask_jobqueue.lsf
+import dask
 
 from dask_jobqueue import (
     PBSCluster,
@@ -95,9 +96,13 @@ def EnvSpecificCluster3(pytestconfig):
     params=[pytest.param(v, marks=[pytest.mark.env(k)]) for (k, v) in all_envs.items()]
 )
 def EnvSpecificCluster(request):
+    if request.param == HTCondorCluster:
+        dask.config.set({"jobqueue.htcondor.disk": "20MB"})
     return request.param
 
 
 @pytest.fixture(params=list(all_envs.values()))
 def Cluster(request):
+    if request.param == HTCondorCluster:
+        dask.config.set({"jobqueue.htcondor.disk": "1GB"})
     return request.param

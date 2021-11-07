@@ -1,15 +1,8 @@
 import asyncio
 from time import time
 
-from dask_jobqueue.local import LocalJob, LocalCluster
+from dask_jobqueue.local import LocalCluster
 from dask_jobqueue.pbs import PBSJob
-from dask_jobqueue.sge import SGEJob
-from dask_jobqueue.slurm import SLURMJob
-from dask_jobqueue.lsf import LSFJob
-from dask_jobqueue.moab import MoabJob
-from dask_jobqueue.htcondor import HTCondorJob
-from dask_jobqueue.oar import OARJob
-
 from dask_jobqueue.core import JobQueueCluster
 from dask.distributed import Scheduler, Client
 from distributed.core import Status
@@ -17,26 +10,15 @@ from distributed.core import Status
 import pytest
 
 
-def test_basic():
-    job = PBSJob(scheduler="127.0.0.1:12345", cores=1, memory="1 GB")
+def test_basic(Cluster):
+    job_cls = Cluster.job_cls
+    job = job_cls(scheduler="127.0.0.1:12345", cores=1, memory="1 GB")
     assert "127.0.0.1:12345" in job.job_script()
 
 
-job_protected = [
-    pytest.param(SGEJob, marks=[pytest.mark.env("sge")]),
-    pytest.param(PBSJob, marks=[pytest.mark.env("pbs")]),
-    pytest.param(SLURMJob, marks=[pytest.mark.env("slurm")]),
-    pytest.param(LSFJob, marks=[pytest.mark.env("lsf")]),
-    LocalJob,
-]
-
-
-all_jobs = [SGEJob, PBSJob, SLURMJob, LSFJob, HTCondorJob, MoabJob, OARJob]
-
-
-@pytest.mark.parametrize("job_cls", job_protected)
 @pytest.mark.asyncio
-async def test_job(job_cls):
+async def test_job(EnvSpecificCluster):
+    job_cls = EnvSpecificCluster.job_cls
     async with Scheduler(port=0) as s:
         job = job_cls(scheduler=s.address, name="foo", cores=1, memory="1GB")
         job = await job
@@ -52,9 +34,9 @@ async def test_job(job_cls):
             assert time() < start + 10
 
 
-@pytest.mark.parametrize("job_cls", job_protected)
 @pytest.mark.asyncio
-async def test_cluster(job_cls):
+async def test_cluster(EnvSpecificCluster):
+    job_cls = EnvSpecificCluster.job_cls
     async with JobQueueCluster(
         1, cores=1, memory="1GB", job_cls=job_cls, asynchronous=True, name="foo"
     ) as cluster:
@@ -75,9 +57,9 @@ async def test_cluster(job_cls):
                 assert time() < start + 10
 
 
-@pytest.mark.parametrize("job_cls", job_protected)
 @pytest.mark.asyncio
-async def test_adapt(job_cls):
+async def test_adapt(EnvSpecificCluster):
+    job_cls = EnvSpecificCluster.job_cls
     async with JobQueueCluster(
         1, cores=1, memory="1GB", job_cls=job_cls, asynchronous=True, name="foo"
     ) as cluster:
@@ -105,9 +87,9 @@ async def test_adapt(job_cls):
             assert not cluster.workers
 
 
-@pytest.mark.parametrize("job_cls", job_protected)
 @pytest.mark.asyncio
-async def test_adapt_parameters(job_cls):
+async def test_adapt_parameters(EnvSpecificCluster):
+    job_cls = EnvSpecificCluster.job_cls
     async with JobQueueCluster(
         cores=2, memory="1GB", processes=2, job_cls=job_cls, asynchronous=True
     ) as cluster:
@@ -155,3 +137,8 @@ async def test_nprocs_scale():
             assert len(cluster.worker_spec) == 3
             cluster.scale(1)
             assert len(cluster.worker_spec) == 1
+
+
+def test_docstring_cluster(Cluster):
+    assert "cores :" in Cluster.__doc__
+    assert Cluster.__name__[: -len("Cluster")] in Cluster.__doc__

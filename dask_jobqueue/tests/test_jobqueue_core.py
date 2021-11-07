@@ -22,15 +22,6 @@ from dask_jobqueue.local import LocalCluster
 
 from dask_jobqueue.sge import SGEJob
 
-# all_clusters = list(all_envs.values())
-
-
-def create_cluster_func(cluster_cls, **kwargs):
-    if cluster_cls is HTCondorCluster:
-        # HTCondorCluster has a mandatory disk argument
-        kwargs.setdefault("disk", "1GB")
-    return cluster_cls(**kwargs)
-
 
 def test_errors():
     match = re.compile("Job type.*job_cls", flags=re.DOTALL)
@@ -39,7 +30,7 @@ def test_errors():
 
 
 def test_command_template(Cluster):
-    with create_cluster_func(Cluster, cores=2, memory="4GB") as cluster:
+    with Cluster(cores=2, memory="4GB") as cluster:
         assert (
             "%s -m distributed.cli.dask_worker" % (sys.executable)
             in cluster._dummy_job._command_template
@@ -48,8 +39,7 @@ def test_command_template(Cluster):
         assert " --memory-limit " in cluster._dummy_job._command_template
         assert " --name " in cluster._dummy_job._command_template
 
-    with create_cluster_func(
-        Cluster,
+    with Cluster(
         cores=2,
         memory="4GB",
         death_timeout=60,
@@ -68,19 +58,17 @@ def test_shebang_settings(Cluster):
         )
     default_shebang = "#!/usr/bin/env bash"
     python_shebang = "#!/usr/bin/python"
-    with create_cluster_func(
-        Cluster, cores=2, memory="4GB", shebang=python_shebang
-    ) as cluster:
+    with Cluster(cores=2, memory="4GB", shebang=python_shebang) as cluster:
         job_script = cluster.job_script()
         assert job_script.startswith(python_shebang)
         assert "bash" not in job_script
-    with create_cluster_func(Cluster, cores=2, memory="4GB") as cluster:
+    with Cluster(cores=2, memory="4GB") as cluster:
         job_script = cluster.job_script()
         assert job_script.startswith(default_shebang)
 
 
 def test_dashboard_link(Cluster):
-    with create_cluster_func(Cluster, cores=1, memory="1GB") as cluster:
+    with Cluster(cores=1, memory="1GB") as cluster:
         assert re.match(r"http://\d+\.\d+\.\d+.\d+:\d+/status", cluster.dashboard_link)
 
 
@@ -125,13 +113,13 @@ def test_job_id_from_qsub(job_cls, qsub_return_string):
 @pytest.mark.parametrize("Cluster", [])
 def test_job_id_error_handling_legacy(Cluster):
     # non-matching regexp
-    with create_cluster_func(Cluster, cores=1, memory="1GB") as cluster:
+    with Cluster(cores=1, memory="1GB") as cluster:
         with pytest.raises(ValueError, match="Could not parse job id"):
             return_string = "there is no number here"
             cluster._job_id_from_submit_output(return_string)
 
     # no job_id named group in the regexp
-    with create_cluster_func(Cluster, cores=1, memory="1GB") as cluster:
+    with Cluster(cores=1, memory="1GB") as cluster:
         with pytest.raises(ValueError, match="You need to use a 'job_id' named group"):
             return_string = "Job <12345> submitted to <normal>."
             cluster.job_id_regexp = r"(\d+)"
@@ -191,13 +179,13 @@ def test_jobqueue_cluster_call(tmpdir):
 def test_cluster_has_cores_and_memory(Cluster):
     base_regex = r"{}.+".format(Cluster.__name__)
     with pytest.raises(ValueError, match=base_regex + r"cores=\d, memory='\d+GB'"):
-        create_cluster_func(Cluster)
+        Cluster()
 
     with pytest.raises(ValueError, match=base_regex + r"cores=\d, memory='1GB'"):
-        create_cluster_func(Cluster, memory="1GB")
+        Cluster(memory="1GB")
 
     with pytest.raises(ValueError, match=base_regex + r"cores=4, memory='\d+GB'"):
-        create_cluster_func(Cluster, cores=4)
+        Cluster(cores=4)
 
 
 @pytest.mark.asyncio
@@ -242,11 +230,11 @@ def test_cluster_without_job_cls():
 
 
 def test_default_number_of_worker_processes(Cluster):
-    with create_cluster_func(Cluster, cores=4, memory="4GB") as cluster:
+    with Cluster(cores=4, memory="4GB") as cluster:
         assert " --nprocs 4" in cluster.job_script()
         assert " --nthreads 1" in cluster.job_script()
 
-    with create_cluster_func(Cluster, cores=6, memory="4GB") as cluster:
+    with Cluster(cores=6, memory="4GB") as cluster:
         assert " --nprocs 3" in cluster.job_script()
         assert " --nthreads 2" in cluster.job_script()
 
@@ -256,8 +244,7 @@ def test_scheduler_options(Cluster):
     interface = list(net_if_addrs.keys())[0]
     port = 8804
 
-    with create_cluster_func(
-        Cluster,
+    with Cluster(
         cores=1,
         memory="1GB",
         scheduler_options={"interface": interface, "port": port},
@@ -273,16 +260,13 @@ def test_scheduler_options_interface(Cluster):
     worker_interface = "worker-interface"
     scheduler_host = socket.gethostname()
 
-    with create_cluster_func(
-        Cluster, cores=1, memory="1GB", interface=scheduler_interface
-    ) as cluster:
+    with Cluster(cores=1, memory="1GB", interface=scheduler_interface) as cluster:
         scheduler_options = cluster.scheduler_spec["options"]
         worker_options = cluster.new_spec["options"]
         assert scheduler_options["interface"] == scheduler_interface
         assert worker_options["interface"] == scheduler_interface
 
-    with create_cluster_func(
-        Cluster,
+    with Cluster(
         cores=1,
         memory="1GB",
         interface=worker_interface,
@@ -293,8 +277,7 @@ def test_scheduler_options_interface(Cluster):
         assert scheduler_options["interface"] == scheduler_interface
         assert worker_options["interface"] == worker_interface
 
-    with create_cluster_func(
-        Cluster,
+    with Cluster(
         cores=1,
         memory="1GB",
         interface=worker_interface,
@@ -312,14 +295,12 @@ def test_cluster_error_scheduler_arguments_should_use_scheduler_options(Cluster)
 
     message = message_template.format("host")
     with pytest.raises(ValueError, match=message):
-        with create_cluster_func(Cluster, cores=1, memory="1GB", host=scheduler_host):
+        with Cluster(cores=1, memory="1GB", host=scheduler_host):
             pass
 
     message = message_template.format("dashboard_address")
     with pytest.raises(ValueError, match=message):
-        with create_cluster_func(
-            Cluster, cores=1, memory="1GB", dashboard_address=":8787"
-        ):
+        with Cluster(Cluster, cores=1, memory="1GB", dashboard_address=":8787"):
             pass
 
 
@@ -343,13 +324,12 @@ def test_import_scheduler_options_from_config(Cluster):
         {"jobqueue.%s.scheduler-options" % default_config_name: scheduler_options}
     ):
 
-        with create_cluster_func(Cluster, cores=2, memory="2GB") as cluster:
+        with Cluster(cores=2, memory="2GB") as cluster:
             scheduler_options = cluster.scheduler_spec["options"]
             assert scheduler_options.get("interface") == config_scheduler_interface
             assert scheduler_options.get("port") == config_scheduler_port
 
-        with create_cluster_func(
-            Cluster,
+        with Cluster(
             cores=2,
             memory="2GB",
             scheduler_options={"interface": pass_scheduler_interface},
@@ -367,9 +347,7 @@ def test_wrong_parameter_error(Cluster):
         re.DOTALL,
     )
     with pytest.raises(ValueError, match=match):
-        create_cluster_func(
-            Cluster, cores=1, memory="1GB", wrong_parameter="wrong_parameter_value"
-        )
+        Cluster(cores=1, memory="1GB", wrong_parameter="wrong_parameter_value")
 
 
 @pytest.mark.xfail_ci({"htcondor": "no shared filesystem in htcondor ci"})
@@ -389,8 +367,7 @@ def test_security(EnvSpecificCluster, loop):
         require_encryption=True,
     )
 
-    with create_cluster_func(
-        EnvSpecificCluster,
+    with EnvSpecificCluster(
         cores=1,
         memory="100MB",
         security=security,
@@ -412,15 +389,9 @@ def test_security(EnvSpecificCluster, loop):
             result = future.result(timeout=30)
             assert result == 11
 
-    with create_cluster_func(
-        EnvSpecificCluster,
+    with EnvSpecificCluster(
         cores=1,
         memory="100MB",
         security=security,
     ) as cluster:
         assert "tls://" in job_script
-
-
-def test_docstring_cluster(Cluster):
-    assert "cores :" in Cluster.__doc__
-    assert Cluster.__name__[: -len("Cluster")] in Cluster.__doc__
