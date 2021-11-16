@@ -14,7 +14,6 @@ from distributed import Client
 
 from dask_jobqueue import (
     JobQueueCluster,
-    PBSCluster,
     HTCondorCluster,
 )
 from dask_jobqueue.core import Job
@@ -74,8 +73,7 @@ def test_dashboard_link(Cluster):
 
 def test_forward_ip(Cluster):
     ip = "127.0.0.1"
-    with PBSCluster(
-        walltime="00:02:00",
+    with Cluster(
         processes=4,
         cores=8,
         memory="28GB",
@@ -85,10 +83,27 @@ def test_forward_ip(Cluster):
         assert cluster.scheduler.ip == ip
 
     default_ip = socket.gethostbyname("")
-    with PBSCluster(
-        walltime="00:02:00", processes=4, cores=8, memory="28GB", name="dask-worker"
-    ) as cluster:
+    with Cluster(processes=4, cores=8, memory="28GB", name="dask-worker") as cluster:
         assert cluster.scheduler.ip == default_ip
+
+
+@pytest.mark.parametrize("Cluster", [])
+@pytest.mark.parametrize(
+    "qsub_return_string",
+    [
+        "{job_id}.admin01",
+        "Request {job_id}.asdf was sumbitted to queue: standard.",
+        "sbatch: Submitted batch job {job_id}",
+        "{job_id};cluster",
+        "Job <{job_id}> is submitted to default queue <normal>.",
+        "{job_id}",
+    ],
+)
+def test_job_id_from_qsub_legacy(Cluster, qsub_return_string):
+    original_job_id = "654321"
+    qsub_return_string = qsub_return_string.format(job_id=original_job_id)
+    with Cluster(cores=1, memory="1GB") as cluster:
+        assert original_job_id == cluster._job_id_from_submit_output(qsub_return_string)
 
 
 @pytest.mark.parametrize("job_cls", [SGEJob])
@@ -142,18 +157,18 @@ def test_job_id_error_handling(job_cls):
         job._job_id_from_submit_output(return_string)
 
 
-def test_log_directory(tmpdir):
+def test_log_directory(Cluster, tmpdir):
     shutil.rmtree(tmpdir.strpath, ignore_errors=True)
-    with PBSCluster(cores=1, memory="1GB"):
+    with Cluster(cores=1, memory="1GB"):
         assert not os.path.exists(tmpdir.strpath)
 
-    with PBSCluster(cores=1, memory="1GB", log_directory=tmpdir.strpath):
+    with Cluster(cores=1, memory="1GB", log_directory=tmpdir.strpath):
         assert os.path.exists(tmpdir.strpath)
 
 
 @pytest.mark.skip
-def test_jobqueue_cluster_call(tmpdir):
-    cluster = PBSCluster(cores=1, memory="1GB")
+def test_jobqueue_cluster_call(tmpdir, Cluster):
+    cluster = Cluster(cores=1, memory="1GB")
 
     path = tmpdir.join("test.py")
     path.write('print("this is the stdout")')
@@ -350,8 +365,8 @@ def test_wrong_parameter_error(Cluster):
         Cluster(cores=1, memory="1GB", wrong_parameter="wrong_parameter_value")
 
 
-@pytest.mark.xfail_ci({"htcondor": "no shared filesystem in htcondor ci"})
-@pytest.mark.xfail_ci({"slurm": "no shared filesystem in slurm ci"})
+@pytest.mark.xfail_ci({"htcondor": "#535 no shared filesystem in htcondor ci"})
+@pytest.mark.xfail_ci({"slurm": "#535 no shared filesystem in slurm ci"})
 def test_security(EnvSpecificCluster, loop):
     dirname = os.path.dirname(__file__)
     key = os.path.join(dirname, "key.pem")
