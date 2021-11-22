@@ -50,10 +50,13 @@ def test_command_template(Cluster):
         assert " --preload mymodule" in cluster._dummy_job._command_template
 
 
-def test_shebang_settings(Cluster):
-    if Cluster is HTCondorCluster:
-        pytest.skip(
-            "HTCondorCluster has a peculiar submit script and does not have a shebang"
+def test_shebang_settings(Cluster, request):
+    if Cluster is HTCondorCluster or Cluster is LocalCluster:
+        request.node.add_marker(
+            pytest.mark.xfail(
+                reason="%s has a peculiar submit script and does not have a shebang"
+                % type(Cluster).__name__
+            )
         )
     default_shebang = "#!/usr/bin/env bash"
     python_shebang = "#!/usr/bin/python"
@@ -365,8 +368,8 @@ def test_wrong_parameter_error(Cluster):
         Cluster(cores=1, memory="1GB", wrong_parameter="wrong_parameter_value")
 
 
-@pytest.mark.xfail_ci({"htcondor": "#535 no shared filesystem in htcondor ci"})
-@pytest.mark.xfail_ci({"slurm": "#535 no shared filesystem in slurm ci"})
+@pytest.mark.xfail_env({"htcondor": "#535 no shared filesystem in htcondor ci"})
+@pytest.mark.xfail_env({"slurm": "#535 no shared filesystem in slurm ci"})
 def test_security(EnvSpecificCluster, loop):
     dirname = os.path.dirname(__file__)
     key = os.path.join(dirname, "key.pem")

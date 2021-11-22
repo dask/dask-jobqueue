@@ -31,11 +31,13 @@ def pytest_addoption(parser):
 
 
 def pytest_configure(config):
-    # register an additional marker
+    # register additional markers
     config.addinivalue_line(
         "markers", "env(NAME): only run test if environment NAME matches"
     )
-    config.addinivalue_line("markers", "xfail_ci(NAME): know CI failure")
+    config.addinivalue_line(
+        "markers", "xfail_env(NAME): known failure for environment NAME"
+    )
 
 
 def pytest_runtest_setup(item):
@@ -55,7 +57,7 @@ def pytest_runtest_setup(item):
         pytest.skip("test requires env in %r" % envnames)
     else:
         xfail = {}
-        [xfail.update(mark.args[0]) for mark in item.iter_markers(name="xfail_ci")]
+        [xfail.update(mark.args[0]) for mark in item.iter_markers(name="xfail_env")]
         if env in xfail:
             item.add_marker(pytest.mark.xfail(reason=xfail[env]))
 
@@ -87,22 +89,19 @@ all_envs = {
 }
 
 
-@pytest.fixture
-def EnvSpecificCluster3(pytestconfig):
-    return all_envs[pytestconfig.getoption("-E")]
-
-
 @pytest.fixture(
     params=[pytest.param(v, marks=[pytest.mark.env(k)]) for (k, v) in all_envs.items()]
 )
 def EnvSpecificCluster(request):
+    """Run test in only with the specific cluster class set by the environment"""
     if request.param == HTCondorCluster:
-        dask.config.set({"jobqueue.htcondor.disk": "20MB"})
+        dask.config.set({"jobqueue.htcondor.disk": "1GB"})
     return request.param
 
 
 @pytest.fixture(params=list(all_envs.values()))
 def Cluster(request):
+    """Run for each cluster class independent when no environment is set"""
     if request.param == HTCondorCluster:
         dask.config.set({"jobqueue.htcondor.disk": "1GB"})
     return request.param
