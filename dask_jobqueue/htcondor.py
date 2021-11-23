@@ -233,7 +233,7 @@ def quote_environment(env):
 
 
 class HTCondorCluster(JobQueueCluster):
-    __doc__ = """ Launch Dask on an HTCondor cluster with a shared file system
+    __doc__ = """ Launch Dask on an HTCondor cluster
 
     Parameters
     ----------
