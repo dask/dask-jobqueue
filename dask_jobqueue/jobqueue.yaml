@@ -10,6 +10,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    shared-directory: "~"       # Shared directory between scheduler and worker
     extra: []
 
     # OAR resource manager options
@@ -36,6 +37,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    shared-directory: "~"       # Shared directory between scheduler and worker
     extra: []
 
     # PBS resource manager options
@@ -62,6 +64,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    shared-directory: "~"       # Shared directory between scheduler and worker
     extra: []
 
     # SGE resource manager options
@@ -88,6 +91,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    shared-directory: "~"       # Shared directory between scheduler and worker
     extra: []
 
     # SLURM resource manager options
@@ -115,6 +119,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    shared-directory: "~"       # Shared directory between scheduler and worker
     extra: []
 
     # PBS resource manager options
@@ -141,6 +146,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    shared-directory: "~"       # Shared directory between scheduler and worker
     extra: []
 
     # LSF resource manager options
@@ -170,6 +176,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    shared-directory: "~"       # Shared directory between scheduler and worker
     extra: []
 
     # HTCondor Resource Manager options
@@ -194,6 +201,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    shared-directory: null       # Shared directory between scheduler and worker
     extra: []
 
     env-extra: []

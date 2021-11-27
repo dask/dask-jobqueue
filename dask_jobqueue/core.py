@@ -85,6 +85,8 @@ cluster_parameters = """
     scheduler_cls : type
         Changes the class of the used Dask Scheduler. Defaults to  Dask's
         :class:`distributed.Scheduler`.
+    shared_directory : str
+        Shared directory between scheduler and worker defaults to "~"
 """.strip()
 
 
@@ -442,6 +444,7 @@ class JobQueueCluster(SpecCluster):
         # Cluster keywords
         loop=None,
         security=None,
+        shared_directory=None,
         silence_logs="error",
         name=None,
         asynchronous=False,
@@ -528,6 +531,11 @@ class JobQueueCluster(SpecCluster):
         job_kwargs["protocol"] = protocol
         job_kwargs["security"] = copy.copy(security)
 
+        if shared_directory is None:
+            shared_directory = dask.config.get(
+                "jobqueue.%s.shared-directory" % config_name
+            )
+
         if security is not None:
             worker_security_dict = job_kwargs["security"].get_tls_config_for_role(
                 "worker"
@@ -535,7 +543,15 @@ class JobQueueCluster(SpecCluster):
             for key, value in worker_security_dict.items():
                 # dump worker in-memory keys for use in job_script
                 if value is not None and "\n" in value:
-                    f = tempfile.NamedTemporaryFile(mode="wt")
+                    f = tempfile.NamedTemporaryFile(
+                        mode="wt",
+                        prefix=".dask-jobqueue" + key,
+                        dir=(
+                            os.path.expanduser(os.path.expandvars(shared_directory))
+                            if shared_directory is not None
+                            else None
+                        ),
+                    )
                     # make sure that tmpfile survives by keeping a reference
                     setattr(self, "_job_" + key, f)
                     f.write(value)
