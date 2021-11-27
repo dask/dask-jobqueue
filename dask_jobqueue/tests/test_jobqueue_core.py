@@ -413,3 +413,46 @@ def test_security(EnvSpecificCluster, loop):
         security=security,
     ) as cluster:
         assert "tls://" in job_script
+
+
+@pytest.mark.xfail(
+    reason="#520 In memory security contexts are not supported", strict=True
+)
+def test_security_temporary(EnvSpecificCluster, loop):
+    dirname = os.path.dirname(__file__)
+    with open(os.path.join(dirname, "key.pem"), "r") as file:
+        key = file.read()
+    with open(os.path.join(dirname, "ca.pem"), "r") as file:
+        cert = file.read()
+    security = Security(
+        tls_ca_file=cert,
+        tls_scheduler_key=key,
+        tls_scheduler_cert=cert,
+        tls_worker_key=key,
+        tls_worker_cert=cert,
+        tls_client_key=key,
+        tls_client_cert=cert,
+        require_encryption=True,
+    )
+
+    with EnvSpecificCluster(
+        cores=1,
+        memory="100MB",
+        security=security,
+        protocol="tls",
+        loop=loop,
+    ) as cluster:
+        assert cluster.security
+        assert cluster.scheduler_spec["options"]["security"] == cluster.security
+        job_script = cluster.job_script()
+        assert "tls://" in job_script
+        assert "--tls-key" in job_script
+        assert "--tls-cert" in job_script
+        assert "--tls-ca-file" in job_script
+
+        cluster.scale(jobs=1)
+        with Client(cluster) as client:
+            future = client.submit(lambda x: x + 1, 10)
+            # TODO timeout is workaround because errors cannot be caught, xfail is reported twice
+            result = future.result(timeout=10)
+            assert result == 11
