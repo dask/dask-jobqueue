@@ -550,7 +550,7 @@ class JobQueueCluster(SpecCluster):
                 if value is not None and "\n" in value:
                     f = tempfile.NamedTemporaryFile(
                         mode="wt",
-                        prefix=".dask-jobqueue" + key,
+                        prefix=".dask-jobqueue.worker." + key + ".",
                         dir=(
                             os.path.expanduser(os.path.expandvars(shared_directory))
                             if shared_directory is not None
