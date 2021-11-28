@@ -354,6 +354,7 @@ def test_config_name_pbs_takes_custom_config():
         "interface": None,
         "death-timeout": None,
         "local-directory": "/foo",
+        "shared-directory": None,
         "extra": [],
         "env-extra": [],
         "log-directory": None,

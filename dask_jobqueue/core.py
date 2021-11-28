@@ -537,6 +537,11 @@ class JobQueueCluster(SpecCluster):
             )
 
         if security is not None:
+            if shared_directory is None:
+                raise ValueError(
+                    "Passing a security object to workers is only supported if a shared directory is configured"
+                )
+
             worker_security_dict = job_kwargs["security"].get_tls_config_for_role(
                 "worker"
             )
@@ -556,10 +561,15 @@ class JobQueueCluster(SpecCluster):
                     setattr(self, "_job_" + key, f)
                     f.write(value)
                     f.flush()
+                    # allow expanding of vars and user paths in remote script
+                    if shared_directory is not None:
+                        fname = os.path.join(shared_directory, os.path.basename(f.name))
+                    else:
+                        fname = f.name
                     setattr(
                         job_kwargs["security"],
                         "tls_" + ("worker_" if key != "ca_file" else "") + key,
-                        f.name,
+                        fname,
                     )
 
         self._job_kwargs = job_kwargs
