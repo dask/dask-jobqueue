@@ -16,7 +16,7 @@ function jobqueue_before_install {
 }
 
 function jobqueue_install {
-    docker exec pbs_master /bin/bash -c "cd /dask-jobqueue; pip install -e ."
+    docker exec pbs_master /bin/bash -c "cd /dask-jobqueue; pip install -e .; chown -R pbsuser ."
 }
 
 function jobqueue_script {

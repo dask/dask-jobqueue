@@ -257,10 +257,20 @@ def test_default_number_of_worker_processes(Cluster):
         assert " --nthreads 2" in cluster.job_script()
 
 
-def test_scheduler_options(Cluster):
+def get_interface_and_port(index=0):
     net_if_addrs = psutil.net_if_addrs()
-    interface = list(net_if_addrs.keys())[0]
-    port = 8804
+    interface = list(net_if_addrs.keys())[index]
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((net_if_addrs[interface][0].address, 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        port = s.getsockname()[1]
+        s.close()
+    return (interface, port)
+
+
+def test_scheduler_options(Cluster):
+
+    interface, port = get_interface_and_port()
 
     with Cluster(
         cores=1,
@@ -323,13 +333,9 @@ def test_cluster_error_scheduler_arguments_should_use_scheduler_options(Cluster)
 
 
 def test_import_scheduler_options_from_config(Cluster):
+    config_scheduler_interface, config_scheduler_port = get_interface_and_port()
 
-    net_if_addrs = psutil.net_if_addrs()
-
-    config_scheduler_interface = list(net_if_addrs.keys())[0]
-    config_scheduler_port = 8804
-
-    pass_scheduler_interface = list(net_if_addrs.keys())[1]
+    pass_scheduler_interface, _ = get_interface_and_port()
 
     scheduler_options = {
         "interface": config_scheduler_interface,
@@ -434,10 +440,6 @@ def test_security_temporary(EnvSpecificCluster, loop):
         require_encryption=True,
     )
 
-    for root, dirs, files in os.walk(dirname):
-        for file in files:
-            assert not file.startswith(".dask-jobqueue.worker.")
-
     with EnvSpecificCluster(
         cores=1,
         memory="100MB",
@@ -450,19 +452,23 @@ def test_security_temporary(EnvSpecificCluster, loop):
         assert cluster.scheduler_spec["options"]["security"] == cluster.security
         job_script = cluster.job_script()
         assert "tls://" in job_script
+        keyfile = re.findall(r"--tls-key (\S+)", job_script)[0]
         assert (
-            "--tls-key {}".format(os.path.join(dirname, ".dask-jobqueue.worker.key."))
-            in job_script
+            os.path.exists(keyfile)
+            and os.path.basename(keyfile).startswith(".dask-jobqueue.worker.key")
+            and os.path.dirname(keyfile) == dirname
         )
+        certfile = re.findall(r"--tls-cert (\S+)", job_script)[0]
         assert (
-            "--tls-cert {}".format(os.path.join(dirname, ".dask-jobqueue.worker.cert."))
-            in job_script
+            os.path.exists(certfile)
+            and os.path.basename(certfile).startswith(".dask-jobqueue.worker.cert")
+            and os.path.dirname(certfile) == dirname
         )
+        cafile = re.findall(r"--tls-ca-file (\S+)", job_script)[0]
         assert (
-            "--tls-ca-file {}".format(
-                os.path.join(dirname, ".dask-jobqueue.worker.ca_file.")
-            )
-            in job_script
+            os.path.exists(cafile)
+            and os.path.basename(cafile).startswith(".dask-jobqueue.worker.ca_file")
+            and os.path.dirname(cafile) == dirname
         )
 
         cluster.scale(jobs=1)
@@ -470,9 +476,5 @@ def test_security_temporary(EnvSpecificCluster, loop):
             future = client.submit(lambda x: x + 1, 10)
             result = future.result(timeout=30)
             assert result == 11
-        cluster.close()
-        del cluster
 
-    for root, dirs, files in os.walk(dirname):
-        for file in files:
-            assert root and file and not file.startswith(".dask-jobqueue.worker.")
+    assert not any([os.path.exists(f) for f in [keyfile, certfile, cafile]])

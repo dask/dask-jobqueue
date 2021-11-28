@@ -607,6 +607,7 @@ class JobQueueCluster(SpecCluster):
             for key, value in worker_security_dict.items():
                 if hasattr(self, "_job_" + key):
                     delattr(self, "_job_" + key)
+        self.close()
 
     @property
     def _dummy_job(self):
