@@ -20,6 +20,8 @@ from dask_jobqueue import (
 
 from dask_jobqueue.local import LocalCluster
 
+import warnings
+
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -41,6 +43,9 @@ def pytest_configure(config):
 
 
 def pytest_runtest_setup(item):
+    warnings.filterwarnings(
+        "ignore", message="Port 8787 is already in use", category=UserWarning
+    )
     env = item.config.getoption("-E")
     envnames = sum(
         [

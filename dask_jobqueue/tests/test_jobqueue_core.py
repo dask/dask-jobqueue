@@ -283,8 +283,7 @@ def test_scheduler_options(Cluster):
 
 
 def test_scheduler_options_interface(Cluster):
-    net_if_addrs = psutil.net_if_addrs()
-    scheduler_interface = list(net_if_addrs.keys())[0]
+    scheduler_interface, _ = get_interface_and_port()
     worker_interface = "worker-interface"
     scheduler_host = socket.gethostname()
 
@@ -335,7 +334,7 @@ def test_cluster_error_scheduler_arguments_should_use_scheduler_options(Cluster)
 def test_import_scheduler_options_from_config(Cluster):
     config_scheduler_interface, config_scheduler_port = get_interface_and_port()
 
-    pass_scheduler_interface, _ = get_interface_and_port()
+    pass_scheduler_interface, _ = get_interface_and_port(1)
 
     scheduler_options = {
         "interface": config_scheduler_interface,
