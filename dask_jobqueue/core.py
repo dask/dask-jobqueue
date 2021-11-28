@@ -223,7 +223,6 @@ class Job(ProcessInterface, abc.ABC):
             extra = extra + ["--protocol", protocol]
         if security:
             worker_security_dict = security.get_tls_config_for_role("worker")
-
             security_command_line_list = [
                 ["--tls-" + key.replace("_", "-"), value]
                 for key, value in worker_security_dict.items()
