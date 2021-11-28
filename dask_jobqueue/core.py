@@ -595,6 +595,19 @@ class JobQueueCluster(SpecCluster):
         if n_workers:
             self.scale(n_workers)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        # delete any temporary security
+        if "security" in self._job_kwargs and self._job_kwargs["security"] is not None:
+            worker_security_dict = self._job_kwargs["security"].get_tls_config_for_role(
+                "worker"
+            )
+            for key, value in worker_security_dict.items():
+                if hasattr(self, "_job_" + key):
+                    delattr(self, "_job_" + key)
+
     @property
     def _dummy_job(self):
         """

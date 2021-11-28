@@ -433,6 +433,11 @@ def test_security_temporary(EnvSpecificCluster, loop):
         tls_client_cert=cert,
         require_encryption=True,
     )
+
+    for root, dirs, files in os.walk(dirname):
+        for file in files:
+            assert not file.startswith(".dask-jobqueue.worker.")
+
     with EnvSpecificCluster(
         cores=1,
         memory="100MB",
@@ -445,12 +450,29 @@ def test_security_temporary(EnvSpecificCluster, loop):
         assert cluster.scheduler_spec["options"]["security"] == cluster.security
         job_script = cluster.job_script()
         assert "tls://" in job_script
-        assert "--tls-key" in job_script
-        assert "--tls-cert" in job_script
-        assert "--tls-ca-file" in job_script
+        assert (
+            "--tls-key {}".format(os.path.join(dirname, ".dask-jobqueue.worker.key."))
+            in job_script
+        )
+        assert (
+            "--tls-cert {}".format(os.path.join(dirname, ".dask-jobqueue.worker.cert."))
+            in job_script
+        )
+        assert (
+            "--tls-ca-file {}".format(
+                os.path.join(dirname, ".dask-jobqueue.worker.ca_file.")
+            )
+            in job_script
+        )
 
         cluster.scale(jobs=1)
         with Client(cluster) as client:
             future = client.submit(lambda x: x + 1, 10)
             result = future.result(timeout=30)
             assert result == 11
+        cluster.close()
+        del cluster
+
+    for root, dirs, files in os.walk(dirname):
+        for file in files:
+            assert root and file and not file.startswith(".dask-jobqueue.worker.")
