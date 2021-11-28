@@ -437,6 +437,7 @@ def test_security_temporary(EnvSpecificCluster, loop):
         cores=1,
         memory="100MB",
         security=security,
+        shared_directory=dirname,
         protocol="tls",
         loop=loop,
     ) as cluster:
