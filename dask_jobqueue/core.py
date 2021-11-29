@@ -525,15 +525,11 @@ class JobQueueCluster(SpecCluster):
             "options": scheduler_options,
         }
 
-        job_kwargs["config_name"] = config_name
-        job_kwargs["interface"] = interface
-        job_kwargs["protocol"] = protocol
-        job_kwargs["security"] = copy.copy(security)
-
         if shared_directory is None:
             shared_directory = dask.config.get(
                 "jobqueue.%s.shared-directory" % config_name
             )
+        self.shared_directory = shared_directory
 
         if security is not None:
             if shared_directory is None:
@@ -541,35 +537,10 @@ class JobQueueCluster(SpecCluster):
                     "Passing a security object to workers is only supported if a shared directory is configured"
                 )
 
-            worker_security_dict = job_kwargs["security"].get_tls_config_for_role(
-                "worker"
-            )
-            for key, value in worker_security_dict.items():
-                # dump worker in-memory keys for use in job_script
-                if value is not None and "\n" in value:
-                    f = tempfile.NamedTemporaryFile(
-                        mode="wt",
-                        prefix=".dask-jobqueue.worker." + key + ".",
-                        dir=(
-                            os.path.expanduser(os.path.expandvars(shared_directory))
-                            if shared_directory is not None
-                            else None
-                        ),
-                    )
-                    # make sure that tmpfile survives by keeping a reference
-                    setattr(self, "_job_" + key, f)
-                    f.write(value)
-                    f.flush()
-                    # allow expanding of vars and user paths in remote script
-                    if shared_directory is not None:
-                        fname = os.path.join(shared_directory, os.path.basename(f.name))
-                    else:
-                        fname = f.name
-                    setattr(
-                        job_kwargs["security"],
-                        "tls_" + ("worker_" if key != "ca_file" else "") + key,
-                        fname,
-                    )
+        job_kwargs["config_name"] = config_name
+        job_kwargs["interface"] = interface
+        job_kwargs["protocol"] = protocol
+        job_kwargs["security"] = self._get_worker_security(security)
 
         self._job_kwargs = job_kwargs
 
@@ -653,6 +624,46 @@ class JobQueueCluster(SpecCluster):
         return "{cluster_name}-{worker_number}".format(
             cluster_name=self._name, worker_number=worker_number
         )
+
+    def _get_worker_security(self, security):
+        """Dump temporary parts of the security object into a shared_directory"""
+        if security is not None:
+            copied_on_write = False
+            worker_security_dict = security.get_tls_config_for_role("worker")
+            for key, value in worker_security_dict.items():
+                # dump worker in-memory keys for use in job_script
+                if value is not None and "\n" in value:
+                    if not copied_on_write:
+                        security = copy.copy(security)
+                        copied_on_write = True
+                    f = tempfile.NamedTemporaryFile(
+                        mode="wt",
+                        prefix=".dask-jobqueue.worker." + key + ".",
+                        dir=(
+                            os.path.expanduser(
+                                os.path.expandvars(self.shared_directory)
+                            )
+                            if self.shared_directory is not None
+                            else None
+                        ),
+                    )
+                    # make sure that tmpfile survives by keeping a reference
+                    setattr(self, "_job_" + key, f)
+                    f.write(value)
+                    f.flush()
+                    # allow expanding of vars and user paths in remote script
+                    if self.shared_directory is not None:
+                        fname = os.path.join(
+                            self.shared_directory, os.path.basename(f.name)
+                        )
+                    else:
+                        fname = f.name
+                    setattr(
+                        security,
+                        "tls_" + ("worker_" if key != "ca_file" else "") + key,
+                        fname,
+                    )
+        return security
 
     def scale(self, n=None, jobs=0, memory=None, cores=None):
         """Scale cluster to specified configurations.
