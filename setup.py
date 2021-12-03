@@ -34,6 +34,7 @@ setup(
     include_package_data=True,
     install_requires=install_requires,
     tests_require=["pytest >= 2.7.1"],
+    extras_require=extras_require,
     long_description=long_description,
     zip_safe=False,
 )
