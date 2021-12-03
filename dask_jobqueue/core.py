@@ -10,6 +10,7 @@ import weakref
 import abc
 import tempfile
 import copy
+import warnings
 
 import dask
 
@@ -85,7 +86,7 @@ cluster_parameters = """
     scheduler_cls : type
         Changes the class of the used Dask Scheduler. Defaults to  Dask's
         :class:`distributed.Scheduler`.
-    shared_directory : str
+    shared_temp_directory : str
         Shared directory between scheduler and worker defaults to "~"
 """.strip()
 
@@ -443,7 +444,7 @@ class JobQueueCluster(SpecCluster):
         # Cluster keywords
         loop=None,
         security=None,
-        shared_directory=None,
+        shared_temp_directory=None,
         silence_logs="error",
         name=None,
         asynchronous=False,
@@ -525,17 +526,11 @@ class JobQueueCluster(SpecCluster):
             "options": scheduler_options,
         }
 
-        if shared_directory is None:
-            shared_directory = dask.config.get(
-                "jobqueue.%s.shared-directory" % config_name
+        if shared_temp_directory is None:
+            shared_temp_directory = dask.config.get(
+                "jobqueue.%s.shared-temp-directory" % config_name
             )
-        self.shared_directory = shared_directory
-
-        if security is not None:
-            if shared_directory is None:
-                raise ValueError(
-                    "Passing a security object to workers is only supported if a shared directory is configured"
-                )
+        self.shared_temp_directory = shared_temp_directory
 
         job_kwargs["config_name"] = config_name
         job_kwargs["interface"] = interface
@@ -626,43 +621,69 @@ class JobQueueCluster(SpecCluster):
         )
 
     def _get_worker_security(self, security):
-        """Dump temporary parts of the security object into a shared_directory"""
-        if security is not None:
-            copied_on_write = False
-            worker_security_dict = security.get_tls_config_for_role("worker")
-            for key, value in worker_security_dict.items():
-                # dump worker in-memory keys for use in job_script
-                if value is not None and "\n" in value:
-                    if not copied_on_write:
-                        security = copy.copy(security)
-                        copied_on_write = True
+        """Dump temporary parts of the security object into a shared_temp_directory"""
+        if security is None:
+            return None
+
+        worker_security_dict = security.get_tls_config_for_role("worker")
+
+        # only needed if temporary security is specified which only works
+        if not any(
+            [value is not None and "\n" for value in worker_security_dict.items()]
+        ):
+            return security
+        elif self.shared_temp_directory is None:
+            shared_temp_directory = os.getcwd()
+            warnings.warn(
+                "Using a temporary security object without explicitly setting a shared_temp_directory: \
+writing temp files to current working directory ({}) instead. You can set this value by \
+using dask for e.g. `dask.config.set({{'jobqueue.pbs.shared_temp_directory': '~'}})`\
+or by setting this value in the config file found in `~/.config/dask/jobqueue.yaml` ".format(
+                    shared_temp_directory
+                ),
+                category=UserWarning,
+            )
+        else:
+            shared_temp_directory = os.path.expanduser(
+                os.path.expandvars(self.shared_temp_directory)
+            )
+
+        security = copy.copy(security)
+
+        for key, value in worker_security_dict.items():
+            # dump worker in-memory keys for use in job_script
+            if value is not None and "\n" in value:
+
+                try:
                     f = tempfile.NamedTemporaryFile(
                         mode="wt",
                         prefix=".dask-jobqueue.worker." + key + ".",
-                        dir=(
-                            os.path.expanduser(
-                                os.path.expandvars(self.shared_directory)
-                            )
-                            if self.shared_directory is not None
-                            else None
-                        ),
+                        dir=shared_temp_directory,
                     )
-                    # make sure that tmpfile survives by keeping a reference
-                    setattr(self, "_job_" + key, f)
-                    f.write(value)
-                    f.flush()
-                    # allow expanding of vars and user paths in remote script
-                    if self.shared_directory is not None:
-                        fname = os.path.join(
-                            self.shared_directory, os.path.basename(f.name)
+                except OSError as e:
+                    raise OSError(
+                        'failed to dump security objects into shared_temp_directory({})"'.format(
+                            shared_temp_directory
                         )
-                    else:
-                        fname = f.name
-                    setattr(
-                        security,
-                        "tls_" + ("worker_" if key != "ca_file" else "") + key,
-                        fname,
+                    ) from e
+
+                # make sure that tmpfile survives by keeping a reference
+                setattr(self, "_job_" + key, f)
+                f.write(value)
+                f.flush()
+                # allow expanding of vars and user paths in remote script
+                if self.shared_temp_directory is not None:
+                    fname = os.path.join(
+                        self.shared_temp_directory, os.path.basename(f.name)
                     )
+                else:
+                    fname = f.name
+                setattr(
+                    security,
+                    "tls_" + ("worker_" if key != "ca_file" else "") + key,
+                    fname,
+                )
+
         return security
 
     def scale(self, n=None, jobs=0, memory=None, cores=None):

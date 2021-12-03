@@ -419,26 +419,11 @@ def test_security(EnvSpecificCluster, loop):
 @pytest.mark.xfail_env({"slurm": "#535 no shared filesystem in slurm ci"})
 def test_security_temporary(EnvSpecificCluster, loop):
     dirname = os.path.dirname(__file__)
-    with open(os.path.join(dirname, "key.pem"), "r") as file:
-        key = file.read()
-    with open(os.path.join(dirname, "ca.pem"), "r") as file:
-        cert = file.read()
-    security = Security(
-        tls_ca_file=cert,
-        tls_scheduler_key=key,
-        tls_scheduler_cert=cert,
-        tls_worker_key=key,
-        tls_worker_cert=cert,
-        tls_client_key=key,
-        tls_client_cert=cert,
-        require_encryption=True,
-    )
-
     with EnvSpecificCluster(
         cores=1,
         memory="100MB",
-        security=security,
-        shared_directory=dirname,
+        security=Security.temporary(),
+        shared_temp_directory=dirname,
         protocol="tls",
         loop=loop,
     ) as cluster:

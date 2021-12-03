@@ -10,7 +10,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
-    shared-directory: "~"       # Shared directory between scheduler and worker
+    shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: []
 
     # OAR resource manager options
@@ -37,7 +37,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
-    shared-directory: "~"       # Shared directory between scheduler and worker
+    shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: []
 
     # PBS resource manager options
@@ -64,7 +64,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
-    shared-directory: "~"       # Shared directory between scheduler and worker
+    shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: []
 
     # SGE resource manager options
@@ -91,7 +91,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
-    shared-directory: "~"       # Shared directory between scheduler and worker
+    shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: []
 
     # SLURM resource manager options
@@ -119,7 +119,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
-    shared-directory: "~"       # Shared directory between scheduler and worker
+    shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: []
 
     # PBS resource manager options
@@ -146,7 +146,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
-    shared-directory: "~"       # Shared directory between scheduler and worker
+    shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: []
 
     # LSF resource manager options
@@ -176,7 +176,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
-    shared-directory: "~"       # Shared directory between scheduler and worker
+    shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: []
 
     # HTCondor Resource Manager options
@@ -201,7 +201,7 @@ jobqueue:
     interface: null             # Network interface to use like eth0 or ib0
     death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
-    shared-directory: "/tmp"    # Shared directory between scheduler and worker
+    shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: []
 
     env-extra: []

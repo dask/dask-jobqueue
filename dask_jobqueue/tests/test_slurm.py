@@ -186,7 +186,7 @@ def test_config_name_slurm_takes_custom_config():
         "interface": None,
         "death-timeout": None,
         "local-directory": "/foo",
-        "shared-directory": None,
+        "shared-temp-directory": None,
         "extra": [],
         "env-extra": [],
         "log-directory": None,

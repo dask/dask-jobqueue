@@ -8,6 +8,14 @@ from setuptools import setup
 with open("requirements.txt") as f:
     install_requires = f.read().strip().split("\n")
 
+extras_require = {}
+
+extras_require["test"] = [
+    "pytest",
+    "pytest-asyncio",
+    "cryptography",
+]
+
 if exists("README.rst"):
     with open("README.rst") as f:
         long_description = f.read()
