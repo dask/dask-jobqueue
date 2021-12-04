@@ -370,6 +370,7 @@ def test_wrong_parameter_error(Cluster):
 
 @pytest.mark.xfail_env({"htcondor": "#535 no shared filesystem in htcondor ci"})
 @pytest.mark.xfail_env({"slurm": "#535 no shared filesystem in slurm ci"})
+@pytest.mark.filterwarnings("error:Using a temporary security object:UserWarning")
 def test_security(EnvSpecificCluster, loop):
     dirname = os.path.dirname(__file__)
     key = os.path.join(dirname, "key.pem")
@@ -457,3 +458,29 @@ def test_security_temporary(EnvSpecificCluster, loop):
             assert result == 11
 
     # TODO assert not any([os.path.exists(f) for f in [keyfile, certfile, cafile]])
+
+
+@pytest.mark.xfail_env({"htcondor": "#535 no shared filesystem in htcondor ci"})
+@pytest.mark.xfail_env({"slurm": "#535 no shared filesystem in slurm ci"})
+@pytest.mark.xfail_env({"pbs": "current directory (pbsuser home) not shared"})
+def test_security_temporary_defaults(EnvSpecificCluster, loop):
+    # test automatic behaviour if security is true and shared_temp_directory not set
+    with pytest.warns(UserWarning, match="shared_temp_directory"), EnvSpecificCluster(
+        cores=1,
+        memory="100MB",
+        security=True,
+        protocol="tls",
+        loop=loop,  # for some reason (bug?) using the loop fixture requires using a new test case
+    ) as cluster:
+        assert cluster.security
+        assert cluster.scheduler_spec["options"]["security"] == cluster.security
+        job_script = cluster.job_script()
+        assert "--tls-key" in job_script
+        assert "--tls-cert" in job_script
+        assert "--tls-ca-file" in job_script
+
+        cluster.scale(jobs=1)
+        with Client(cluster) as client:
+            future = client.submit(lambda x: x + 1, 10)
+            result = future.result(timeout=30)
+            assert result == 11
