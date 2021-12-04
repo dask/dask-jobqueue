@@ -627,11 +627,12 @@ class JobQueueCluster(SpecCluster):
 
         worker_security_dict = security.get_tls_config_for_role("worker")
 
-        # only needed if temporary security is specified which only works
+        # dumping of certificates only needed if multiline in-memory keys are contained
         if not any(
             [value is not None and "\n" for value in worker_security_dict.items()]
         ):
             return security
+        # a shared temp directory should be configured correctly
         elif self.shared_temp_directory is None:
             shared_temp_directory = os.getcwd()
             warnings.warn(
@@ -667,7 +668,7 @@ or by setting this value in the config file found in `~/.config/dask/jobqueue.ya
                         )
                     ) from e
 
-                # make sure that tmpfile survives by keeping a reference
+                # make sure that the file is bound to life time of self by keeping a reference to the file handle
                 setattr(self, "_job_" + key, f)
                 f.write(value)
                 f.flush()
