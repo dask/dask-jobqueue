@@ -87,7 +87,8 @@ cluster_parameters = """
         Changes the class of the used Dask Scheduler. Defaults to  Dask's
         :class:`distributed.Scheduler`.
     shared_temp_directory : str
-        Shared directory between scheduler and worker (used for example by temporary security certificates) defaults to current working directory if not set.
+        Shared directory between scheduler and worker (used for example by temporary
+        security certificates) defaults to current working directory if not set.
 """.strip()
 
 
@@ -629,7 +630,10 @@ class JobQueueCluster(SpecCluster):
 
         # dumping of certificates only needed if multiline in-memory keys are contained
         if not any(
-            [(value is not None and "\n" in value) for value in worker_security_dict.values()]
+            [
+                (value is not None and "\n" in value)
+                for value in worker_security_dict.values()
+            ]
         ):
             return security
         # a shared temp directory should be configured correctly
