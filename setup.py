@@ -8,6 +8,14 @@ from setuptools import setup
 with open("requirements.txt") as f:
     install_requires = f.read().strip().split("\n")
 
+extras_require = {}
+
+extras_require["test"] = [
+    "pytest",
+    "pytest-asyncio",
+    "cryptography",
+]
+
 if exists("README.rst"):
     with open("README.rst") as f:
         long_description = f.read()
@@ -26,6 +34,7 @@ setup(
     include_package_data=True,
     install_requires=install_requires,
     tests_require=["pytest >= 2.7.1"],
+    extras_require=extras_require,
     long_description=long_description,
     zip_safe=False,
 )

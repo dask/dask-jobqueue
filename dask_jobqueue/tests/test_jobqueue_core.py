@@ -413,3 +413,47 @@ def test_security(EnvSpecificCluster, loop):
         security=security,
     ) as cluster:
         assert "tls://" in job_script
+
+
+@pytest.mark.xfail_env({"htcondor": "#535 no shared filesystem in htcondor ci"})
+@pytest.mark.xfail_env({"slurm": "#535 no shared filesystem in slurm ci"})
+def test_security_temporary(EnvSpecificCluster, loop):
+    dirname = os.path.dirname(__file__)
+    with EnvSpecificCluster(
+        cores=1,
+        memory="100MB",
+        security=Security.temporary(),
+        shared_temp_directory=dirname,
+        protocol="tls",
+        loop=loop,
+    ) as cluster:
+        assert cluster.security
+        assert cluster.scheduler_spec["options"]["security"] == cluster.security
+        job_script = cluster.job_script()
+        assert "tls://" in job_script
+        keyfile = re.findall(r"--tls-key (\S+)", job_script)[0]
+        assert (
+            os.path.exists(keyfile)
+            and os.path.basename(keyfile).startswith(".dask-jobqueue.worker.key")
+            and os.path.dirname(keyfile) == dirname
+        )
+        certfile = re.findall(r"--tls-cert (\S+)", job_script)[0]
+        assert (
+            os.path.exists(certfile)
+            and os.path.basename(certfile).startswith(".dask-jobqueue.worker.cert")
+            and os.path.dirname(certfile) == dirname
+        )
+        cafile = re.findall(r"--tls-ca-file (\S+)", job_script)[0]
+        assert (
+            os.path.exists(cafile)
+            and os.path.basename(cafile).startswith(".dask-jobqueue.worker.ca_file")
+            and os.path.dirname(cafile) == dirname
+        )
+
+        cluster.scale(jobs=1)
+        with Client(cluster) as client:
+            future = client.submit(lambda x: x + 1, 10)
+            result = future.result(timeout=30)
+            assert result == 11
+
+    # TODO assert not any([os.path.exists(f) for f in [keyfile, certfile, cafile]])

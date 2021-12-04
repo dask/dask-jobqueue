@@ -10,3 +10,4 @@ dependencies:
   - black
   - pytest
   - pytest-asyncio
+  - cryptography
