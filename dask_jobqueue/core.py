@@ -629,7 +629,7 @@ class JobQueueCluster(SpecCluster):
 
         # dumping of certificates only needed if multiline in-memory keys are contained
         if not any(
-            [value is not None and "\n" for value in worker_security_dict.items()]
+            [(value is not None and "\n" in value) for value in worker_security_dict.values()]
         ):
             return security
         # a shared temp directory should be configured correctly
