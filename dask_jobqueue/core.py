@@ -87,7 +87,7 @@ cluster_parameters = """
         Changes the class of the used Dask Scheduler. Defaults to  Dask's
         :class:`distributed.Scheduler`.
     shared_temp_directory : str
-        Shared directory between scheduler and worker defaults to "~"
+        Shared directory between scheduler and worker (used for example by temporary security certificates) defaults to current working directory if not set.
 """.strip()
 
 
