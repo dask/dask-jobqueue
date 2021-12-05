@@ -228,7 +228,10 @@ class Job(ProcessInterface, abc.ABC):
         if security:
             worker_security_dict = security.get_tls_config_for_role("worker")
             security_command_line_list = [
-                ["--tls-" + key.replace("_", "-"), value]
+                [
+                    "--tls-" + key.replace("_", "-"),
+                    '"' + value.replace('"', r"\"") + '"',
+                ]
                 for key, value in worker_security_dict.items()
                 # 'ciphers' parameter does not have a command-line equivalent
                 if key != "ciphers"

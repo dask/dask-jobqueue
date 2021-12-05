@@ -373,8 +373,8 @@ def test_wrong_parameter_error(Cluster):
 @pytest.mark.filterwarnings("error:Using a temporary security object:UserWarning")
 def test_security(EnvSpecificCluster, loop):
     dirname = os.path.dirname(__file__)
-    key = os.path.join(dirname, "key.pem")
-    cert = os.path.join(dirname, "ca.pem")
+    key = os.path.join(dirname, r'key".pem')
+    cert = os.path.join(dirname, r"ca .pem")
     security = Security(
         tls_ca_file=cert,
         tls_scheduler_key=key,
@@ -397,9 +397,9 @@ def test_security(EnvSpecificCluster, loop):
         assert cluster.scheduler_spec["options"]["security"] == security
         job_script = cluster.job_script()
         assert "tls://" in job_script
-        assert "--tls-key {}".format(key) in job_script
-        assert "--tls-cert {}".format(cert) in job_script
-        assert "--tls-ca-file {}".format(cert) in job_script
+        assert '--tls-key "{}"'.format(key.replace('"', r"\"")) in job_script
+        assert '--tls-cert "{}"'.format(cert.replace('"', r"\"")) in job_script
+        assert '--tls-ca-file "{}"'.format(cert.replace('"', r"\"")) in job_script
 
         cluster.scale(jobs=1)
 
@@ -432,19 +432,20 @@ def test_security_temporary(EnvSpecificCluster, loop):
         assert cluster.scheduler_spec["options"]["security"] == cluster.security
         job_script = cluster.job_script()
         assert "tls://" in job_script
-        keyfile = re.findall(r"--tls-key (\S+)", job_script)[0]
+        quotedstring_re = r'"((?:(?:(?!(?<!\\)").)*))"'
+        keyfile = re.findall("--tls-key " + quotedstring_re, job_script)[0]
         assert (
             os.path.exists(keyfile)
             and os.path.basename(keyfile).startswith(".dask-jobqueue.worker.key")
             and os.path.dirname(keyfile) == dirname
         )
-        certfile = re.findall(r"--tls-cert (\S+)", job_script)[0]
+        certfile = re.findall("--tls-cert " + quotedstring_re, job_script)[0]
         assert (
             os.path.exists(certfile)
             and os.path.basename(certfile).startswith(".dask-jobqueue.worker.cert")
             and os.path.dirname(certfile) == dirname
         )
-        cafile = re.findall(r"--tls-ca-file (\S+)", job_script)[0]
+        cafile = re.findall("--tls-ca-file " + quotedstring_re, job_script)[0]
         assert (
             os.path.exists(cafile)
             and os.path.basename(cafile).startswith(".dask-jobqueue.worker.ca_file")
