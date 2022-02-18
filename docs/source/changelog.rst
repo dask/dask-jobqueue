@@ -4,6 +4,8 @@ Changelog
 Development version
 -------------------
 
+- Drop support for Python 3.6 (:pr:`???`)
+
 0.7.3 / 2021-07-22
 ------------------
 
