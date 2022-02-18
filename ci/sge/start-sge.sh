@@ -1,6 +1,6 @@
 #!/bin/bash
 
-docker-compose up -d --no-build
+docker-compose up -d
 
 START=$(date +%s)
 MAX_WAIT_SECONDS=300
