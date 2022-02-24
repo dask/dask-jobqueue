@@ -21,9 +21,9 @@ from dask_jobqueue import __version__ as version
 
 # -- Project information -----------------------------------------------------
 
-author = u"Dask-jobqueue Development Team"
-project = u"Dask-jobqueue"
-copyright = u"2018, Anaconda, Inc. and contributors"
+author = "Dask-jobqueue Development Team"
+project = "Dask-jobqueue"
+copyright = "2018, Anaconda, Inc. and contributors"
 
 
 # The full version, including alpha/beta/rc tags.
