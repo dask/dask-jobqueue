@@ -8,4 +8,4 @@ dependencies:
   - ipython
   - sphinx
   - pip:
-    - dask_sphinx_theme>=2
+    - dask-sphinx-theme>=3.0.0
