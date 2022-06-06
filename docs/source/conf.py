@@ -80,7 +80,9 @@ language = None
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "default"
+# Commenting this out for now, if we register dask pygments,
+# then eventually this line can be:
+# pygments_style = "dask"
 
 
 # -- Options for HTML output -------------------------------------------------
