@@ -177,6 +177,4 @@ specified for certain steps in the processing. For example:
     stage_1 = [delayed(step_1_w_single_GPU)(i) for i in range(10)]
     stage_2 = [delayed(step_2_w_local_IO)(s2) for s2 in stage_1]
 
-    result_stage_2 = client.compute(stage_2,
-                                    resources={tuple(stage_1): {'GPU': 1},
-                                               tuple(stage_2): {'ssdGB': 100}})
+    result_stage_2 = client.compute(stage_2, resources={'GPU': 1})
