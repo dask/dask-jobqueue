@@ -60,6 +60,10 @@ job_parameters = """
     python : str
         Python executable used to launch Dask workers.
         Defaults to the Python that is submitting these jobs
+    pre_exec : list
+        Additional commands to execute before launching the actual
+        Dask worker. For example sourcing a virtual environment,
+        loading a module, etc.
     config_name : str
         Section to use from jobqueue.yaml configuration file.
     name : str
@@ -159,6 +163,7 @@ class Job(ProcessInterface, abc.ABC):
         log_directory=None,
         shebang=None,
         python=sys.executable,
+        pre_exec=None,
         job_name=None,
         config_name=None,
     ):
@@ -268,7 +273,10 @@ class Job(ProcessInterface, abc.ABC):
         if extra is not None:
             command_args += extra
 
-        self._command_template = " ".join(map(str, command_args))
+        self._command_template = ""
+        if pre_exec is not None:
+            self._command_template += "; ".join(pre_exec) + "; "
+        self._command_template += " ".join(map(str, command_args))
 
         self.log_directory = log_directory
         if self.log_directory is not None:
