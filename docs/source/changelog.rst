@@ -4,7 +4,17 @@ Changelog
 Development version
 -------------------
 
+
+
+0.7.4 / 2022-07-13
+------------------
+
+- Testing fixes (:pr:`538`, :pr:`537`, :pr:`533`, :pr:`532`, :pr:`531`, :pr:`523`, :pr:`511`)
 - Drop support for Python 3.6 (:pr:`279`)
+- Fix docstring as HTCondor needs no shared filesystem (:pr:`536`)
+- Fix some utils deprecations (:pr:`529`)
+- Add the possibility to use TLS and auto generate certificates (:pr:`519`, :pr:`524`, :pr:`526`, :pr:`527`)
+- Adding extra argument to condor_submit (:pr:`411`)
 
 0.7.3 / 2021-07-22
 ------------------
