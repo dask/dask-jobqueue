@@ -257,10 +257,20 @@ def test_default_number_of_worker_processes(Cluster):
         assert " --nthreads 2" in cluster.job_script()
 
 
-def test_scheduler_options(Cluster):
+def get_interface_and_port(index=0):
     net_if_addrs = psutil.net_if_addrs()
-    interface = list(net_if_addrs.keys())[0]
-    port = 8804
+    interface = list(net_if_addrs.keys())[index]
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((net_if_addrs[interface][0].address, 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        port = s.getsockname()[1]
+        s.close()
+    return (interface, port)
+
+
+def test_scheduler_options(Cluster):
+
+    interface, port = get_interface_and_port()
 
     with Cluster(
         cores=1,
@@ -273,8 +283,7 @@ def test_scheduler_options(Cluster):
 
 
 def test_scheduler_options_interface(Cluster):
-    net_if_addrs = psutil.net_if_addrs()
-    scheduler_interface = list(net_if_addrs.keys())[0]
+    scheduler_interface, _ = get_interface_and_port()
     worker_interface = "worker-interface"
     scheduler_host = socket.gethostname()
 
@@ -323,13 +332,9 @@ def test_cluster_error_scheduler_arguments_should_use_scheduler_options(Cluster)
 
 
 def test_import_scheduler_options_from_config(Cluster):
+    config_scheduler_interface, config_scheduler_port = get_interface_and_port()
 
-    net_if_addrs = psutil.net_if_addrs()
-
-    config_scheduler_interface = list(net_if_addrs.keys())[0]
-    config_scheduler_port = 8804
-
-    pass_scheduler_interface = list(net_if_addrs.keys())[1]
+    pass_scheduler_interface, _ = get_interface_and_port(1)
 
     scheduler_options = {
         "interface": config_scheduler_interface,
