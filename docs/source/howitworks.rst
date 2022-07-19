@@ -57,7 +57,7 @@ generate as follows:
    #PBS -l walltime=02:00:00
 
    /home/username/path/to/bin/dask-worker tcp://127.0.1.1:43745
-   --nthreads 4 --nprocs 6 --memory-limit 18.66GB --name dask-worker-3
+   --nthreads 4 --nworkers 6 --memory-limit 18.66GB --name dask-worker-3
    --death-timeout 60
 
 Each of these jobs are sent to the job queue independently and, once that job

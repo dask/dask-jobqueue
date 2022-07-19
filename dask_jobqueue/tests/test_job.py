@@ -113,7 +113,7 @@ def test_header_lines_skip():
 
 
 @pytest.mark.asyncio
-async def test_nprocs_scale():
+async def test_nworkers_scale():
     async with LocalCluster(
         cores=2, memory="4GB", processes=2, asynchronous=True
     ) as cluster:

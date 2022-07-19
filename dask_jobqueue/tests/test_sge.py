@@ -88,7 +88,7 @@ def test_job_script(tmpdir):
         formatted_bytes = format_bytes(parse_bytes("6GB")).replace(" ", "")
 
         for each in [
-            "--nprocs 2",
+            "--nworkers 2",
             "--nthreads 3",
             f"--memory-limit {formatted_bytes}",
             "-q my-queue",

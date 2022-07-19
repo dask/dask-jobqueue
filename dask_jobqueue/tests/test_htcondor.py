@@ -56,7 +56,7 @@ def test_job_script():
         formatted_bytes = format_bytes(parse_bytes("50MB")).replace(" ", "")
         assert f"--memory-limit {formatted_bytes}" in job_script
         assert "--nthreads 2" in job_script
-        assert "--nprocs 2" in job_script
+        assert "--nworkers 2" in job_script
 
 
 @pytest.mark.env("htcondor")
