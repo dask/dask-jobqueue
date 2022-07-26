@@ -16,7 +16,6 @@ class HTCondorJob(Job):
 
 %(job_header)s
 
-Environment = "%(quoted_environment)s"
 Arguments = "%(quoted_arguments)s"
 Executable = %(executable)s
 
@@ -67,7 +66,12 @@ Queue
             env_extra = dask.config.get(
                 "jobqueue.%s.env-extra" % self.config_name, default=[]
             )
-        self.env_dict = self.env_lines_to_dict(env_extra)
+
+        if env_extra is not None:
+            # Overwrite command template: prepend commands from env_extra separated by semicolon.
+            # This is special for HTCondor, because lines to execute on the worker node cannot be
+            # simply added to the submit script like for other batch systems.
+            self._command_template = "; ".join(env_extra) + "; " + self._command_template
 
         self.job_header_dict = {
             "MY.DaskWorkerName": '"htcondor--$F(MY.JobId)--"',
@@ -118,31 +122,15 @@ Queue
             + " ".join(shlex.quote(arg) for arg in cancel_command_extra)
         )
 
-    def env_lines_to_dict(self, env_lines):
-        """Convert an array of export statements (what we get from env-extra
-        in the config) into a dict"""
-        env_dict = {}
-        for env_line in env_lines:
-            split_env_line = shlex.split(env_line)
-            if split_env_line[0] == "export":
-                split_env_line = split_env_line[1:]
-            for item in split_env_line:
-                if "=" in item:
-                    k, v = item.split("=", 1)
-                    env_dict[k] = v
-        return env_dict
-
     def job_script(self):
         """Construct a job submission script"""
         quoted_arguments = quote_arguments(["-c", self._command_template])
-        quoted_environment = quote_environment(self.env_dict)
         job_header_lines = "\n".join(
             "%s = %s" % (k, v) for k, v in self.job_header_dict.items()
         )
         return self._script_template % {
             "shebang": self.shebang,
             "job_header": job_header_lines,
-            "quoted_environment": quoted_environment,
             "quoted_arguments": quoted_arguments,
             "executable": self.executable,
         }
