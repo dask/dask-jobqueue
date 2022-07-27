@@ -248,6 +248,16 @@ class HTCondorCluster(JobQueueCluster):
     This also works with adaptive clusters.  This automatically launches and kill workers based on load.
 
     >>> cluster.adapt(maximum_jobs=20)
+
+    If setup commands need to be run before starting the worker on the worker node, ``env_extra`` can be used,
+    e.g., to activate a virtual environment:
+
+    >>> from dask_jobqueue.htcondor import HTCondorCluster
+    >>> cluster = HTCondorCluster(cores=1, memory="2GB", disk="4GB", env_extra=['cd /some/path/', 'source venv/bin/activate'])
+
+    Note that environment variables are no longer passed via the ``Environment`` parameter in the submit
+    description file. If you explictly want to set that, you need to use ``job_extra``.
+
     """.format(
         job=job_parameters, cluster=cluster_parameters
     )
