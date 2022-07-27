@@ -92,18 +92,22 @@ all_envs = {
 @pytest.fixture(
     params=[pytest.param(v, marks=[pytest.mark.env(k)]) for (k, v) in all_envs.items()]
 )
-def EnvSpecificCluster(request):
+def EnvSpecificCluster(request, cleanup):
     """Run test only with the specific cluster class set by the environment"""
     if request.param == HTCondorCluster:
         # HTCondor requires explicitly specifying requested disk space
-        dask.config.set({"jobqueue.htcondor.disk": "1GB"})
-    return request.param
+        with dask.config.set({"jobqueue.htcondor.disk": "1GB"}):
+            yield request.param
+    else:
+        yield request.param
 
 
 @pytest.fixture(params=list(all_envs.values()))
-def Cluster(request):
+def Cluster(request, cleanup):
     """Run test for each cluster class when no environment is set (test should not require the actual scheduler)"""
     if request.param == HTCondorCluster:
         # HTCondor requires explicitly specifying requested disk space
-        dask.config.set({"jobqueue.htcondor.disk": "1GB"})
-    return request.param
+        with dask.config.set({"jobqueue.htcondor.disk": "1GB"}):
+            yield request.param
+    else:
+        yield request.param
