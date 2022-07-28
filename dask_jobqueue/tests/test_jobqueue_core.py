@@ -263,7 +263,9 @@ def test_scheduler_options(Cluster):
     port = 8804
 
     with Cluster(
-        cores=1, memory="1GB", scheduler_options={"interface": interface, "port": port},
+        cores=1,
+        memory="1GB",
+        scheduler_options={"interface": interface, "port": port},
     ) as cluster:
         scheduler_options = cluster.scheduler_spec["options"]
         assert scheduler_options["interface"] == interface
@@ -385,7 +387,11 @@ def test_security(EnvSpecificCluster, loop):
     )
 
     with EnvSpecificCluster(
-        cores=1, memory="100MB", security=security, protocol="tls", loop=loop,
+        cores=1,
+        memory="100MB",
+        security=security,
+        protocol="tls",
+        loop=loop,
     ) as cluster:
         assert cluster.security == security
         assert cluster.scheduler_spec["options"]["security"] == security
@@ -402,7 +408,11 @@ def test_security(EnvSpecificCluster, loop):
             result = future.result(timeout=30)
             assert result == 11
 
-    with EnvSpecificCluster(cores=1, memory="100MB", security=security,) as cluster:
+    with EnvSpecificCluster(
+        cores=1,
+        memory="100MB",
+        security=security,
+    ) as cluster:
         assert "tls://" in job_script
 
 
