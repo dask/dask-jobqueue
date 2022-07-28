@@ -109,7 +109,7 @@ def test_basic(loop):
         walltime="00:02:00",
         processes=1,
         cores=2,
-        memory="2GB",
+        memory="2GiB",
         local_directory="/tmp",
         job_extra=["-V"],
         loop=loop,
@@ -125,7 +125,7 @@ def test_basic(loop):
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
-            assert w["memory_limit"] == 2e9
+            assert w["memory_limit"] == 2 * 1024**3
             assert w["nthreads"] == 2
 
             cluster.scale(0)
@@ -144,7 +144,7 @@ def test_scale_cores_memory(loop):
         walltime="00:02:00",
         processes=1,
         cores=2,
-        memory="2GB",
+        memory="2GiB",
         local_directory="/tmp",
         job_extra=["-V"],
         loop=loop,
@@ -160,7 +160,7 @@ def test_scale_cores_memory(loop):
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
-            assert w["memory_limit"] == 2e9
+            assert w["memory_limit"] == 2 ** 1024**3
             assert w["nthreads"] == 2
 
             cluster.scale(memory="0GB")
@@ -289,7 +289,7 @@ def test_scale_grouped(loop):
         walltime="00:02:00",
         processes=2,
         cores=2,
-        memory="2GB",
+        memory="2GiB",
         local_directory="/tmp",
         job_extra=["-V"],
         loop=loop,
@@ -310,7 +310,7 @@ def test_scale_grouped(loop):
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
-            assert w["memory_limit"] == 1e9
+            assert w["memory_limit"] == 1024**3
             assert w["nthreads"] == 1
             assert len(workers) == 4
 

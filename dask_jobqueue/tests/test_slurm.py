@@ -118,7 +118,7 @@ def test_basic(loop):
         walltime="00:02:00",
         cores=2,
         processes=1,
-        memory="2GB",
+        memory="2GiB",
         # job_extra=["-D /"],
         loop=loop,
     ) as cluster:
@@ -134,7 +134,7 @@ def test_basic(loop):
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
-            assert w["memory_limit"] == 2e9
+            assert w["memory_limit"] == 2 * 1024**3
             assert w["nthreads"] == 2
 
             cluster.scale(0)
