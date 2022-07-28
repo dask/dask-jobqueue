@@ -99,10 +99,10 @@ def slurm_format_bytes_ceil(n):
     >>> slurm_format_bytes_ceil(15000000000)
     '14G'
     """
-    if n >= (1024**3):
-        return "%dG" % math.ceil(n / (1024**3))
-    if n >= (1024**2):
-        return "%dM" % math.ceil(n / (1024**2))
+    if n >= (1024 ** 3):
+        return "%dG" % math.ceil(n / (1024 ** 3))
+    if n >= (1024 ** 2):
+        return "%dM" % math.ceil(n / (1024 ** 2))
     if n >= 1024:
         return "%dK" % math.ceil(n / 1024)
     return "1K" % n
