@@ -1,5 +1,4 @@
 from contextlib import contextmanager, suppress
-import asyncio
 import logging
 import math
 import os
@@ -12,7 +11,6 @@ import abc
 import tempfile
 import copy
 import warnings
-import functools
 
 import dask
 
@@ -96,22 +94,7 @@ cluster_parameters = """
 """.strip()
 
 
-class FixedProcessInterface(ProcessInterface):
-    def __init__(self, scheduler=None, name=None):
-        self.address = getattr(self, "address", None)
-        self.external_address = None
-        self.status = Status.created
-
-    @functools.cached_property
-    def lock(self):
-        return asyncio.Lock()
-
-    @functools.cached_property
-    def _event_finished(self):
-        return asyncio.Event()
-
-
-class Job(FixedProcessInterface, abc.ABC):
+class Job(ProcessInterface, abc.ABC):
     """ Base class to launch Dask workers on Job queues
 
     This class should not be used directly, use a class appropriate for
