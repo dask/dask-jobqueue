@@ -7,7 +7,7 @@ RUN curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-L
     /opt/anaconda/bin/conda clean -tipy && \
     rm -f miniconda.sh
 ENV PATH /opt/anaconda/bin:$PATH
-RUN conda install --yes -c conda-forge python=3.7 dask distributed flake8 pytest pytest-asyncio
+RUN conda install --yes -c conda-forge python=3.8 dask distributed flake8 pytest pytest-asyncio
 
 ENV LC_ALL en_US.UTF-8
 

@@ -70,7 +70,7 @@ the right module just before:
    distributed.nanny - INFO - Worker closed
 
 This happens when you created the cluster using a different python than the one
-you want to use for your workers (here ``module load python/3.7.5``), giving
+you want to use for your workers (here ``module load python/3.8.5``), giving
 the following job script (pay attention to the last line which will show which
 ``python`` is used):
 

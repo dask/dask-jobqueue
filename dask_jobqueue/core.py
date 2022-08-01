@@ -1,4 +1,5 @@
-from contextlib import contextmanager, suppress
+from contextlib import closing, contextmanager, suppress
+import asyncio
 import logging
 import math
 import os
@@ -21,6 +22,18 @@ from distributed.deploy.spec import ProcessInterface, SpecCluster
 from distributed.deploy.local import nprocesses_nthreads
 from distributed.scheduler import Scheduler
 from distributed.security import Security
+
+
+def _maybe_get_running_loop():
+    try:
+        return asyncio.get_running_loop()
+    except RuntimeError:
+        pass
+
+
+async def _acall(fn):
+    return fn()
+
 
 logger = logging.getLogger(__name__)
 
@@ -557,7 +570,14 @@ class JobQueueCluster(SpecCluster):
                 "-" + str(i) for i in range(self._job_kwargs["processes"])
             ]
 
-        self._dummy_job  # trigger property to ensure that the job is valid
+        def _trigger_property():
+            self._dummy_job  # trigger property to ensure that the job is valid
+
+        if _maybe_get_running_loop() is not None:
+            _trigger_property()
+        else:
+            with closing(asyncio.new_event_loop()) as loop:
+                loop.run_until_complete(_acall(_trigger_property))
 
         super().__init__(
             scheduler=scheduler,

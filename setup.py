@@ -28,7 +28,7 @@ setup(
     cmdclass=versioneer.get_cmdclass(),
     description="Deploy Dask on job queuing systems like PBS, Slurm, SGE or LSF",
     url="https://jobqueue.dask.org",
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     license="BSD 3-Clause",
     packages=["dask_jobqueue"],
     include_package_data=True,
