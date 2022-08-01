@@ -27,7 +27,12 @@ def test_job_script():
         processes=2,
         memory="100MB",
         disk="100MB",
-        env_extra=['export LANG="en_US.utf8"', 'export LC_ALL="en_US.utf8"', 'cd /some/path/', 'source venv/bin/activate'],
+        env_extra=[
+            'export LANG="en_US.utf8"',
+            'export LC_ALL="en_US.utf8"',
+            "cd /some/path/",
+            "source venv/bin/activate",
+        ],
         job_extra={"+Extra": "True"},
         submit_command_extra=["-verbose"],
         cancel_command_extra=["-forcex"],
