@@ -68,6 +68,36 @@ accepted option on some SLURM clusters. The error was something like this:
   sbatch: error: Memory specification can not be satisfied
   sbatch: error: Batch job submission failed: Requested node configuration is not available
 
+Run setup commands before starting the worker with ``env_extra``
+----------------------------------------------------------------
+
+Sometimes you need to run some setup commands before the actual worker can be started. This includes
+setting environment variables, loading environment modules, sourcing/activating a virtual environment,
+or activating conda/mamba environments.
+
+This can be achieved using the ``env_extra`` parameter. Example for setting up a virtual environment:
+
+.. code-block:: python
+
+   from dask_jobqueue.htcondor import HTCondorCluster
+   env_extra = ['cd /some/path', 'source venv/bin/activate']
+   cluster = HTCondorCluster(cores=1, memory="2GB", disk="4GB", log_directory = 'logs', python='python3',
+                             env_extra=env_extra)
+   print(cluster.job_script())
+
+For ``HTCondorCluster``, the commands will be prepended to the actual python call in the ``Arguments``
+parameter in the submit description file. The relevant lines will look like this:
+
+.. code-block:: text
+
+   ...
+   Arguments = "-c 'cd /some/path; source venv/bin/activate; python3 -m distributed.cli.dask_worker tcp://<IP>:<PORT> --nthreads 1 --memory-limit 2.00GB --name dummy-name --nanny --death-timeout 60'"
+   Executable = /bin/sh
+   ...
+
+For other batch systems (``*Cluster`` classes) the additional commands will be inserted as separate lines
+in the submission script.
+
 
 How to handle job queueing system walltime killing workers
 ----------------------------------------------------------

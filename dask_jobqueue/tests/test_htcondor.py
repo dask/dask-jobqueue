@@ -27,7 +27,12 @@ def test_job_script():
         processes=2,
         memory="100MB",
         disk="100MB",
-        env_extra=['export LANG="en_US.utf8"', 'export LC_ALL="en_US.utf8"'],
+        env_extra=[
+            'export LANG="en_US.utf8"',
+            'export LC_ALL="en_US.utf8"',
+            "cd /some/path/",
+            "source venv/bin/activate",
+        ],
         job_extra={"+Extra": "True"},
         submit_command_extra=["-verbose"],
         cancel_command_extra=["-forcex"],
@@ -40,9 +45,10 @@ def test_job_script():
         assert "MY.DaskWorkerDisk = 100000000" in job_script
         assert "MY.DaskWorkerMemory = 100000000" in job_script
         assert 'MY.JobId = "$(ClusterId).$(ProcId)"' in job_script
-        assert "LANG=en_US.utf8" in job_script
-        assert "LC_ALL=en_US.utf8" in job_script
-        assert "export" not in job_script
+        assert 'export LANG=""en_US.utf8""' in job_script
+        assert 'export LC_ALL=""en_US.utf8""' in job_script
+        assert "cd /some/path/" in job_script
+        assert "source venv/bin/activate" in job_script
         assert "+Extra = True" in job_script
         assert re.search(
             r"condor_submit\s.*-verbose", cluster._dummy_job.submit_command

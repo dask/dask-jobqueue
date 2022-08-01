@@ -32,7 +32,7 @@ PBS Deployments
                         interface='ib0')
 
 Moab Deployments
-~~~~~~~~~~~~~~~~
+----------------
 
 On systems which use the Moab Workload Manager, a subclass of ``PBSCluster``
 can be used, called ``MoabCluster``:
