@@ -67,7 +67,7 @@ def test_basic(loop):
             cluster.scale(2)
 
             start = time()
-            client.wait_for_workers(2)
+            client.wait_for_workers(2, timeout=QUEUE_WAIT)
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
@@ -98,7 +98,7 @@ def test_extra_args_broken_cancel(loop):
 
             cluster.scale(2)
 
-            client.wait_for_workers(2)
+            client.wait_for_workers(2, timeout=QUEUE_WAIT)
             workers = Job._call(["condor_q", "-af", "jobpid"]).strip()
             assert workers, "we got dask workers"
 
