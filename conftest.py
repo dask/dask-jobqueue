@@ -89,6 +89,7 @@ all_envs = {
     "htcondor": HTCondorCluster,
 }
 
+
 # We override cleanup method from distributed that has been added to the loop
 # fixture, because it just wipe the Main Loop in our tests.
 @pytest.fixture

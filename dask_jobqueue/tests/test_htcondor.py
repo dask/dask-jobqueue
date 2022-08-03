@@ -13,6 +13,7 @@ from dask_jobqueue.core import Job
 
 from . import QUEUE_WAIT
 
+
 def test_header():
     with HTCondorCluster(cores=1, memory="100MB", disk="100MB") as cluster:
         assert cluster._dummy_job.job_header_dict["MY.DaskWorkerCores"] == 1
