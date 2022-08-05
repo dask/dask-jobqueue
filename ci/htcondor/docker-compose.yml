@@ -8,6 +8,7 @@ services:
       - USE_POOL_PASSWORD=yes
     volumes:
       - secrets:/root/secrets
+      - ./condor_config.local:/etc/condor/condor_config.local
     command: bash -c 'condor_store_cred -p password -f /root/secrets/pool_password ; exec bash -x /start.sh'
 
   submit:
@@ -24,6 +25,7 @@ services:
     volumes:
       - secrets:/root/secrets
       - ../..:/dask-jobqueue
+      - ./condor_config.local:/etc/condor/condor_config.local
 
   execute1:
     image: daskdev/dask-jobqueue:htcondor-execute
@@ -38,6 +40,7 @@ services:
       - cm
     volumes:
       - secrets:/root/secrets
+      - ./condor_config.local:/etc/condor/condor_config.local
 
   execute2:
     image: daskdev/dask-jobqueue:htcondor-execute
@@ -52,6 +55,7 @@ services:
       - cm
     volumes:
       - secrets:/root/secrets
+      - ./condor_config.local:/etc/condor/condor_config.local
 
 volumes:
   secrets:

@@ -91,6 +91,7 @@ def test_basic(loop):
             except BaseException:
                 print("Test error")
                 print(Job._call(["condor_q"]))
+                print(Job._call(["condor_history"]))
                 raise
 
 
