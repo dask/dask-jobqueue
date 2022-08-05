@@ -23,7 +23,7 @@ function jobqueue_install {
 
 function jobqueue_script {
     cd ./ci/htcondor
-    docker-compose exec -T --user submituser submit /bin/bash -c "cd; pytest /dask-jobqueue/dask_jobqueue --verbose -E htcondor -s"
+    docker-compose exec -T --user submituser submit /bin/bash -c "cd; pytest /dask-jobqueue/dask_jobqueue --log-cli-level DEBUG --capture=tee-sys --verbose -E htcondor "
     cd -
 }
 

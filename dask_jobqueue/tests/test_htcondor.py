@@ -63,26 +63,36 @@ def test_job_script():
 def test_basic(loop):
     with HTCondorCluster(cores=1, memory="100MiB", disk="100MiB", loop=loop) as cluster:
         with Client(cluster) as client:
+            try:
 
-            cluster.scale(2)
+                cluster.scale(2)
 
-            start = time()
-            client.wait_for_workers(2, timeout=2 * QUEUE_WAIT)
+                start = time()
+                # Temporary debug
+                sleep(1.0)
+                print(Job._call(["condor_q"]))
 
-            future = client.submit(lambda x: x + 1, 10)
-            assert future.result(QUEUE_WAIT) == 11
+                client.wait_for_workers(2, timeout=2 * QUEUE_WAIT)
 
-            workers = list(client.scheduler_info()["workers"].values())
-            w = workers[0]
-            assert w["memory_limit"] == 100 * 1024**2
-            assert w["nthreads"] == 1
+                future = client.submit(lambda x: x + 1, 10)
+                assert future.result(QUEUE_WAIT) == 11
 
-            cluster.scale(0)
+                workers = list(client.scheduler_info()["workers"].values())
+                w = workers[0]
+                assert w["memory_limit"] == 100 * 1024**2
+                assert w["nthreads"] == 1
 
-            start = time()
-            while client.scheduler_info()["workers"]:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
+                cluster.scale(0)
+
+                start = time()
+                while client.scheduler_info()["workers"]:
+                    sleep(0.100)
+                    assert time() < start + QUEUE_WAIT
+            except BaseException:
+                print("Test error")
+                print(Job._call(["condor_q"]))
+                raise
+
 
 
 @pytest.mark.env("htcondor")
@@ -97,6 +107,10 @@ def test_extra_args_broken_cancel(loop):
         with Client(cluster) as client:
 
             cluster.scale(2)
+
+            # Temporary debug
+            sleep(1.0)
+            print(Job._call(["condor_q"]).strip())
 
             client.wait_for_workers(2, timeout=2 * QUEUE_WAIT)
             workers = Job._call(["condor_q", "-af", "jobpid"]).strip()
