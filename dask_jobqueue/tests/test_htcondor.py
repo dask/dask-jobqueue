@@ -94,7 +94,6 @@ def test_basic(loop):
                 raise
 
 
-
 @pytest.mark.env("htcondor")
 def test_extra_args_broken_cancel(loop):
     with HTCondorCluster(
