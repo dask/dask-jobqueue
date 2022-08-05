@@ -51,6 +51,7 @@ jobs:
           jobqueue_script
 
       - name: Cleanup
+        if: always()
         run: |
           source ci/${{ matrix.jobqueue }}.sh
           jobqueue_after_script
