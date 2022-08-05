@@ -9,10 +9,10 @@ function jobqueue_before_install {
     docker-compose pull
     docker-compose build
     ./start-htcondor.sh
-    cd -
-
     docker-compose exec -T submit /bin/bash -c "condor_status"
     docker-compose exec -T submit /bin/bash -c "condor_q"
+    cd -
+
     docker ps -a
     docker images
 }
