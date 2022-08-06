@@ -1,7 +1,7 @@
 # content of conftest.py
 
 # Make loop fixture available in all tests
-from distributed.utils_test import loop  # noqa: F401
+from distributed.utils_test import loop, loop_in_thread  # noqa: F401
 
 import pytest
 
