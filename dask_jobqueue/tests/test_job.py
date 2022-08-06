@@ -24,7 +24,7 @@ async def test_job(EnvSpecificCluster):
         job = job_cls(scheduler=s.address, name="foo", cores=1, memory="1GB")
         job = await job
         async with Client(s.address, asynchronous=True) as client:
-            await client.wait_for_workers(1, timeout=2 * QUEUE_WAIT)
+            await client.wait_for_workers(1, timeout=QUEUE_WAIT)
             assert list(s.workers.values())[0].name == "foo"
 
         await job.close()
@@ -48,7 +48,7 @@ async def test_cluster(EnvSpecificCluster):
             assert len(cluster.workers) == 2
             assert all(isinstance(w, job_cls) for w in cluster.workers.values())
             assert all(w.status == Status.running for w in cluster.workers.values())
-            await client.wait_for_workers(2, timeout=2 * QUEUE_WAIT)
+            await client.wait_for_workers(2, timeout=QUEUE_WAIT)
 
             cluster.scale(1)
             start = time()
@@ -65,7 +65,7 @@ async def test_adapt(EnvSpecificCluster):
         1, cores=1, memory="1GB", job_cls=job_cls, asynchronous=True, name="foo"
     ) as cluster:
         async with Client(cluster, asynchronous=True) as client:
-            await client.wait_for_workers(1, timeout=2 * QUEUE_WAIT)
+            await client.wait_for_workers(1, timeout=QUEUE_WAIT)
             cluster.adapt(minimum=0, maximum=4, interval="10ms")
 
             start = time()
@@ -76,7 +76,7 @@ async def test_adapt(EnvSpecificCluster):
             assert not cluster.workers
 
             future = client.submit(lambda: 0)
-            await client.wait_for_workers(1, timeout=2 * QUEUE_WAIT)
+            await client.wait_for_workers(1, timeout=QUEUE_WAIT)
 
             del future
 
