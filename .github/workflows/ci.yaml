@@ -12,7 +12,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        jobqueue: ["htcondor", "pbs", "sge", "slurm", "none"]
+        #HTCondor disabled for now
+        jobqueue: ["pbs", "sge", "slurm", "none"]
 
     steps:
       - name: Cancel previous runs
