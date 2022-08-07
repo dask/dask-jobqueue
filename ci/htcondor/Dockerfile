@@ -1,10 +1,13 @@
 FROM  htcondor/submit:el7 as submit
 
-RUN yum install -y gcc git 
-RUN yum install -y python3-devel python3-pip 
-RUN pip3 install dask distributed pytest
+RUN curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    bash miniconda.sh -f -b -p /opt/anaconda && \
+    /opt/anaconda/bin/conda clean -tipy && \
+    rm -f miniconda.sh
+ENV PATH /opt/anaconda/bin:$PATH
+RUN conda install --yes -c conda-forge python=3.8 dask distributed flake8 pytest pytest-asyncio
 
-FROM  htcondor/execute:el7 as execute 
-RUN yum install -y python3
-COPY --from=submit /usr/local/lib/python3.6 /usr/local/lib/python3.6
-COPY --from=submit /usr/local/lib64/python3.6 /usr/local/lib64/python3.6
+FROM  htcondor/execute:el7 as execute
+
+COPY --from=submit /opt/anaconda /opt/anaconda
+ENV PATH /opt/anaconda/bin:$PATH

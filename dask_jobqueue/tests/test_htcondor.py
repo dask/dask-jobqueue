@@ -11,7 +11,7 @@ from dask.utils import format_bytes, parse_bytes
 from dask_jobqueue import HTCondorCluster
 from dask_jobqueue.core import Job
 
-QUEUE_WAIT = 30  # seconds
+from . import QUEUE_WAIT
 
 
 def test_header():
@@ -67,20 +67,18 @@ def test_job_script():
 
 @pytest.mark.env("htcondor")
 def test_basic(loop):
-    with HTCondorCluster(cores=1, memory="100MB", disk="100MB", loop=loop) as cluster:
+    with HTCondorCluster(cores=1, memory="100MiB", disk="100MiB", loop=loop) as cluster:
         with Client(cluster) as client:
-
             cluster.scale(2)
 
-            start = time()
-            client.wait_for_workers(2)
+            client.wait_for_workers(2, timeout=QUEUE_WAIT)
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
-            assert w["memory_limit"] == 1e8
+            assert w["memory_limit"] == 100 * 1024**2
             assert w["nthreads"] == 1
 
             cluster.scale(0)
@@ -104,7 +102,7 @@ def test_extra_args_broken_cancel(loop):
 
             cluster.scale(2)
 
-            client.wait_for_workers(2)
+            client.wait_for_workers(2, timeout=QUEUE_WAIT)
             workers = Job._call(["condor_q", "-af", "jobpid"]).strip()
             assert workers, "we got dask workers"
 
@@ -119,6 +117,9 @@ def test_extra_args_broken_cancel(loop):
 
                 if time() > start + QUEUE_WAIT // 3:
                     return
+
+            # Remove running job as it prevents other jobs execution in subsequent tests
+            Job._call(["condor_rm", "-all"]).strip()
 
 
 def test_config_name_htcondor_takes_custom_config():
