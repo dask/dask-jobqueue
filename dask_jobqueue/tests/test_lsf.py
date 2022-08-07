@@ -101,7 +101,9 @@ def test_job_script():
             in job_script
         )
         formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
-        assert f"--nthreads 2 --nprocs 4 --memory-limit {formatted_bytes}" in job_script
+        assert (
+            f"--nthreads 2 --nworkers 4 --memory-limit {formatted_bytes}" in job_script
+        )
 
     with LSFCluster(
         queue="general",
@@ -128,7 +130,9 @@ def test_job_script():
             in job_script
         )
         formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
-        assert f"--nthreads 2 --nprocs 4 --memory-limit {formatted_bytes}" in job_script
+        assert (
+            f"--nthreads 2 --nworkers 4 --memory-limit {formatted_bytes}" in job_script
+        )
 
     with LSFCluster(
         walltime="1:00",

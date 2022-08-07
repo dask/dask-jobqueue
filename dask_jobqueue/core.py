@@ -255,7 +255,7 @@ class Job(ProcessInterface, abc.ABC):
         command_args = [dask_worker_command, self.scheduler]
         command_args += ["--nthreads", self.worker_process_threads]
         if processes is not None and processes > 1:
-            command_args += ["--nprocs", processes]
+            command_args += ["--nworkers", processes]
 
         command_args += ["--memory-limit", self.worker_process_memory]
         command_args += ["--name", str(name)]
