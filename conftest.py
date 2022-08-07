@@ -1,12 +1,15 @@
 # content of conftest.py
 
 # Make loop fixture available in all tests
-from distributed.utils_test import loop  # noqa: F401
+from distributed.utils_test import loop, loop_in_thread  # noqa: F401
 
 import pytest
 
+import dask_jobqueue.config
 import dask_jobqueue.lsf
 import dask
+import distributed.utils_test
+import copy
 
 from dask_jobqueue import (
     PBSCluster,
@@ -92,6 +95,28 @@ all_envs = {
     "oar": OARCluster,
     "htcondor": HTCondorCluster,
 }
+
+
+# Overriding cleanup method from distributed that has been added to the loop
+# fixture, because it just wipe the Main Loop in our tests, and dask-jobqueue is
+# not ready for this.
+# FIXME
+@pytest.fixture
+def cleanup():
+    dask_jobqueue.config.reconfigure()
+    yield
+
+
+# Overriding distributed.utils_test.reset_config()  method because it reset the
+# config from ou tests.
+# FIXME
+def reset_config():
+    dask.config.config.clear()
+    dask.config.config.update(copy.deepcopy(distributed.utils_test.original_config))
+    dask_jobqueue.config.reconfigure()
+
+
+distributed.utils_test.reset_config = reset_config
 
 
 @pytest.fixture(

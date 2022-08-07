@@ -122,7 +122,7 @@ def test_basic(loop):
         walltime="00:02:00",
         cores=2,
         processes=1,
-        memory="2GB",
+        memory="2GiB",
         # job_extra=["-D /"],
         loop=loop,
     ) as cluster:
@@ -131,14 +131,14 @@ def test_basic(loop):
             cluster.scale(2)
 
             start = time()
-            client.wait_for_workers(2)
+            client.wait_for_workers(2, timeout=QUEUE_WAIT)
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
-            assert w["memory_limit"] == 2e9
+            assert w["memory_limit"] == 2 * 1024**3
             assert w["nthreads"] == 2
 
             cluster.scale(0)
@@ -164,7 +164,7 @@ def test_adaptive(loop):
             future = client.submit(lambda x: x + 1, 10)
 
             start = time()
-            client.wait_for_workers(1)
+            client.wait_for_workers(1, timeout=QUEUE_WAIT)
 
             assert future.result(QUEUE_WAIT) == 11
 
@@ -218,7 +218,7 @@ def test_different_interfaces_on_scheduler_and_workers(loop):
         with Client(cluster) as client:
             future = client.submit(lambda x: x + 1, 10)
 
-            client.wait_for_workers(1)
+            client.wait_for_workers(1, timeout=QUEUE_WAIT)
 
             assert future.result(QUEUE_WAIT) == 11
 
@@ -238,7 +238,7 @@ def test_worker_name_uses_cluster_name(loop):
         with Client(cluster) as client:
             cluster.scale(jobs=2)
             print(cluster.job_script())
-            client.wait_for_workers(2)
+            client.wait_for_workers(2, timeout=QUEUE_WAIT)
             worker_names = [
                 w["id"] for w in client.scheduler_info()["workers"].values()
             ]

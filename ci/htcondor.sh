@@ -9,6 +9,8 @@ function jobqueue_before_install {
     docker-compose pull
     docker-compose build
     ./start-htcondor.sh
+    docker-compose exec -T submit /bin/bash -c "condor_status"
+    docker-compose exec -T submit /bin/bash -c "condor_q"
     cd -
 
     docker ps -a
@@ -23,12 +25,15 @@ function jobqueue_install {
 
 function jobqueue_script {
     cd ./ci/htcondor
-    docker-compose exec -T --user submituser submit /bin/bash -c "cd; pytest /dask-jobqueue/dask_jobqueue --verbose -E htcondor -s"
+    docker-compose exec -T --user submituser submit /bin/bash -c "cd; pytest /dask-jobqueue/dask_jobqueue --log-cli-level DEBUG --capture=tee-sys --verbose -E htcondor "
     cd -
 }
 
 function jobqueue_after_script {
     cd ./ci/htcondor
+    docker-compose exec -T submit /bin/bash -c "condor_q"
+    docker-compose exec -T submit /bin/bash -c "condor_status"
+    docker-compose exec -T submit /bin/bash -c "condor_history"
     docker-compose exec -T cm /bin/bash -c " grep -R \"\" /var/log/condor/	"
     cd -
 }

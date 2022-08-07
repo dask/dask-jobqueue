@@ -113,7 +113,7 @@ def test_basic(loop):
         walltime="00:02:00",
         processes=1,
         cores=2,
-        memory="2GB",
+        memory="2GiB",
         local_directory="/tmp",
         job_extra=["-V"],
         loop=loop,
@@ -121,7 +121,7 @@ def test_basic(loop):
         with Client(cluster) as client:
 
             cluster.scale(2)
-            client.wait_for_workers(2)
+            client.wait_for_workers(2, timeout=QUEUE_WAIT)
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
@@ -129,7 +129,7 @@ def test_basic(loop):
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
-            assert w["memory_limit"] == 2e9
+            assert w["memory_limit"] == 2 * 1024**3
             assert w["nthreads"] == 2
 
             cluster.scale(0)
@@ -148,7 +148,7 @@ def test_scale_cores_memory(loop):
         walltime="00:02:00",
         processes=1,
         cores=2,
-        memory="2GB",
+        memory="2GiB",
         local_directory="/tmp",
         job_extra=["-V"],
         loop=loop,
@@ -156,7 +156,7 @@ def test_scale_cores_memory(loop):
         with Client(cluster) as client:
 
             cluster.scale(cores=2)
-            client.wait_for_workers(1)
+            client.wait_for_workers(1, timeout=QUEUE_WAIT)
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
@@ -164,7 +164,7 @@ def test_scale_cores_memory(loop):
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
-            assert w["memory_limit"] == 2e9
+            assert w["memory_limit"] == 2 * 1024**3
             assert w["nthreads"] == 2
 
             cluster.scale(memory="0GB")
@@ -245,7 +245,7 @@ def test_adaptive_grouped(loop):
     ) as cluster:
         cluster.adapt(minimum=1)  # at least 1 worker
         with Client(cluster) as client:
-            client.wait_for_workers(1)
+            client.wait_for_workers(1, timeout=QUEUE_WAIT)
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
@@ -293,7 +293,7 @@ def test_scale_grouped(loop):
         walltime="00:02:00",
         processes=2,
         cores=2,
-        memory="2GB",
+        memory="2GiB",
         local_directory="/tmp",
         job_extra=["-V"],
         loop=loop,
@@ -314,7 +314,7 @@ def test_scale_grouped(loop):
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
-            assert w["memory_limit"] == 1e9
+            assert w["memory_limit"] == 1024**3
             assert w["nthreads"] == 1
             assert len(workers) == 4
 

@@ -13,7 +13,7 @@ from . import QUEUE_WAIT
 @pytest.mark.env("sge")
 def test_basic(loop):
     with SGECluster(
-        walltime="00:02:00", cores=8, processes=4, memory="2GB", loop=loop
+        walltime="00:02:00", cores=8, processes=4, memory="2GiB", loop=loop
     ) as cluster:
         with Client(cluster, loop=loop) as client:
 
@@ -30,7 +30,7 @@ def test_basic(loop):
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
-            assert w["memory_limit"] == 2e9 / 4
+            assert w["memory_limit"] == 2 * 1024**3 / 4
             assert w["nthreads"] == 2
 
             cluster.scale(0)
