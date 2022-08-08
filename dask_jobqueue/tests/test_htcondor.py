@@ -93,8 +93,8 @@ def test_basic(loop):
 def test_extra_args_broken_cancel(loop):
     with HTCondorCluster(
         cores=1,
-        memory="100MB",
-        disk="100MB",
+        memory="500MiB",
+        disk="500MiB",
         loop=loop,
         cancel_command_extra=["-name", "wrong.docker"],
     ) as cluster:
