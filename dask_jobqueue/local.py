@@ -53,9 +53,11 @@ class LocalJob(Job):
     async def _submit_job(self, script_filename):
         # Should we make this async friendly?
         with open(script_filename) as f:
-            text = f.read().strip().split()
+            text = f.read()
         self.process = Subprocess(
-            text, stdout=Subprocess.STREAM, stderr=Subprocess.STREAM
+            ["bash", "-c", "exec " + text],
+            stdout=Subprocess.STREAM,
+            stderr=Subprocess.STREAM,
         )
 
         lines = []
