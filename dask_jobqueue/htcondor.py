@@ -72,7 +72,7 @@ Queue
             # This is special for HTCondor, because lines to execute on the worker node cannot be
             # simply added to the submit script like for other batch systems.
             self._command_template = (
-                "; ".join(env_extra) + "; " + self._command_template
+                "; ".join(env_extra + [self._command_template])
             )
 
         self.job_header_dict = {
