@@ -65,6 +65,13 @@ def test_job_script():
         assert "--nworkers 2" in job_script
 
 
+def print_log_files():
+    import os
+    for fn in os.listdir('logs'):
+        print(fn)
+        with open('logs/'+fn) as f:
+            print(f.read())
+
 @pytest.mark.env("htcondor")
 def test_basic(loop):
     with HTCondorCluster(cores=1, memory="100MiB", disk="100MiB", log_directory="logs", loop=loop) as cluster:
@@ -95,15 +102,15 @@ def test_basic(loop):
                 print(Job._call(["condor_q"]))
                 print('MYDEBUG ls -l')
                 print(Job._call(["ls", "-l", "logs"]))
-                print('MYDEBUG cat logs/*')
-                print(Job._call(["cat", "logs/*"]))
+                print('MYDEBUG print_log_files()')
+                print_log_files()
             except BaseException:
                 print('MYDEBUG 4. condor_q')
                 print(Job._call(["condor_q"]))
                 print('MYDEBUG 4. ls -l')
                 print(Job._call(["ls", "-l", "logs"]))
-                print('MYDEBUG 4. cat logs/*')
-                print(Job._call(["cat", "logs/*"]))
+                print('MYDEBUG print_log_files()')
+                print_log_files()
                 raise
 
 @pytest.mark.env("htcondor")
