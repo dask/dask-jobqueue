@@ -94,16 +94,16 @@ def test_basic(loop):
                 print('MYDEBUG 3. condor_q')
                 print(Job._call(["condor_q"]))
                 print('MYDEBUG ls -l')
-                print(Job._call(["ls -l logs"]))
+                print(Job._call(["ls", "-l", "logs"]))
                 print('MYDEBUG cat logs/*')
-                print(Job._call(["cat logs/*"]))
+                print(Job._call(["cat", "logs/*"]))
             except BaseException:
                 print('MYDEBUG 4. condor_q')
                 print(Job._call(["condor_q"]))
                 print('MYDEBUG 4. ls -l')
-                print(Job._call(["ls -l logs"]))
+                print(Job._call(["ls", "-l", "logs"]))
                 print('MYDEBUG 4. cat logs/*')
-                print(Job._call(["cat logs/*"]))
+                print(Job._call(["cat", "logs/*"]))
                 raise
 
 @pytest.mark.env("htcondor")
