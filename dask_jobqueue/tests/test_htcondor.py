@@ -74,7 +74,7 @@ def print_log_files():
 
 @pytest.mark.env("htcondor")
 def test_basic(loop):
-    with HTCondorCluster(cores=1, memory="100MiB", disk="100MiB", log_directory="logs", loop=loop) as cluster:
+    with HTCondorCluster(cores=1, memory="2GiB", disk="100MiB", log_directory="logs", loop=loop) as cluster:
         with Client(cluster) as client:
             try:
                 cluster.scale(2)
