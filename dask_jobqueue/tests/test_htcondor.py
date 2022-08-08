@@ -71,10 +71,10 @@ def test_basic(loop):
         with Client(cluster) as client:
             try:
                 cluster.scale(2)
-                print('DEBUG 1. condor_q')
+                print('MYDEBUG 1. condor_q')
                 print(Job._call(["condor_q"]))
                 client.wait_for_workers(2, timeout=QUEUE_WAIT)
-                print('DEBUG 2. condor_q')
+                print('MYDEBUG 2. condor_q')
                 print(Job._call(["condor_q"]))
 
                 future = client.submit(lambda x: x + 1, 10)
@@ -91,12 +91,18 @@ def test_basic(loop):
                 while client.scheduler_info()["workers"]:
                     sleep(0.100)
                     assert time() < start + QUEUE_WAIT
-            except BaseException:
-                print('DEBUG 3. condor_q')
+                print('MYDEBUG 3. condor_q')
                 print(Job._call(["condor_q"]))
-                print('DEBUG ls -l')
+                print('MYDEBUG ls -l')
                 print(Job._call(["ls -l logs"]))
-                print('DEBUG cat logs/*')
+                print('MYDEBUG cat logs/*')
+                print(Job._call(["cat logs/*"]))
+            except BaseException:
+                print('MYDEBUG 4. condor_q')
+                print(Job._call(["condor_q"]))
+                print('MYDEBUG 4. ls -l')
+                print(Job._call(["ls -l logs"]))
+                print('MYDEBUG 4. cat logs/*')
                 print(Job._call(["cat logs/*"]))
                 raise
 
