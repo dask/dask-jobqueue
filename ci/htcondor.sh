@@ -31,9 +31,10 @@ function jobqueue_script {
 
 function jobqueue_after_script {
     cd ./ci/htcondor
-    docker-compose exec -T submit /bin/bash -c "condor_q"
+    docker-compose exec -T --user submituser submit /bin/bash -c "condor_q"
     docker-compose exec -T submit /bin/bash -c "condor_status"
-    docker-compose exec -T submit /bin/bash -c "condor_history"
+    docker-compose exec -T --user submituser submit /bin/bash -c "condor_history"
+    docker-compose exec -T --user submituser submit /bin/bash -c "cd; cat logs/*"
     docker-compose exec -T cm /bin/bash -c " grep -R \"\" /var/log/condor/	"
     cd -
 }
