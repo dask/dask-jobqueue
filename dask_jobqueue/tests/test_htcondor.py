@@ -67,27 +67,38 @@ def test_job_script():
 
 @pytest.mark.env("htcondor")
 def test_basic(loop):
-    with HTCondorCluster(cores=1, memory="100MiB", disk="100MiB", loop=loop) as cluster:
+    with HTCondorCluster(cores=1, memory="100MiB", disk="100MiB", log_directory="logs", loop=loop) as cluster:
         with Client(cluster) as client:
-            cluster.scale(2)
+            try:
+                cluster.scale(2)
+                print('DEBUG 1. condor_q')
+                print(Job._call(["condor_q"]))
+                client.wait_for_workers(2, timeout=QUEUE_WAIT)
+                print('DEBUG 2. condor_q')
+                print(Job._call(["condor_q"]))
 
-            client.wait_for_workers(2, timeout=QUEUE_WAIT)
+                future = client.submit(lambda x: x + 1, 10)
+                assert future.result(QUEUE_WAIT) == 11
 
-            future = client.submit(lambda x: x + 1, 10)
-            assert future.result(QUEUE_WAIT) == 11
+                workers = list(client.scheduler_info()["workers"].values())
+                w = workers[0]
+                assert w["memory_limit"] == 100 * 1024**2
+                assert w["nthreads"] == 1
 
-            workers = list(client.scheduler_info()["workers"].values())
-            w = workers[0]
-            assert w["memory_limit"] == 100 * 1024**2
-            assert w["nthreads"] == 1
+                cluster.scale(0)
 
-            cluster.scale(0)
-
-            start = time()
-            while client.scheduler_info()["workers"]:
-                sleep(0.100)
-                assert time() < start + QUEUE_WAIT
-
+                start = time()
+                while client.scheduler_info()["workers"]:
+                    sleep(0.100)
+                    assert time() < start + QUEUE_WAIT
+            except BaseException:
+                print('DEBUG 3. condor_q')
+                print(Job._call(["condor_q"]))
+                print('DEBUG ls -l')
+                print(Job._call(["ls -l logs"]))
+                print('DEBUG cat logs/*')
+                print(Job._call(["cat logs/*"]))
+                raise
 
 @pytest.mark.env("htcondor")
 def test_extra_args_broken_cancel(loop):
