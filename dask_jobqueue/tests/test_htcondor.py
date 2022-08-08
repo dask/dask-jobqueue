@@ -67,7 +67,7 @@ def test_job_script():
 
 @pytest.mark.env("htcondor")
 def test_basic(loop):
-    with HTCondorCluster(cores=1, memory="100MiB", disk="100MiB", loop=loop) as cluster:
+    with HTCondorCluster(cores=1, memory="500MiB", disk="100MiB", loop=loop) as cluster:
         with Client(cluster) as client:
             cluster.scale(2)
 
@@ -78,7 +78,7 @@ def test_basic(loop):
 
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
-            assert w["memory_limit"] == 100 * 1024**2
+            assert w["memory_limit"] == 500 * 1024**2
             assert w["nthreads"] == 1
 
             cluster.scale(0)
