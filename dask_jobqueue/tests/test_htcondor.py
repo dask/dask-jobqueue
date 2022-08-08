@@ -65,56 +65,29 @@ def test_job_script():
         assert "--nworkers 2" in job_script
 
 
-def print_log_files():
-    import os
-    for fn in os.listdir('logs'):
-        print(fn)
-        with open('logs/'+fn) as f:
-            print(f.read())
-
 @pytest.mark.env("htcondor")
 def test_basic(loop):
-    with HTCondorCluster(cores=1, memory="500MiB", disk="100MiB", log_directory="logs", loop=loop) as cluster:
+    with HTCondorCluster(cores=1, memory="100MiB", disk="100MiB", loop=loop) as cluster:
         with Client(cluster) as client:
-            try:
-                cluster.scale(2)
-                print('MYDEBUG 1. condor_q')
-                print(Job._call(["condor_q"]))
-                sleep(2)
-                print('MYDEBUG 1.1 condor_q')
-                print(Job._call(["condor_q"]))
-                client.wait_for_workers(2, timeout=QUEUE_WAIT)
-                print('MYDEBUG 2. condor_q')
-                print(Job._call(["condor_q"]))
+            cluster.scale(2)
 
-                future = client.submit(lambda x: x + 1, 10)
-                assert future.result(QUEUE_WAIT) == 11
+            client.wait_for_workers(2, timeout=QUEUE_WAIT)
 
-                workers = list(client.scheduler_info()["workers"].values())
-                w = workers[0]
-                assert w["memory_limit"] == 500 * 1024**2
-                assert w["nthreads"] == 1
+            future = client.submit(lambda x: x + 1, 10)
+            assert future.result(QUEUE_WAIT) == 11
 
-                cluster.scale(0)
+            workers = list(client.scheduler_info()["workers"].values())
+            w = workers[0]
+            assert w["memory_limit"] == 100 * 1024**2
+            assert w["nthreads"] == 1
 
-                start = time()
-                while client.scheduler_info()["workers"]:
-                    sleep(0.100)
-                    assert time() < start + QUEUE_WAIT
-                print('MYDEBUG 3. condor_q')
-                print(Job._call(["condor_q"]))
-                print('MYDEBUG ls -l')
-                print(Job._call(["ls", "-l", "logs"]))
-                print('MYDEBUG print_log_files()')
-                print_log_files()
-            except BaseException:
-                print('MYDEBUG 4. condor_q')
-                print(Job._call(["condor_q"]))
-                print('MYDEBUG 4. ls -l')
-                print(Job._call(["ls", "-l", "logs"]))
-                print('MYDEBUG print_log_files()')
-                print_log_files()
-                raise
+            cluster.scale(0)
+
+            start = time()
+            while client.scheduler_info()["workers"]:
+                sleep(0.100)
+                assert time() < start + QUEUE_WAIT
+
 
 @pytest.mark.env("htcondor")
 def test_extra_args_broken_cancel(loop):
