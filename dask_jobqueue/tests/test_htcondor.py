@@ -38,6 +38,7 @@ def test_job_script():
         cancel_command_extra=["-forcex"],
     ) as cluster:
         job_script = cluster.job_script()
+        assert "batch_name = dummy-name" in job_script
         assert "RequestCpus = MY.DaskWorkerCores" in job_script
         assert "RequestDisk = floor(MY.DaskWorkerDisk / 1024)" in job_script
         assert "RequestMemory = floor(MY.DaskWorkerMemory / 1048576)" in job_script
