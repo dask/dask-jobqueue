@@ -38,6 +38,7 @@ def test_job_script():
         cancel_command_extra=["-forcex"],
     ) as cluster:
         job_script = cluster.job_script()
+        assert "batch_name = dummy-name" in job_script
         assert "RequestCpus = MY.DaskWorkerCores" in job_script
         assert "RequestDisk = floor(MY.DaskWorkerDisk / 1024)" in job_script
         assert "RequestMemory = floor(MY.DaskWorkerMemory / 1048576)" in job_script
@@ -78,10 +79,13 @@ def test_basic(loop):
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11
 
+            condor_q = Job._call(["condor_q", "-batch"]).strip()
+
             workers = list(client.scheduler_info()["workers"].values())
             w = workers[0]
             assert w["memory_limit"] == 500 * 1024**2
             assert w["nthreads"] == 1
+            assert w["name"] in condor_q
 
             cluster.scale(0)
 

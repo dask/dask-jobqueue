@@ -75,6 +75,7 @@ Queue
 
         self.job_header_dict = {
             "MY.DaskWorkerName": '"htcondor--$F(MY.JobId)--"',
+            "batch_name": self.name,
             "RequestCpus": "MY.DaskWorkerCores",
             "RequestMemory": "floor(MY.DaskWorkerMemory / 1048576)",
             "RequestDisk": "floor(MY.DaskWorkerDisk / 1024)",
