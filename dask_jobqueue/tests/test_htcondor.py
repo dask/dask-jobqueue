@@ -85,7 +85,7 @@ def test_basic(loop):
             w = workers[0]
             assert w["memory_limit"] == 500 * 1024**2
             assert w["nthreads"] == 1
-            assert w.name in condor_q
+            assert w.["name"] in condor_q
 
             cluster.scale(0)
 
