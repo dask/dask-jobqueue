@@ -225,7 +225,8 @@ class HTCondorCluster(JobQueueCluster):
     disk : str
         Total amount of disk per job
     job_extra : dict
-        Extra submit file attributes for the job
+        Extra submit file attributes for the job as key-value pairs.
+        They will be inserted as ``key = value``.
     submit_command_extra : list of str
         Extra arguments to pass to condor_submit
     cancel_command_extra : list of str
