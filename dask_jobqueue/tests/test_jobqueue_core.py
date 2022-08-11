@@ -43,7 +43,7 @@ def test_command_template(Cluster):
         memory="4GB",
         death_timeout=60,
         local_directory="/scratch",
-        extra=["--preload", "mymodule"],
+        worker_extra_args=["--preload", "mymodule"],
     ) as cluster:
         assert " --death-timeout 60" in cluster._dummy_job._command_template
         assert " --local-directory /scratch" in cluster._dummy_job._command_template
