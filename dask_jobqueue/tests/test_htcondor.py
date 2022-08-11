@@ -27,7 +27,7 @@ def test_job_script():
         processes=2,
         memory="100MB",
         disk="100MB",
-        env_extra=[
+        job_script_prologue=[
             'export LANG="en_US.utf8"',
             'export LC_ALL="en_US.utf8"',
             "cd /some/path/",
@@ -140,7 +140,8 @@ def test_config_name_htcondor_takes_custom_config():
         "interface": None,
         "death-timeout": None,
         "extra": [],
-        "env-extra": [],
+        "env-extra": None,
+        "job-script-prologue": [],
         "log-directory": None,
         "shebang": "#!/usr/bin/env condor_submit",
         "local-directory": "/tmp",

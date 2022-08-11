@@ -61,12 +61,12 @@ Queue
         else:
             self.job_extra = job_extra
 
-        if self._env_extra is not None:
-            # Overwrite command template: prepend commands from env_extra separated by semicolon.
+        if self._job_script_prologue is not None:
+            # Overwrite command template: prepend commands from job_script_prologue separated by semicolon.
             # This is special for HTCondor, because lines to execute on the worker node cannot be
             # simply added to the submit script like for other batch systems.
             self._command_template = "; ".join(
-                self._env_extra + [self._command_template]
+                self._job_script_prologue + [self._command_template]
             )
 
         self.job_header_dict = {
@@ -246,12 +246,12 @@ class HTCondorCluster(JobQueueCluster):
 
     >>> cluster.adapt(maximum_jobs=20)
 
-    If setup commands need to be run before starting the worker on the worker node, ``env_extra`` can be used,
+    If setup commands need to be run before starting the worker on the worker node, ``job_script_prologue`` can be used,
     e.g., to activate a virtual environment:
 
     >>> from dask_jobqueue.htcondor import HTCondorCluster
     >>> cluster = HTCondorCluster(cores=1, memory="2GB", disk="4GB",
-                                  env_extra=['cd /some/path/', 'source venv/bin/activate'])
+                                  job_script_prologue=['cd /some/path/', 'source venv/bin/activate'])
 
     Note that environment variables are no longer passed via the ``Environment`` parameter in the submit
     description file. If you explictly want to set that, you need to use ``job_extra``.
