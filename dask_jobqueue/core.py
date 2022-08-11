@@ -245,7 +245,7 @@ class Job(ProcessInterface, abc.ABC):
 
         self.shebang = shebang
 
-        self._env_header = "\n".join(filter(None, env_extra))
+        self._env_extra = env_extra
         self.header_skip = set(header_skip)
 
         # dask-worker command line build
@@ -299,7 +299,7 @@ class Job(ProcessInterface, abc.ABC):
         pieces = {
             "shebang": self.shebang,
             "job_header": header,
-            "env_header": self._env_header,
+            "env_header": "\n".join(filter(None, self._env_extra)),
             "worker_command": self._command_template,
         }
         return self._script_template % pieces
