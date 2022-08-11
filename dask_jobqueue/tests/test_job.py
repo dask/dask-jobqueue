@@ -143,3 +143,67 @@ async def test_nworkers_scale():
 def test_docstring_cluster(Cluster):
     assert "cores :" in Cluster.__doc__
     assert Cluster.__name__[: -len("Cluster")] in Cluster.__doc__
+
+
+def test_deprecation(Cluster):
+    import warnings
+
+    # test issuing of warning
+    warnings.simplefilter("always")
+
+    job_cls = Cluster.job_cls
+    with warnings.catch_warnings(record=True) as w:
+        # should give a warning
+        job = job_cls(cores=1, memory="1 GB", env_extra=["env_extra is used"])
+        assert len(w) == 1
+        assert issubclass(w[0].category, FutureWarning)
+        assert "env_extra has been renamed" in str(w[0].message)
+    with warnings.catch_warnings(record=True) as w:
+        # should give a warning
+        job = job_cls(
+            cores=1,
+            memory="1 GB",
+            env_extra=["env_extra is used"],
+            job_script_prologue=["job_script_prologue is used"],
+        )
+        assert len(w) == 1
+        assert issubclass(w[0].category, FutureWarning)
+        assert "env_extra has been renamed" in str(w[0].message)
+    with warnings.catch_warnings(record=True) as w:
+        # should not give a warning
+        job = job_cls(
+            cores=1,
+            memory="1 GB",
+            job_script_prologue=["job_script_prologue is used, env_extra not"],
+        )
+        assert len(w) == 0
+
+    # the rest is not about the warning but about behaviour: if job_script_prologue is not
+    # set, env_extra should still be used if provided
+    warnings.simplefilter("ignore")
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        env_extra=["env_extra"],
+        job_script_prologue=["job_script_prologue"],
+    )
+    job_script = job.job_script()
+    assert "env_extra" not in job_script
+    assert "job_script_prologue" in job_script
+
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        env_extra=["env_extra"],
+    )
+    job_script = job.job_script()
+    assert "env_extra" in job_script
+
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        env_extra=["env_extra"],
+        job_script_prologue=[],
+    )
+    job_script = job.job_script()
+    assert "env_extra" in job_script
