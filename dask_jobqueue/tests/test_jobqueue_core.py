@@ -393,7 +393,7 @@ def test_security(EnvSpecificCluster, loop):
 
     with EnvSpecificCluster(
         cores=1,
-        memory="100MB",
+        memory="500MiB",
         security=security,
         protocol="tls",
         loop=loop,
@@ -427,7 +427,7 @@ def test_security_temporary(EnvSpecificCluster, loop):
     dirname = os.path.dirname(__file__)
     with EnvSpecificCluster(
         cores=1,
-        memory="100MB",
+        memory="500MiB",
         security=Security.temporary(),
         shared_temp_directory=dirname,
         protocol="tls",
@@ -472,7 +472,7 @@ def test_security_temporary_defaults(EnvSpecificCluster, loop):
     # test automatic behaviour if security is true and shared_temp_directory not set
     with pytest.warns(UserWarning, match="shared_temp_directory"), EnvSpecificCluster(
         cores=1,
-        memory="100MB",
+        memory="500MiB",
         security=True,
         protocol="tls",
         loop=loop,  # for some reason (bug?) using the loop fixture requires using a new test case
