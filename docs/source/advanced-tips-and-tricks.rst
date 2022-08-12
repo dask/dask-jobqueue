@@ -128,9 +128,16 @@ Here is an example of how to use these parameters:
 
 .. code-block:: python
 
-    cluster = Cluster(walltime='01:00:00', cores=4, memory='16gb', extra=["--lifetime", "55m", "--lifetime-stagger", "4m"])
+    cluster = Cluster(
+        walltime="01:00:00",
+        cores=4,
+        memory="16gb",
+        worker_extra_args=["--lifetime", "55m", "--lifetime-stagger", "4m"],
+    )
     cluster.adapt(minimum=0, maximum=200)
 
+*Note: the parameter* ``worker_extra_args`` *was named* ``extra`` *until version 0.7.4.* ``extra`` *can still
+be used, but is considered deprecated and will be removed in a future version.*
 
 Here is an example of a workflow taking advantage of this, if you want to give it a try or adapt it to your use case:
 

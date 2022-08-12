@@ -146,8 +146,12 @@ argument is for the specification of abstract resources, described `here
 <http://distributed.dask.org/en/latest/resources.html>`__. This could be used
 to specify special hardware availability that the scheduler is not aware of,
 for example GPUs. Below, the arbitrary resources "ssdGB" and "GPU" are
-specified. Notice that the ``extra`` keyword is used to pass through arguments
-to the dask-workers.
+specified. Notice that the ``worker_extra_args`` keyword is used to pass through
+arguments to the dask-workers.
+
+*Note: the parameter* ``worker_extra_args`` *was named* ``extra`` *until version
+0.7.4.* ``extra`` *can still be used, but is considered deprecated and will be
+removed in a future version.*
 
 .. code-block:: python
 
@@ -155,10 +159,9 @@ to the dask-workers.
     from distributed import Client
     from dask import delayed
 
-    cluster = SLURMCluster(memory='8g',
-                           processes=1,
-                           cores=2,
-                           extra=['--resources ssdGB=200,GPU=2'])
+    cluster = SLURMCluster(
+        memory="8g", processes=1, cores=2, worker_extra_args=["--resources ssdGB=200,GPU=2"]
+    )
 
     cluster.scale(2)
     client = Client(cluster)
