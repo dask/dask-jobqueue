@@ -145,7 +145,7 @@ def test_docstring_cluster(Cluster):
     assert Cluster.__name__[: -len("Cluster")] in Cluster.__doc__
 
 
-def test_deprecation(Cluster):
+def test_deprecation_env_extra(Cluster):
     import warnings
 
     # test issuing of warning
@@ -207,3 +207,67 @@ def test_deprecation(Cluster):
     )
     job_script = job.job_script()
     assert "env_extra" in job_script
+
+
+def test_deprecation_extra(Cluster):
+    import warnings
+
+    # test issuing of warning
+    warnings.simplefilter("always")
+
+    job_cls = Cluster.job_cls
+    with warnings.catch_warnings(record=True) as w:
+        # should give a warning
+        job = job_cls(cores=1, memory="1 GB", extra=["old_param"])
+        assert len(w) == 1
+        assert issubclass(w[0].category, FutureWarning)
+        assert "extra has been renamed" in str(w[0].message)
+    with warnings.catch_warnings(record=True) as w:
+        # should give a warning
+        job = job_cls(
+            cores=1,
+            memory="1 GB",
+            extra=["old_param"],
+            worker_extra_args=["new_param"],
+        )
+        assert len(w) == 1
+        assert issubclass(w[0].category, FutureWarning)
+        assert "extra has been renamed" in str(w[0].message)
+    with warnings.catch_warnings(record=True) as w:
+        # should not give a warning
+        job = job_cls(
+            cores=1,
+            memory="1 GB",
+            worker_extra_args=["new_param"],
+        )
+        assert len(w) == 0
+
+    # the rest is not about the warning but about behaviour: if worker_extra_args is not
+    # set, extra should still be used if provided
+    warnings.simplefilter("ignore")
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        extra=["old_param"],
+        worker_extra_args=["new_param"],
+    )
+    job_script = job.job_script()
+    assert "old_param" not in job_script
+    assert "new_param" in job_script
+
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        extra=["old_param"],
+    )
+    job_script = job.job_script()
+    assert "old_param" in job_script
+
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        extra=["old_param"],
+        worker_extra_args=[],
+    )
+    job_script = job.job_script()
+    assert "old_param" in job_script
