@@ -86,7 +86,7 @@ def test_job_script():
         processes=4,
         cores=8,
         memory="28GB",
-        env_extra=[
+        job_script_prologue=[
             'export LANG="en_US.utf8"',
             'export LANGUAGE="en_US.utf8"',
             'export LC_ALL="en_US.utf8"',
@@ -192,7 +192,8 @@ def test_config_name_slurm_takes_custom_config():
         "local-directory": "/foo",
         "shared-temp-directory": None,
         "extra": [],
-        "env-extra": [],
+        "env-extra": None,
+        "job-script-prologue": [],
         "log-directory": None,
         "shebang": "#!/usr/bin/env bash",
         "job-cpu": None,
@@ -232,7 +233,7 @@ def test_worker_name_uses_cluster_name(loop):
         cores=1,
         memory="2GB",
         name="test-$MY_ENV_VARIABLE",
-        env_extra=["MY_ENV_VARIABLE=my-env-variable-value"],
+        job_script_prologue=["MY_ENV_VARIABLE=my-env-variable-value"],
         loop=loop,
     ) as cluster:
         with Client(cluster) as client:

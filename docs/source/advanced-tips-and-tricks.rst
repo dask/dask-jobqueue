@@ -68,21 +68,24 @@ accepted option on some SLURM clusters. The error was something like this:
   sbatch: error: Memory specification can not be satisfied
   sbatch: error: Batch job submission failed: Requested node configuration is not available
 
-Run setup commands before starting the worker with ``env_extra``
-----------------------------------------------------------------
+Run setup commands before starting the worker with ``job_script_prologue``
+--------------------------------------------------------------------------
+
+*Note: the parameter* ``job_script_prologue`` *was named* ``env_extra`` *until version 0.7.4.* ``env_extra`` *can still
+be used, but is considered deprecated and will be removed in a future version.*
 
 Sometimes you need to run some setup commands before the actual worker can be started. This includes
 setting environment variables, loading environment modules, sourcing/activating a virtual environment,
 or activating conda/mamba environments.
 
-This can be achieved using the ``env_extra`` parameter. Example for setting up a virtual environment:
+This can be achieved using the ``job_script_prologue`` parameter. Example for setting up a virtual environment:
 
 .. code-block:: python
 
    from dask_jobqueue.htcondor import HTCondorCluster
-   env_extra = ['cd /some/path', 'source venv/bin/activate']
+   job_script_prologue = ['cd /some/path', 'source venv/bin/activate']
    cluster = HTCondorCluster(cores=1, memory="2GB", disk="4GB", log_directory = 'logs', python='python3',
-                             env_extra=env_extra)
+                             job_script_prologue=job_script_prologue)
    print(cluster.job_script())
 
 For ``HTCondorCluster``, the commands will be prepended to the actual python call in the ``Arguments``

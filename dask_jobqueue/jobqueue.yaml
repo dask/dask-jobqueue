@@ -18,7 +18,8 @@ jobqueue:
     queue: null
     project: null
     walltime: '00:30:00'
-    env-extra: []
+    env-extra: null
+    job-script-prologue: []
     resource-spec: null
     job-extra: []
     log-directory: null
@@ -45,7 +46,8 @@ jobqueue:
     queue: null
     project: null
     walltime: '00:30:00'
-    env-extra: []
+    env-extra: null
+    job-script-prologue: []
     resource-spec: null
     job-extra: []
     log-directory: null
@@ -72,7 +74,8 @@ jobqueue:
     queue: null
     project: null
     walltime: '00:30:00'
-    env-extra: []
+    env-extra: null
+    job-script-prologue: []
     job-extra: []
     log-directory: null
     resource-spec: null
@@ -99,7 +102,8 @@ jobqueue:
     queue: null
     project: null
     walltime: '00:30:00'
-    env-extra: []
+    env-extra: null
+    job-script-prologue: []
     job-cpu: null
     job-mem: null
     job-extra: []
@@ -127,7 +131,8 @@ jobqueue:
     queue: null
     project: null
     walltime: '00:30:00'
-    env-extra: []
+    env-extra: null
+    job-script-prologue: []
     resource-spec: null
     job-extra: []
     log-directory: null
@@ -154,7 +159,8 @@ jobqueue:
     queue: null
     project: null
     walltime: '00:30'
-    env-extra: []
+    env-extra: null
+    job-script-prologue: []
     ncpus: null
     mem: null
     job-extra: []
@@ -181,7 +187,8 @@ jobqueue:
 
     # HTCondor Resource Manager options
     disk: null                  # Total amount of disk per job
-    env-extra: []
+    env-extra: null
+    job-script-prologue: []
     job-extra: {}               # Extra submit attributes
     submit-command-extra: []    # Extra condor_submit arguments
     cancel-command-extra: []    # Extra condor_rm arguments
@@ -204,7 +211,8 @@ jobqueue:
     shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: []
 
-    env-extra: []
+    env-extra: null
+    job-script-prologue: []
     job-extra: []
     log-directory: null
     

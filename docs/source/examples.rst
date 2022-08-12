@@ -129,9 +129,11 @@ SLURM Deployment: Low-priority node usage
                            memory="16GB",
                            project="co_laika",
                            queue='savio2_bigmem',
-                           env_extra=['export LANG="en_US.utf8"',
-                                      'export LANGUAGE="en_US.utf8"',
-                                      'export LC_ALL="en_US.utf8"'],
+                           job_script_prologue=[
+                               'export LANG="en_US.utf8"',
+                               'export LANGUAGE="en_US.utf8"',
+                               'export LC_ALL="en_US.utf8"'
+                           ],
                            job_extra=['--qos="savio_lowprio"'])
 
 

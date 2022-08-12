@@ -49,6 +49,8 @@ job_parameters = """
     extra : list
         Additional arguments to pass to `dask-worker`
     env_extra : list
+        Deprecated: use ``job_script_prologue`` instead. This parameter will be removed in a future version.
+    job_script_prologue : list
         Other commands to add to script before launching worker.
     header_skip : list
         Lines to skip in the header.
@@ -129,7 +131,7 @@ class Job(ProcessInterface, abc.ABC):
 %(shebang)s
 
 %(job_header)s
-%(env_header)s
+%(job_script_prologue)s
 %(worker_command)s
 """.lstrip()
 
@@ -155,6 +157,7 @@ class Job(ProcessInterface, abc.ABC):
         local_directory=None,
         extra=None,
         env_extra=None,
+        job_script_prologue=None,
         header_skip=None,
         log_directory=None,
         shebang=None,
@@ -207,6 +210,21 @@ class Job(ProcessInterface, abc.ABC):
             extra = dask.config.get("jobqueue.%s.extra" % self.config_name)
         if env_extra is None:
             env_extra = dask.config.get("jobqueue.%s.env-extra" % self.config_name)
+        if job_script_prologue is None:
+            job_script_prologue = dask.config.get(
+                "jobqueue.%s.job-script-prologue" % self.config_name
+            )
+        if env_extra is not None:
+            warn = (
+                "env_extra has been renamed to job_script_prologue. "
+                "You are still using it (even if only set to []; please also check config files)."
+                "If you did not set job_script_prologue yet, env_extra will be respected for now, "
+                "but it will be removed in a future release. "
+                "If you already set job_script_prologue, env_extra is ignored and you can remove it."
+            )
+            warnings.warn(warn, FutureWarning)
+            if not job_script_prologue:
+                job_script_prologue = env_extra
         if header_skip is None:
             header_skip = dask.config.get(
                 "jobqueue.%s.header-skip" % self.config_name, ()
@@ -245,7 +263,7 @@ class Job(ProcessInterface, abc.ABC):
 
         self.shebang = shebang
 
-        self._env_extra = env_extra
+        self._job_script_prologue = job_script_prologue
         self.header_skip = set(header_skip)
 
         # dask-worker command line build
@@ -299,7 +317,7 @@ class Job(ProcessInterface, abc.ABC):
         pieces = {
             "shebang": self.shebang,
             "job_header": header,
-            "env_header": "\n".join(filter(None, self._env_extra)),
+            "job_script_prologue": "\n".join(filter(None, self._job_script_prologue)),
             "worker_command": self._command_template,
         }
         return self._script_template % pieces
