@@ -71,7 +71,7 @@ accepted option on some SLURM clusters. The error was something like this:
 Run setup commands before starting the worker with ``job_script_prologue``
 --------------------------------------------------------------------------
 
-*Note: the parameter* ``job_script_prologue`` *was named* ``env_extra`` *until version 0.7.3.* ``env_extra`` *can still
+*Note: the parameter* ``job_script_prologue`` *was named* ``env_extra`` *until version 0.7.4.* ``env_extra`` *can still
 be used, but is considered deprecated and will be removed in a future version.*
 
 Sometimes you need to run some setup commands before the actual worker can be started. This includes
