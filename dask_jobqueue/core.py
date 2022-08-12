@@ -217,7 +217,7 @@ class Job(ProcessInterface, abc.ABC):
         if env_extra is not None:
             warn = (
                 "env_extra has been renamed to job_script_prologue. "
-                "You are still using it (even if only set to []; please also check config files)."
+                "You are still using it (even if only set to []; please also check config files). "
                 "If you did not set job_script_prologue yet, env_extra will be respected for now, "
                 "but it will be removed in a future release. "
                 "If you already set job_script_prologue, env_extra is ignored and you can remove it."
