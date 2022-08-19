@@ -22,7 +22,8 @@ jobqueue:
     env-extra: null
     job-script-prologue: []
     resource-spec: null
-    job-extra: []
+    job-extra: null
+    job-extra-directives: []
     log-directory: null
     
     # Scheduler options
@@ -51,7 +52,8 @@ jobqueue:
     env-extra: null
     job-script-prologue: []
     resource-spec: null
-    job-extra: []
+    job-extra: null
+    job-extra-directives: []
     log-directory: null
     
     # Scheduler options
@@ -79,7 +81,8 @@ jobqueue:
     walltime: '00:30:00'
     env-extra: null
     job-script-prologue: []
-    job-extra: []
+    job-extra: null
+    job-extra-directives: []
     log-directory: null
     resource-spec: null
     
@@ -110,7 +113,8 @@ jobqueue:
     job-script-prologue: []
     job-cpu: null
     job-mem: null
-    job-extra: []
+    job-extra: null
+    job-extra-directives: []
     log-directory: null
     
     # Scheduler options
@@ -139,7 +143,8 @@ jobqueue:
     env-extra: null
     job-script-prologue: []
     resource-spec: null
-    job-extra: []
+    job-extra: null
+    job-extra-directives: []
     log-directory: null
     
     # Scheduler options
@@ -169,7 +174,8 @@ jobqueue:
     job-script-prologue: []
     ncpus: null
     mem: null
-    job-extra: []
+    job-extra: null
+    job-extra-directives: []
     log-directory: null
     lsf-units: null
     use-stdin: True             # (bool) How jobs are launched, i.e. 'bsub jobscript.sh' or 'bsub < jobscript.sh'
@@ -196,7 +202,8 @@ jobqueue:
     disk: null                  # Total amount of disk per job
     env-extra: null
     job-script-prologue: []
-    job-extra: {}               # Extra submit attributes
+    job-extra: null               # Extra submit attributes
+    job-extra-directives: {}               # Extra submit attributes
     submit-command-extra: []    # Extra condor_submit arguments
     cancel-command-extra: []    # Extra condor_rm arguments
     log-directory: null
@@ -221,7 +228,8 @@ jobqueue:
 
     env-extra: null
     job-script-prologue: []
-    job-extra: []
+    job-extra: null
+    job-extra-directives: []
     log-directory: null
     
     # Scheduler options
