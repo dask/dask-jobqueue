@@ -32,7 +32,7 @@ class LocalJob(Job):
         project=None,
         resource_spec=None,
         walltime=None,
-        job_extra=None,
+        job_extra_directives=None,
         config_name=None,
         **kwargs
     ):
