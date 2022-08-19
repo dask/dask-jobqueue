@@ -50,7 +50,7 @@ def test_header(Cluster):
         assert "#PBS -A" not in cluster.job_header
         assert "#PBS -q" not in cluster.job_header
 
-    with Cluster(cores=4, memory="8GB", job_extra=["-j oe"]) as cluster:
+    with Cluster(cores=4, memory="8GB", job_extra_directives=["-j oe"]) as cluster:
 
         assert "#PBS -j oe" in cluster.job_header
         assert "#PBS -N" in cluster.job_header
@@ -115,7 +115,7 @@ def test_basic(loop):
         cores=2,
         memory="2GiB",
         local_directory="/tmp",
-        job_extra=["-V"],
+        job_extra_directives=["-V"],
         loop=loop,
     ) as cluster:
         with Client(cluster) as client:
@@ -150,7 +150,7 @@ def test_scale_cores_memory(loop):
         cores=2,
         memory="2GiB",
         local_directory="/tmp",
-        job_extra=["-V"],
+        job_extra_directives=["-V"],
         loop=loop,
     ) as cluster:
         with Client(cluster) as client:
@@ -185,7 +185,7 @@ def test_basic_scale_edge_cases(loop):
         cores=2,
         memory="2GB",
         local_directory="/tmp",
-        job_extra=["-V"],
+        job_extra_directives=["-V"],
         loop=loop,
     ) as cluster:
 
@@ -210,7 +210,7 @@ def test_adaptive(loop):
         cores=2,
         memory="2GB",
         local_directory="/tmp",
-        job_extra=["-V"],
+        job_extra_directives=["-V"],
         loop=loop,
     ) as cluster:
         cluster.adapt()
@@ -240,7 +240,7 @@ def test_adaptive_grouped(loop):
         cores=2,
         memory="2GB",
         local_directory="/tmp",
-        job_extra=["-V"],
+        job_extra_directives=["-V"],
         loop=loop,
     ) as cluster:
         cluster.adapt(minimum=1)  # at least 1 worker
@@ -265,7 +265,7 @@ def test_adaptive_cores_mem(loop):
         cores=2,
         memory="2GB",
         local_directory="/tmp",
-        job_extra=["-V"],
+        job_extra_directives=["-V"],
         loop=loop,
     ) as cluster:
         cluster.adapt(minimum_cores=0, maximum_memory="4GB")
@@ -295,7 +295,7 @@ def test_scale_grouped(loop):
         cores=2,
         memory="2GiB",
         local_directory="/tmp",
-        job_extra=["-V"],
+        job_extra_directives=["-V"],
         loop=loop,
     ) as cluster:
         with Client(cluster) as client:
@@ -352,7 +352,8 @@ def test_config_name_pbs_takes_custom_config():
         "cores": 1,
         "memory": "2 GB",
         "walltime": "00:02",
-        "job-extra": [],
+        "job-extra": None,
+        "job-extra-directives": [],
         "name": "myname",
         "processes": 1,
         "interface": None,
