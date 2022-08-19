@@ -202,8 +202,8 @@ jobqueue:
     disk: null                  # Total amount of disk per job
     env-extra: null
     job-script-prologue: []
-    job-extra: null               # Extra submit attributes
-    job-extra-directives: {}               # Extra submit attributes
+    job-extra: null             # Extra submit attributes
+    job-extra-directives: {}    # Extra submit attributes
     submit-command-extra: []    # Extra condor_submit arguments
     cancel-command-extra: []    # Extra condor_rm arguments
     log-directory: null
