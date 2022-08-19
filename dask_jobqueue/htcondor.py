@@ -1,6 +1,7 @@
 import logging
 import re
 import shlex
+import warnings
 
 import dask
 from dask.utils import parse_bytes
@@ -38,6 +39,7 @@ Queue
         name=None,
         disk=None,
         job_extra=None,
+        job_extra_directives=None,
         config_name=None,
         submit_command_extra=None,
         cancel_command_extra=None,
@@ -54,12 +56,26 @@ Queue
                 "You must specify how much disk to use per job like ``disk='1 GB'``"
             )
         self.worker_disk = parse_bytes(disk)
+
         if job_extra is None:
-            self.job_extra = dask.config.get(
-                "jobqueue.%s.job-extra" % self.config_name, {}
+            job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name, {})
+        if job_extra_directives is None:
+            job_extra_directives = dask.config.get(
+                "jobqueue.%s.job-extra-directives" % self.config_name, {}
             )
-        else:
-            self.job_extra = job_extra
+        if job_extra is not None:
+            warn = (
+                "job_extra has been renamed to job_extra_directives. "
+                "You are still using it (even if only set to []; please also check config files). "
+                "If you did not set job_extra_directives yet, job_extra will be respected for now, "
+                "but it will be removed in a future release. "
+                "If you already set job_extra_directives, job_extra is ignored and you can remove it."
+            )
+            warnings.warn(warn, FutureWarning)
+            if not job_extra_directives:
+                job_extra_directives = job_extra
+
+        self.job_extra_directives = job_extra_directives
 
         if self._job_script_prologue is not None:
             # Overwrite command template: prepend commands from job_script_prologue separated by semicolon.
@@ -94,8 +110,8 @@ Queue
                     "Stream_Error": True,
                 }
             )
-        if self.job_extra:
-            self.job_header_dict.update(self.job_extra)
+        if self.job_extra_directives:
+            self.job_header_dict.update(self.job_extra_directives)
 
         if submit_command_extra is None:
             submit_command_extra = dask.config.get(
@@ -225,6 +241,8 @@ class HTCondorCluster(JobQueueCluster):
     disk : str
         Total amount of disk per job
     job_extra : dict
+        Deprecated: use ``job_extra_directives`` instead. This parameter will be removed in a future version.
+    job_extra_directives : dict
         Extra submit file attributes for the job as key-value pairs.
         They will be inserted as ``key = value``.
     submit_command_extra : list of str
