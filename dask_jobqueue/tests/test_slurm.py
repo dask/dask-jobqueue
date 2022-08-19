@@ -123,7 +123,7 @@ def test_basic(loop):
         cores=2,
         processes=1,
         memory="2GiB",
-        # job_extra=["-D /"],
+        # job_extra_directives=["-D /"],
         loop=loop,
     ) as cluster:
         with Client(cluster) as client:
@@ -156,7 +156,7 @@ def test_adaptive(loop):
         cores=2,
         processes=1,
         memory="2GB",
-        # job_extra=["-D /"],
+        # job_extra_directives=["-D /"],
         loop=loop,
     ) as cluster:
         cluster.adapt()
@@ -184,7 +184,8 @@ def test_config_name_slurm_takes_custom_config():
         "cores": 1,
         "memory": "2 GB",
         "walltime": "00:02",
-        "job-extra": [],
+        "job-extra": None,
+        "job-extra-directives": [],
         "name": "myname",
         "processes": 1,
         "interface": None,

@@ -1,5 +1,6 @@
 import logging
 import math
+import warnings
 
 import dask
 
@@ -24,6 +25,7 @@ class SLURMJob(Job):
         job_cpu=None,
         job_mem=None,
         job_extra=None,
+        job_extra_directives=None,
         config_name=None,
         **base_class_kwargs
     ):
@@ -43,6 +45,21 @@ class SLURMJob(Job):
             job_mem = dask.config.get("jobqueue.%s.job-mem" % self.config_name)
         if job_extra is None:
             job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name)
+        if job_extra_directives is None:
+            job_extra_directives = dask.config.get(
+                "jobqueue.%s.job-extra-directives" % self.config_name
+            )
+        if job_extra is not None:
+            warn = (
+                "job_extra has been renamed to job_extra_directives. "
+                "You are still using it (even if only set to []; please also check config files). "
+                "If you did not set job_extra_directives yet, job_extra will be respected for now, "
+                "but it will be removed in a future release. "
+                "If you already set job_extra_directives, job_extra is ignored and you can remove it."
+            )
+            warnings.warn(warn, FutureWarning)
+            if not job_extra_directives:
+                job_extra_directives = job_extra
 
         header_lines = []
         # SLURM header build
@@ -77,7 +94,7 @@ class SLURMJob(Job):
 
         if walltime is not None:
             header_lines.append("#SBATCH -t %s" % walltime)
-        header_lines.extend(["#SBATCH %s" % arg for arg in job_extra])
+        header_lines.extend(["#SBATCH %s" % arg for arg in job_extra_directives])
 
         # Declare class attribute that shall be overridden
         self.job_header = "\n".join(header_lines)
@@ -127,6 +144,8 @@ class SLURMCluster(JobQueueCluster):
         Amount of memory to request in SLURM. If None, defaults to worker
         processes * memory
     job_extra : list
+        Deprecated: use ``job_extra_directives`` instead. This parameter will be removed in a future version.
+    job_extra_directives : list
         List of other Slurm options, for example -j oe. Each option will be prepended with the #SBATCH prefix.
 
     Examples
