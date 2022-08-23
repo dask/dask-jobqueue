@@ -1,7 +1,6 @@
 import logging
 import math
 import os
-import warnings
 
 import dask
 
@@ -48,8 +47,6 @@ class PBSJob(Job):
         project=None,
         resource_spec=None,
         walltime=None,
-        job_extra=None,
-        job_extra_directives=None,
         config_name=None,
         **base_class_kwargs
     ):
@@ -65,23 +62,6 @@ class PBSJob(Job):
             )
         if walltime is None:
             walltime = dask.config.get("jobqueue.%s.walltime" % self.config_name)
-        if job_extra is None:
-            job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name)
-        if job_extra_directives is None:
-            job_extra_directives = dask.config.get(
-                "jobqueue.%s.job-extra-directives" % self.config_name
-            )
-        if job_extra is not None:
-            warn = (
-                "job_extra has been renamed to job_extra_directives. "
-                "You are still using it (even if only set to []; please also check config files). "
-                "If you did not set job_extra_directives yet, job_extra will be respected for now, "
-                "but it will be removed in a future release. "
-                "If you already set job_extra_directives, job_extra is ignored and you can remove it."
-            )
-            warnings.warn(warn, FutureWarning)
-            if not job_extra_directives:
-                job_extra_directives = job_extra
 
         if project is None:
             project = dask.config.get(
@@ -115,7 +95,7 @@ class PBSJob(Job):
         if self.log_directory is not None:
             header_lines.append("#PBS -e %s/" % self.log_directory)
             header_lines.append("#PBS -o %s/" % self.log_directory)
-        header_lines.extend(["#PBS %s" % arg for arg in job_extra_directives])
+        header_lines.extend(["#PBS %s" % arg for arg in self.job_extra_directives])
 
         # Declare class attribute that shall be overridden
         self.job_header = "\n".join(header_lines)

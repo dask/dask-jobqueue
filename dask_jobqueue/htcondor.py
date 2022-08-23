@@ -1,7 +1,6 @@
 import logging
 import re
 import shlex
-import warnings
 
 import dask
 from dask.utils import parse_bytes
@@ -38,8 +37,6 @@ Queue
         scheduler=None,
         name=None,
         disk=None,
-        job_extra=None,
-        job_extra_directives=None,
         config_name=None,
         submit_command_extra=None,
         cancel_command_extra=None,
@@ -56,26 +53,6 @@ Queue
                 "You must specify how much disk to use per job like ``disk='1 GB'``"
             )
         self.worker_disk = parse_bytes(disk)
-
-        if job_extra is None:
-            job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name, {})
-        if job_extra_directives is None:
-            job_extra_directives = dask.config.get(
-                "jobqueue.%s.job-extra-directives" % self.config_name, {}
-            )
-        if job_extra is not None:
-            warn = (
-                "job_extra has been renamed to job_extra_directives. "
-                "You are still using it (even if only set to []; please also check config files). "
-                "If you did not set job_extra_directives yet, job_extra will be respected for now, "
-                "but it will be removed in a future release. "
-                "If you already set job_extra_directives, job_extra is ignored and you can remove it."
-            )
-            warnings.warn(warn, FutureWarning)
-            if not job_extra_directives:
-                job_extra_directives = job_extra
-
-        self.job_extra_directives = job_extra_directives
 
         if self._job_script_prologue is not None:
             # Overwrite command template: prepend commands from job_script_prologue separated by semicolon.
