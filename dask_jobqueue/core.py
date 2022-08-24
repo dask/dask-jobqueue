@@ -235,10 +235,10 @@ class Job(ProcessInterface, abc.ABC):
                 worker_extra_args = extra
 
         if job_extra is None:
-            job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name, {})
+            job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name, [])
         if job_extra_directives is None:
             job_extra_directives = dask.config.get(
-                "jobqueue.%s.job-extra-directives" % self.config_name, {}
+                "jobqueue.%s.job-extra-directives" % self.config_name, []
             )
         if job_extra is not None:
             warn = (
