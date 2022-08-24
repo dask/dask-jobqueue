@@ -73,7 +73,7 @@ def test_header():
         assert "#BSUB -P" not in cluster.job_header
 
     with LSFCluster(
-        cores=4, memory="8GB", job_extra=["-u email@domain.com"]
+        cores=4, memory="8GB", job_extra_directives=["-u email@domain.com"]
     ) as cluster:
 
         assert "#BSUB -u email@domain.com" in cluster.job_header
@@ -139,7 +139,7 @@ def test_job_script():
         cores=1,
         memory="16GB",
         project="Dask On LSF",
-        job_extra=["-R rusage[mem=16GB]"],
+        job_extra_directives=["-R rusage[mem=16GB]"],
     ) as cluster:
 
         job_script = cluster.job_script()
@@ -312,7 +312,8 @@ def test_config_name_lsf_takes_custom_config():
         "mem": 2,
         "memory": "2 GB",
         "walltime": "00:02",
-        "job-extra": [],
+        "job-extra": None,
+        "job-extra-directives": [],
         "lsf-units": "TB",
         "name": "myname",
         "processes": 1,

@@ -42,13 +42,15 @@ can be used, called ``MoabCluster``:
    import os
    from dask_jobqueue import MoabCluster
 
-   cluster = MoabCluster(cores=6,
-                         processes=6,
-                         project='gfdl_m',
-                         memory='16G',
-                         resource_spec='pmem=96G',
-                         job_extra=['-d /home/First.Last', '-M none'],
-                         local_directory=os.getenv('TMPDIR', '/tmp'))
+   cluster = MoabCluster(
+       cores=6,
+       processes=6,
+       project="gfdl_m",
+       memory="16G",
+       resource_spec="pmem=96G",
+       job_extra_directives=["-d /home/First.Last", "-M none"],
+       local_directory=os.getenv("TMPDIR", "/tmp"),
+   )
 
 SGE Deployments
 ---------------
@@ -124,17 +126,19 @@ SLURM Deployment: Low-priority node usage
 
     from dask_jobqueue import SLURMCluster
 
-    cluster = SLURMCluster(cores=24,
-                           processes=6,
-                           memory="16GB",
-                           project="co_laika",
-                           queue='savio2_bigmem',
-                           job_script_prologue=[
-                               'export LANG="en_US.utf8"',
-                               'export LANGUAGE="en_US.utf8"',
-                               'export LC_ALL="en_US.utf8"'
-                           ],
-                           job_extra=['--qos="savio_lowprio"'])
+    cluster = SLURMCluster(
+        cores=24,
+        processes=6,
+        memory="16GB",
+        project="co_laika",
+        queue="savio2_bigmem",
+        job_script_prologue=[
+            'export LANG="en_US.utf8"',
+            'export LANGUAGE="en_US.utf8"',
+            'export LC_ALL="en_US.utf8"',
+        ],
+        job_extra_directives=['--qos="savio_lowprio"'],
+    )
 
 
 

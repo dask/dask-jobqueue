@@ -28,7 +28,6 @@ class LSFJob(Job):
         ncpus=None,
         mem=None,
         walltime=None,
-        job_extra=None,
         lsf_units=None,
         config_name=None,
         use_stdin=None,
@@ -48,8 +47,6 @@ class LSFJob(Job):
             mem = dask.config.get("jobqueue.%s.mem" % self.config_name)
         if walltime is None:
             walltime = dask.config.get("jobqueue.%s.walltime" % self.config_name)
-        if job_extra is None:
-            job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name)
         if lsf_units is None:
             lsf_units = dask.config.get("jobqueue.%s.lsf-units" % self.config_name)
 
@@ -96,7 +93,7 @@ class LSFJob(Job):
             header_lines.append("#BSUB -M %s" % memory_string)
         if walltime is not None:
             header_lines.append("#BSUB -W %s" % walltime)
-        header_lines.extend(["#BSUB %s" % arg for arg in job_extra])
+        header_lines.extend(["#BSUB %s" % arg for arg in self.job_extra_directives])
 
         # Declare class attribute that shall be overridden
         self.job_header = "\n".join(header_lines)
@@ -189,6 +186,8 @@ class LSFCluster(JobQueueCluster):
         Walltime for each worker job in HH:MM. Passed to `#BSUB -W` option.
     {cluster}
     job_extra : list
+        Deprecated: use ``job_extra_directives`` instead. This parameter will be removed in a future version.
+    job_extra_directives : list
         List of other LSF options, for example -u. Each option will be
         prepended with the #LSF prefix.
     lsf_units : str

@@ -49,7 +49,8 @@ def test_config_name_sge_takes_custom_config():
         "cores": 1,
         "memory": "2 GB",
         "walltime": "00:02",
-        "job-extra": [],
+        "job-extra": None,
+        "job-extra-directives": [],
         "name": "myname",
         "processes": 1,
         "interface": None,
@@ -82,7 +83,7 @@ def test_job_script(tmpdir):
         project="my-project",
         walltime="02:00:00",
         job_script_prologue=["export MY_VAR=my_var"],
-        job_extra=["-w e", "-m e"],
+        job_extra_directives=["-w e", "-m e"],
         log_directory=log_directory,
         resource_spec="h_vmem=12G,mem_req=12G",
     ) as cluster:

@@ -33,7 +33,7 @@ def test_job_script():
             "cd /some/path/",
             "source venv/bin/activate",
         ],
-        job_extra={"+Extra": "True"},
+        job_extra_directives={"+Extra": "True"},
         submit_command_extra=["-verbose"],
         cancel_command_extra=["-forcex"],
     ) as cluster:
@@ -134,7 +134,8 @@ def test_config_name_htcondor_takes_custom_config():
         "cores": 1,
         "memory": "120 MB",
         "disk": "120 MB",
-        "job-extra": [],
+        "job-extra": None,
+        "job-extra-directives": [],
         "name": "myname",
         "processes": 1,
         "interface": None,

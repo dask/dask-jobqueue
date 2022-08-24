@@ -271,3 +271,70 @@ def test_deprecation_extra(Cluster):
     )
     job_script = job.job_script()
     assert "old_param" in job_script
+
+
+def test_deprecation_job_extra(Cluster):
+    if issubclass(Cluster, LocalCluster):
+        return  # nothing to test in this implentation, really
+
+    import warnings
+
+    # test issuing of warning
+    warnings.simplefilter("always")
+
+    job_cls = Cluster.job_cls
+    with warnings.catch_warnings(record=True) as w:
+        # should give a warning
+        job = job_cls(cores=1, memory="1 GB", job_extra={"old_param": "1"})
+        assert len(w) == 1
+        assert issubclass(w[0].category, FutureWarning)
+        assert "job_extra has been renamed" in str(w[0].message)
+    with warnings.catch_warnings(record=True) as w:
+        # should give a warning
+        job = job_cls(
+            cores=1,
+            memory="1 GB",
+            job_extra={"old_param": "1"},
+            job_extra_directives={"new_param": "2"},
+        )
+        assert len(w) == 1
+        assert issubclass(w[0].category, FutureWarning)
+        assert "job_extra has been renamed" in str(w[0].message)
+    with warnings.catch_warnings(record=True) as w:
+        # should not give a warning
+        job = job_cls(
+            cores=1,
+            memory="1 GB",
+            job_extra_directives={"new_param": "2"},
+        )
+        assert len(w) == 0
+
+    # the rest is not about the warning but about behaviour: if job_extra_directives is not
+    # set, job_extra should still be used if provided
+    warnings.simplefilter("ignore")
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        job_extra={"old_param": "1"},
+        job_extra_directives={"new_param": "2"},
+    )
+    job_script = job.job_script()
+    assert "old_param" not in job_script
+    assert "new_param" in job_script
+
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        job_extra={"old_param": "1"},
+    )
+    job_script = job.job_script()
+    assert "old_param" in job_script
+
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        job_extra={"old_param": "1"},
+        job_extra_directives=[],
+    )
+    job_script = job.job_script()
+    assert "old_param" in job_script

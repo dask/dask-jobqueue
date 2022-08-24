@@ -21,7 +21,7 @@ def test_header():
         processes=4,
         cores=8,
         memory="28GB",
-        job_extra=["-t besteffort"],
+        job_extra_directives=["-t besteffort"],
     ) as cluster:
         assert "walltime=" in cluster.job_header
         assert "#OAR --project DaskOnOar" in cluster.job_header
@@ -101,7 +101,8 @@ def test_config_name_oar_takes_custom_config():
         "cores": 1,
         "memory": "2 GB",
         "walltime": "00:02",
-        "job-extra": [],
+        "job-extra": None,
+        "job-extra-directives": [],
         "name": "myname",
         "processes": 1,
         "interface": None,

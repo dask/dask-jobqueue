@@ -47,7 +47,6 @@ class PBSJob(Job):
         project=None,
         resource_spec=None,
         walltime=None,
-        job_extra=None,
         config_name=None,
         **base_class_kwargs
     ):
@@ -63,8 +62,7 @@ class PBSJob(Job):
             )
         if walltime is None:
             walltime = dask.config.get("jobqueue.%s.walltime" % self.config_name)
-        if job_extra is None:
-            job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name)
+
         if project is None:
             project = dask.config.get(
                 "jobqueue.%s.project" % self.config_name
@@ -97,7 +95,7 @@ class PBSJob(Job):
         if self.log_directory is not None:
             header_lines.append("#PBS -e %s/" % self.log_directory)
             header_lines.append("#PBS -o %s/" % self.log_directory)
-        header_lines.extend(["#PBS %s" % arg for arg in job_extra])
+        header_lines.extend(["#PBS %s" % arg for arg in self.job_extra_directives])
 
         # Declare class attribute that shall be overridden
         self.job_header = "\n".join(header_lines)
@@ -121,6 +119,8 @@ class PBSCluster(JobQueueCluster):
     walltime : str
         Walltime for each worker job.
     job_extra : list
+        Deprecated: use ``job_extra_directives`` instead. This parameter will be removed in a future version.
+    job_extra_directives : list
         List of other PBS options. Each option will be prepended with the #PBS prefix.
 
     Examples

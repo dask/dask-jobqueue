@@ -27,7 +27,8 @@ a real job script file, and submit it using ``qsub``, ``sbatch``, ``bsub`` or
 what is appropriate for you job queuing system.
 
 To correct any problem detected at this point, you could try to use
-``job_extra`` or ``job_script_prologue`` kwargs when initializing your cluster object.
+``job_extra_directives`` or ``job_script_prologue`` kwargs when initializing
+your cluster object.
 
 In particular, pay attention to the python executable used to launch the
 workers, which by default is the one used to launch the scheduler (this makes

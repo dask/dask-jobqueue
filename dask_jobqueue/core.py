@@ -107,6 +107,11 @@ class Job(ProcessInterface, abc.ABC):
     Parameters
     ----------
     {job_parameters}
+    job_extra : list or dict
+        Deprecated: use ``job_extra_directives`` instead. This parameter will be removed in a future version.
+    job_extra_directives : list or dict
+        Unused in this base class:
+        List or dict of other options for the queueing system. See derived classes for specific descriptions.
 
     Attributes
     ----------
@@ -159,6 +164,8 @@ class Job(ProcessInterface, abc.ABC):
         local_directory=None,
         extra=None,
         worker_extra_args=None,
+        job_extra=None,
+        job_extra_directives=None,
         env_extra=None,
         job_script_prologue=None,
         header_skip=None,
@@ -226,6 +233,26 @@ class Job(ProcessInterface, abc.ABC):
             warnings.warn(warn, FutureWarning)
             if not worker_extra_args:
                 worker_extra_args = extra
+
+        if job_extra is None:
+            job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name, [])
+        if job_extra_directives is None:
+            job_extra_directives = dask.config.get(
+                "jobqueue.%s.job-extra-directives" % self.config_name, []
+            )
+        if job_extra is not None:
+            warn = (
+                "job_extra has been renamed to job_extra_directives. "
+                "You are still using it (even if only set to []; please also check config files). "
+                "If you did not set job_extra_directives yet, job_extra will be respected for now, "
+                "but it will be removed in a future release. "
+                "If you already set job_extra_directives, job_extra is ignored and you can remove it."
+            )
+            warnings.warn(warn, FutureWarning)
+            if not job_extra_directives:
+                job_extra_directives = job_extra
+        self.job_extra_directives = job_extra_directives
+
         if env_extra is None:
             env_extra = dask.config.get("jobqueue.%s.env-extra" % self.config_name)
         if job_script_prologue is None:

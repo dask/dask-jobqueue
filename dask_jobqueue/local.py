@@ -32,7 +32,6 @@ class LocalJob(Job):
         project=None,
         resource_spec=None,
         walltime=None,
-        job_extra=None,
         config_name=None,
         **kwargs
     ):

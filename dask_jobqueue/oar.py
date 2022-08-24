@@ -24,7 +24,6 @@ class OARJob(Job):
         project=None,
         resource_spec=None,
         walltime=None,
-        job_extra=None,
         config_name=None,
         **base_class_kwargs
     ):
@@ -42,8 +41,6 @@ class OARJob(Job):
             )
         if walltime is None:
             walltime = dask.config.get("jobqueue.%s.walltime" % self.config_name)
-        if job_extra is None:
-            job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name)
 
         header_lines = []
         if self.job_name is not None:
@@ -67,7 +64,7 @@ class OARJob(Job):
 
         full_resource_spec = ",".join(resource_spec_list)
         header_lines.append("#OAR -l %s" % full_resource_spec)
-        header_lines.extend(["#OAR %s" % arg for arg in job_extra])
+        header_lines.extend(["#OAR %s" % arg for arg in self.job_extra_directives])
 
         self.job_header = "\n".join(header_lines)
 
@@ -113,6 +110,8 @@ class OARCluster(JobQueueCluster):
     walltime : str
         Walltime for each worker job.
     job_extra : list
+        Deprecated: use ``job_extra_directives`` instead. This parameter will be removed in a future version.
+    job_extra_directives : list
         List of other OAR options, for example `-t besteffort`. Each option will be prepended with the #OAR prefix.
 
     Examples

@@ -23,7 +23,6 @@ class SLURMJob(Job):
         walltime=None,
         job_cpu=None,
         job_mem=None,
-        job_extra=None,
         config_name=None,
         **base_class_kwargs
     ):
@@ -41,8 +40,6 @@ class SLURMJob(Job):
             job_cpu = dask.config.get("jobqueue.%s.job-cpu" % self.config_name)
         if job_mem is None:
             job_mem = dask.config.get("jobqueue.%s.job-mem" % self.config_name)
-        if job_extra is None:
-            job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name)
 
         header_lines = []
         # SLURM header build
@@ -77,7 +74,7 @@ class SLURMJob(Job):
 
         if walltime is not None:
             header_lines.append("#SBATCH -t %s" % walltime)
-        header_lines.extend(["#SBATCH %s" % arg for arg in job_extra])
+        header_lines.extend(["#SBATCH %s" % arg for arg in self.job_extra_directives])
 
         # Declare class attribute that shall be overridden
         self.job_header = "\n".join(header_lines)
@@ -127,6 +124,8 @@ class SLURMCluster(JobQueueCluster):
         Amount of memory to request in SLURM. If None, defaults to worker
         processes * memory
     job_extra : list
+        Deprecated: use ``job_extra_directives`` instead. This parameter will be removed in a future version.
+    job_extra_directives : list
         List of other Slurm options, for example -j oe. Each option will be prepended with the #SBATCH prefix.
 
     Examples
