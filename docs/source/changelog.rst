@@ -6,6 +6,20 @@ Development version
 
 
 
+0.8.0 / 2022-08-29
+------------------
+
+- Use --nworkers instead of deprecated --nprocs in the generated job scripts (:pr:`560`)
+- Drop support for Python 3.7 (:pr:`562`)
+- Rename `env_extra` kwarg to `job_script_prologue` (:pr:`575`)
+- Rename `extra` kwarg to `worker_extra_args` (:pr:`576`)
+- Rename `job_extra` kwarg to `job_extra_directives` (:pr:`577`)
+- Fixing CI failures (:pr:`562`, :pr:`574`)
+- Fix behaviour of env_extra for HTCondor and other related fixes (:pr:`563`, :pr:`570`, :pr:`572`)
+- Add batch_name to match the name of the Dask worker in HTCondor (:pr:`571`)
+
+Thanks to [@jolange](https://github.com/jolange), [@ikabadzhov](https://github.com/ikabadzhov) and [@guillaumeeb](https://github.com/guillaumeeb).
+
 0.7.4 / 2022-07-13
 ------------------
 
