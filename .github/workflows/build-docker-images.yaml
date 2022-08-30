@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        jobqueue: ["pbs", "sge", "slurm"]
+        jobqueue: ["pbs", "sge", "slurm", "htcondor"]
 
     steps:
       - name: Checkout
