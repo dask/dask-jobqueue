@@ -7,8 +7,6 @@ function jobqueue_before_install {
     # start pbs cluster
     cd ./ci/pbs
     docker-compose pull
-    cp ../environment.yml environment.yml
-    docker-compose build
     ./start-pbs.sh
     cd -
 
