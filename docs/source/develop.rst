@@ -57,23 +57,6 @@ For example for PBS you can run::
 .. _Docker: https://www.docker.com/
 .. _`Docker compose`: https://docs.docker.com/compose/
 
-Building the Docker Images
---------------------------
-
-Under the hood, the CI commands use or build Docker images.
-You can also build these Docker images on your local computer if you need to update them.
-
-For Slurm for example::
-
-   cd ci/slurm
-   cp ../environment.yml environment.yml #The Dockerfile needs the reference Conda environment file in its context to build
-   docker-compose build
-
-You might want to stop your dockerized cluster and refresh the build if you have done this previously::
-
-   docker-compose down
-   docker-compose build --no-cache
-
 Testing without CI scripts
 --------------------------
 
@@ -113,3 +96,35 @@ So for example with a Slurm cluster::
 
 Note that this last feature has not been thoroughly tested, and you might run into timeout 
 issues or other unexpected failures depending on your Job Scheduler configuration and load.
+
+Building the Docker Images
+--------------------------
+
+Under the hood, the CI commands use or build Docker images.
+You can also build these Docker images on your local computer if you need to update them.
+
+For Slurm for example::
+
+   cd ci/slurm
+   cp ../environment.yml environment.yml #The Dockerfile needs the reference Conda environment file in its context to build
+   docker-compose build
+
+You might want to stop your dockerized cluster and refresh the build if you have done this previously::
+
+   docker-compose down
+   docker-compose build --no-cache
+
+Update Docker images for CI tests
+---------------------------------
+
+The CI build testing dask-jobqueue on various dockerized Job Schedulers (.github/workflows/ci.yaml)
+does not build the Docker images on each run and only pull them from Dockerhub.
+It relies on another workflow (build-docker-images.yaml) to build and push these images.
+This allows to speed-up CI checks.
+
+Sometimes, (e.g. usually when updating Python version for tests), we will need to both update
+the Docker images and modify and run tests accordingly. This should be done with two different PRs:
+
+- One updating the Docker images. Tests might fail on this first one.
+- Another to check tests using the newly built Docker images, once the first one is merged and the
+  build-docker-images workflow has terminated.
