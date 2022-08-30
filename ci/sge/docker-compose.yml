@@ -7,8 +7,6 @@ services:
     build:
       context: .
       target: master
-      args:
-        PYTHON_VERSION: 3.8
     container_name: sge_master
     hostname: sge_master
     #network_mode: host
@@ -21,8 +19,6 @@ services:
     build:
       context: .
       target: slave
-      args:
-        PYTHON_VERSION: 3.8
     container_name: slave_one
     hostname: slave_one
     #network_mode: host

@@ -9,8 +9,8 @@ RUN curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-L
     /opt/anaconda/bin/conda clean -tipy && \
     rm -f miniconda.sh
 ENV PATH /opt/anaconda/bin:$PATH
-ARG PYTHON_VERSION
-RUN conda install -c conda-forge python=$PYTHON_VERSION dask distributed pytest pytest-asyncio && conda clean -tipy
+COPY ../environment.yml .
+RUN conda env update --file environment.yml
 
 COPY ./*.sh /
 COPY ./*.txt /
