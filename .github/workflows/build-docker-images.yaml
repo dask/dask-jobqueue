@@ -26,6 +26,7 @@ jobs:
         shell: bash -l {0}
         run: |
           cd ./ci/${{ matrix.jobqueue }}
+          cp ../environment.yml environment.yml
           docker-compose build
       - name: List images
         run: |

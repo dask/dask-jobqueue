@@ -30,7 +30,9 @@ RUN curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-L
     bash miniconda.sh -f -b -p /opt/anaconda && \
     /opt/anaconda/bin/conda clean -tipy && \
     rm -f miniconda.sh
-RUN conda install --yes -c conda-forge python=3.8 dask distributed flake8 pytest pytest-asyncio
+# environment.yml file is copied by CI script. If manually building, you should copy it too from parent directory
+COPY environment.yml .
+RUN conda env update -n base --file environment.yml
 
 # Copy entrypoint and other needed scripts
 COPY ./*.sh /
