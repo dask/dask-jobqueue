@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        jobqueue: ["pbs", "sge", "slurm"]
+        jobqueue: ["pbs", "sge", "slurm", "htcondor"]
 
     steps:
       - name: Checkout
@@ -33,12 +33,21 @@ jobs:
           docker images
 
       - name: Publish main images to DockerHub Registry
+        if: matrix.jobqueue != 'htcondor'
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
           docker push daskdev/dask-jobqueue:${{ matrix.jobqueue }}
 
-      - name: Publish secondary images to DockerHub Registry
+      - name: Publish secondary SGE images to DockerHub Registry
         if: matrix.jobqueue == 'sge'
         run: |
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
           docker push daskdev/dask-jobqueue:${{ matrix.jobqueue }}-slave
+
+      #HTCondor images have composed tags.
+      - name: Publish HTCondor images to DockerHub Registry
+        if: matrix.jobqueue == 'htcondor'
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          docker push daskdev/dask-jobqueue:${{ matrix.jobqueue }}-submit
+          docker push daskdev/dask-jobqueue:${{ matrix.jobqueue }}-execute
