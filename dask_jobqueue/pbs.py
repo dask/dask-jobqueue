@@ -95,6 +95,16 @@ class PBSJob(Job):
         if self.log_directory is not None:
             header_lines.append("#PBS -e %s/" % self.log_directory)
             header_lines.append("#PBS -o %s/" % self.log_directory)
+
+        # Skip requested header directives
+        header_lines = list(
+            filter(
+                lambda line: not any(skip in line for skip in self.job_directives_skip),
+                header_lines,
+            )
+        )
+
+        # Add extra header directives
         header_lines.extend(["#PBS %s" % arg for arg in self.job_extra_directives])
 
         # Declare class attribute that shall be overridden

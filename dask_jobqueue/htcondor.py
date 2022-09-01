@@ -87,6 +87,11 @@ Queue
                     "Stream_Error": True,
                 }
             )
+
+        if self.job_directives_skip:
+            for skip in self.job_directives_skip:
+                self.job_header_dict.pop(skip)
+
         if self.job_extra_directives:
             self.job_header_dict.update(self.job_extra_directives)
 

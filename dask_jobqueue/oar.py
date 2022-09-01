@@ -64,6 +64,16 @@ class OARJob(Job):
 
         full_resource_spec = ",".join(resource_spec_list)
         header_lines.append("#OAR -l %s" % full_resource_spec)
+
+        # Skip requested header directives
+        header_lines = list(
+            filter(
+                lambda line: not any(skip in line for skip in self.job_directives_skip),
+                header_lines,
+            )
+        )
+
+        # Add extra header directives
         header_lines.extend(["#OAR %s" % arg for arg in self.job_extra_directives])
 
         self.job_header = "\n".join(header_lines)

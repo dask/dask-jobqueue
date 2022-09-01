@@ -74,6 +74,16 @@ class SLURMJob(Job):
 
         if walltime is not None:
             header_lines.append("#SBATCH -t %s" % walltime)
+
+        # Skip requested header directives
+        header_lines = list(
+            filter(
+                lambda line: not any(skip in line for skip in self.job_directives_skip),
+                header_lines,
+            )
+        )
+
+        # Add extra header directives
         header_lines.extend(["#SBATCH %s" % arg for arg in self.job_extra_directives])
 
         # Declare class attribute that shall be overridden

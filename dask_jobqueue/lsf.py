@@ -93,6 +93,16 @@ class LSFJob(Job):
             header_lines.append("#BSUB -M %s" % memory_string)
         if walltime is not None:
             header_lines.append("#BSUB -W %s" % walltime)
+
+        # Skip requested header directives
+        header_lines = list(
+            filter(
+                lambda line: not any(skip in line for skip in self.job_directives_skip),
+                header_lines,
+            )
+        )
+
+        # Add extra header directives
         header_lines.extend(["#BSUB %s" % arg for arg in self.job_extra_directives])
 
         # Declare class attribute that shall be overridden
