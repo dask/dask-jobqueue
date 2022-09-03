@@ -58,8 +58,8 @@ job_parameters = """
         Deprecated: use ``job_directives_skip`` instead. This parameter will be removed in a future version.
     job_directives_skip : list
         Directives to skip in the generated job script header.
-        Directives lines matching this text will be removed.
-        Directives added trhough job_extra_directives won't be affected.
+        Directives lines containing the specified strings will be removed.
+        Directives added by job_extra_directives won't be affected.
     log_directory : str
         Directory to use for job scheduler logs.
     shebang : str
