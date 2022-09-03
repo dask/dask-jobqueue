@@ -1,6 +1,8 @@
 import asyncio
 from time import time
 
+
+from dask_jobqueue import PBSCluster, SLURMCluster, SGECluster, OARCluster
 from dask_jobqueue.local import LocalCluster
 from dask_jobqueue.pbs import PBSJob
 from dask_jobqueue.core import JobQueueCluster
@@ -109,8 +111,96 @@ def test_header_lines_skip():
     job = PBSJob(cores=1, memory="1GB", job_name="foobar")
     assert "foobar" in job.job_script()
 
-    job = PBSJob(cores=1, memory="1GB", job_name="foobar", header_skip=["-N"])
+    job = PBSJob(cores=1, memory="1GB", job_name="foobar", job_directives_skip=["-N"])
     assert "foobar" not in job.job_script()
+
+
+def test_header_lines_dont_skip_extra_directives():
+    job = PBSJob(
+        cores=1, memory="1GB", job_name="foobar", job_extra_directives=["-N 123"]
+    )
+    assert "foobar" in job.job_script()
+    assert "-N 123" in job.job_script()
+
+    job = PBSJob(
+        cores=1,
+        memory="1GB",
+        job_name="foobar",
+        job_directives_skip=["-N"],
+        job_extra_directives=["-N 123"],
+    )
+    assert "foobar" not in job.job_script()
+    assert "-N 123" in job.job_script()
+
+
+# Test only header_skip for the cluster implementation that uses job_name.
+
+
+@pytest.mark.parametrize("Cluster", [PBSCluster, SLURMCluster, SGECluster, OARCluster])
+def test_deprecation_header_skip(Cluster):
+    import warnings
+
+    # test issuing of warning
+    warnings.simplefilter("always")
+
+    job_cls = Cluster.job_cls
+    with warnings.catch_warnings(record=True) as w:
+        # should give a warning
+        job = job_cls(cores=1, memory="1 GB", header_skip=["old_param"])
+        assert len(w) == 1
+        assert issubclass(w[0].category, FutureWarning)
+        assert "header_skip has been renamed" in str(w[0].message)
+    with warnings.catch_warnings(record=True) as w:
+        # should give a warning
+        job = job_cls(
+            cores=1,
+            memory="1 GB",
+            header_skip=["old_param"],
+            job_directives_skip=["new_param"],
+        )
+        assert len(w) == 1
+        assert issubclass(w[0].category, FutureWarning)
+        assert "header_skip has been renamed" in str(w[0].message)
+    with warnings.catch_warnings(record=True) as w:
+        # should not give a warning
+        job = job_cls(
+            cores=1,
+            memory="1 GB",
+            job_directives_skip=["new_param"],
+        )
+        assert len(w) == 0
+
+    # the rest is not about the warning but about behaviour: if job_directives_skip is not
+    # set, header_skip should still be used if provided
+    warnings.simplefilter("ignore")
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        job_name="jobname",
+        header_skip=["jobname"],
+        job_directives_skip=["new_param"],
+    )
+    job_script = job.job_script()
+    assert "jobname" in job_script
+
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        job_name="jobname",
+        header_skip=["jobname"],
+    )
+    job_script = job.job_script()
+    assert "jobname" not in job_script
+
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        job_name="jobname",
+        header_skip=["jobname"],
+        job_directives_skip=(),
+    )
+    job_script = job.job_script()
+    assert "jobname" not in job_script
 
 
 @pytest.mark.asyncio

@@ -40,32 +40,31 @@ class SGEJob(Job):
 
         header_lines = []
         if self.job_name is not None:
-            header_lines.append("#$ -N %(job-name)s")
+            header_lines.append("#$ -N %s" % self.job_name)
         if queue is not None:
-            header_lines.append("#$ -q %(queue)s")
+            header_lines.append("#$ -q %s" % queue)
         if project is not None:
-            header_lines.append("#$ -P %(project)s")
+            header_lines.append("#$ -P %s" % project)
         if resource_spec is not None:
-            header_lines.append("#$ -l %(resource_spec)s")
+            header_lines.append("#$ -l %s" % resource_spec)
         if walltime is not None:
-            header_lines.append("#$ -l h_rt=%(walltime)s")
+            header_lines.append("#$ -l h_rt=%s" % walltime)
         if self.log_directory is not None:
-            header_lines.append("#$ -e %(log_directory)s/")
-            header_lines.append("#$ -o %(log_directory)s/")
+            header_lines.append("#$ -e %s/" % self.log_directory)
+            header_lines.append("#$ -o %s/" % self.log_directory)
         header_lines.extend(["#$ -cwd", "#$ -j y"])
-        header_lines.extend(["#$ %s" % arg for arg in self.job_extra_directives])
-        header_template = "\n".join(header_lines)
 
-        config = {
-            "job-name": self.job_name,
-            "queue": queue,
-            "project": project,
-            "processes": self.worker_processes,
-            "walltime": walltime,
-            "resource_spec": resource_spec,
-            "log_directory": self.log_directory,
-        }
-        self.job_header = header_template % config
+        # Skip requested header directives
+        header_lines = list(
+            filter(
+                lambda line: not any(skip in line for skip in self.job_directives_skip),
+                header_lines,
+            )
+        )
+
+        # Add extra header directives
+        header_lines.extend(["#$ %s" % arg for arg in self.job_extra_directives])
+        self.job_header = "\n".join(header_lines)
 
         logger.debug("Job script: \n %s" % self.job_script())
 

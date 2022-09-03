@@ -24,6 +24,7 @@ jobqueue:
     resource-spec: null
     job-extra: null
     job-extra-directives: []
+    job-directives-skip: []
     log-directory: null
     
     # Scheduler options
@@ -54,6 +55,7 @@ jobqueue:
     resource-spec: null
     job-extra: null
     job-extra-directives: []
+    job-directives-skip: []
     log-directory: null
     
     # Scheduler options
@@ -83,6 +85,7 @@ jobqueue:
     job-script-prologue: []
     job-extra: null
     job-extra-directives: []
+    job-directives-skip: []
     log-directory: null
     resource-spec: null
     
@@ -115,6 +118,7 @@ jobqueue:
     job-mem: null
     job-extra: null
     job-extra-directives: []
+    job-directives-skip: []
     log-directory: null
     
     # Scheduler options
@@ -145,6 +149,7 @@ jobqueue:
     resource-spec: null
     job-extra: null
     job-extra-directives: []
+    job-directives-skip: []
     log-directory: null
     
     # Scheduler options
@@ -176,6 +181,7 @@ jobqueue:
     mem: null
     job-extra: null
     job-extra-directives: []
+    job-directives-skip: []
     log-directory: null
     lsf-units: null
     use-stdin: True             # (bool) How jobs are launched, i.e. 'bsub jobscript.sh' or 'bsub < jobscript.sh'
@@ -204,6 +210,7 @@ jobqueue:
     job-script-prologue: []
     job-extra: null             # Extra submit attributes
     job-extra-directives: {}    # Extra submit attributes
+    job-directives-skip: []
     submit-command-extra: []    # Extra condor_submit arguments
     cancel-command-extra: []    # Extra condor_rm arguments
     log-directory: null
@@ -230,6 +237,7 @@ jobqueue:
     job-script-prologue: []
     job-extra: null
     job-extra-directives: []
+    job-directives-skip: []
     log-directory: null
     
     # Scheduler options

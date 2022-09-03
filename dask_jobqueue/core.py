@@ -55,8 +55,11 @@ job_parameters = """
     job_script_prologue : list
         Other commands to add to script before launching worker.
     header_skip : list
-        Lines to skip in the header.
-        Header lines matching this text will be removed
+        Deprecated: use ``job_directives_skip`` instead. This parameter will be removed in a future version.
+    job_directives_skip : list
+        Directives to skip in the generated job script header.
+        Directives lines containing the specified strings will be removed.
+        Directives added by job_extra_directives won't be affected.
     log_directory : str
         Directory to use for job scheduler logs.
     shebang : str
@@ -169,6 +172,7 @@ class Job(ProcessInterface, abc.ABC):
         env_extra=None,
         job_script_prologue=None,
         header_skip=None,
+        job_directives_skip=None,
         log_directory=None,
         shebang=None,
         python=sys.executable,
@@ -272,8 +276,25 @@ class Job(ProcessInterface, abc.ABC):
                 job_script_prologue = env_extra
         if header_skip is None:
             header_skip = dask.config.get(
-                "jobqueue.%s.header-skip" % self.config_name, ()
+                "jobqueue.%s.header-skip" % self.config_name, None
             )
+        if job_directives_skip is None:
+            job_directives_skip = dask.config.get(
+                "jobqueue.%s.job-directives-skip" % self.config_name, ()
+            )
+        if header_skip is not None:
+            warn = (
+                "header_skip has been renamed to job_directives_skip. "
+                "You are still using it (even if only set to (); please also check config files). "
+                "If you did not set job_directives_skip yet, header_skip will be respected for now, "
+                "but it will be removed in a future release. "
+                "If you already set job_directives_skip, header_skip is ignored and you can remove it."
+            )
+            warnings.warn(warn, FutureWarning)
+            if not job_directives_skip:
+                job_directives_skip = header_skip
+        self.job_directives_skip = set(job_directives_skip)
+
         if log_directory is None:
             log_directory = dask.config.get(
                 "jobqueue.%s.log-directory" % self.config_name
@@ -309,7 +330,6 @@ class Job(ProcessInterface, abc.ABC):
         self.shebang = shebang
 
         self._job_script_prologue = job_script_prologue
-        self.header_skip = set(header_skip)
 
         # dask-worker command line build
         dask_worker_command = "%(python)s -m distributed.cli.dask_worker" % dict(
@@ -352,16 +372,9 @@ class Job(ProcessInterface, abc.ABC):
 
     def job_script(self):
         """Construct a job submission script"""
-        header = "\n".join(
-            [
-                line
-                for line in self.job_header.split("\n")
-                if not any(skip in line for skip in self.header_skip)
-            ]
-        )
         pieces = {
             "shebang": self.shebang,
-            "job_header": header,
+            "job_header": self.job_header,
             "job_script_prologue": "\n".join(filter(None, self._job_script_prologue)),
             "worker_command": self._command_template,
         }
