@@ -28,7 +28,7 @@ def test_header(Cluster):
 
     with Cluster(
         queue="regular",
-        project="DaskOnPBS",
+        account="DaskOnPBS",
         processes=4,
         cores=8,
         resource_spec="select=1:ncpus=24:mem=100GB",
@@ -82,7 +82,7 @@ def test_job_script(Cluster):
 
     with Cluster(
         queue="regular",
-        project="DaskOnPBS",
+        account="DaskOnPBS",
         processes=4,
         cores=8,
         resource_spec="select=1:ncpus=24:mem=100GB",
@@ -347,7 +347,7 @@ def test_config(loop):
 def test_config_name_pbs_takes_custom_config():
     conf = {
         "queue": "myqueue",
-        "project": "myproject",
+        "account": "myaccount",
         "ncpus": 1,
         "cores": 1,
         "memory": "2 GB",
@@ -390,3 +390,67 @@ def test_informative_errors():
 async def test_adapt(loop):
     async with PBSCluster(cores=1, memory="1 GB", asynchronous=True) as cluster:
         cluster.adapt()
+
+
+def test_deprecation_project():
+    import warnings
+
+    # test issuing of warning
+    warnings.simplefilter("always")
+
+    job_cls = PBSCluster.job_cls
+    with warnings.catch_warnings(record=True) as w:
+        # should give a warning
+        job = job_cls(cores=1, memory="1 GB", project=["project is used"])
+        assert len(w) == 1
+        assert issubclass(w[0].category, FutureWarning)
+        assert "project has been renamed" in str(w[0].message)
+    with warnings.catch_warnings(record=True) as w:
+        # should give a warning
+        job = job_cls(
+            cores=1,
+            memory="1 GB",
+            project=["project is used"],
+            account=["account is used"],
+        )
+        assert len(w) == 1
+        assert issubclass(w[0].category, FutureWarning)
+        assert "project has been renamed" in str(w[0].message)
+    with warnings.catch_warnings(record=True) as w:
+        # should not give a warning
+        job = job_cls(
+            cores=1,
+            memory="1 GB",
+            account=["account is used, project not"],
+        )
+        assert len(w) == 0
+
+    # the rest is not about the warning but about behaviour: if account is not
+    # set, project should still be used if provided
+    warnings.simplefilter("ignore")
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        project=["project"],
+        account=["account"],
+    )
+    job_script = job.job_script()
+    assert "project" not in job_script
+    assert "account" in job_script
+
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        project=["project"],
+    )
+    job_script = job.job_script()
+    assert "project" in job_script
+
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        project=["project"],
+        account=[],
+    )
+    job_script = job.job_script()
+    assert "project" in job_script

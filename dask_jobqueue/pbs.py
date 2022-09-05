@@ -1,6 +1,7 @@
 import logging
 import math
 import os
+import warnings
 
 import dask
 
@@ -45,6 +46,7 @@ class PBSJob(Job):
         name=None,
         queue=None,
         project=None,
+        account=None,
         resource_spec=None,
         walltime=None,
         config_name=None,
@@ -63,13 +65,23 @@ class PBSJob(Job):
         if walltime is None:
             walltime = dask.config.get("jobqueue.%s.walltime" % self.config_name)
 
-        if project is None:
-            project = dask.config.get(
-                "jobqueue.%s.project" % self.config_name
+        if account is None:
+            account = dask.config.get(
+                "jobqueue.%s.account" % self.config_name
             ) or os.environ.get("PBS_ACCOUNT")
-
-        # Try to find a project name from environment variable
-        project = project or os.environ.get("PBS_ACCOUNT")
+        if project is None:
+            project = dask.config.get("jobqueue.%s.project" % self.config_name, None)
+        if project is not None:
+            warn = (
+                "project has been renamed to account as this kwarg was used wit -A option. "
+                "You are still using it (please also check config files). "
+                "If you did not set account yet, project will be respected for now, "
+                "but it will be removed in a future release. "
+                "If you already set account, project is ignored and you can remove it."
+            )
+            warnings.warn(warn, FutureWarning)
+            if not account:
+                account = project
 
         header_lines = []
         # PBS header build
@@ -77,8 +89,8 @@ class PBSJob(Job):
             header_lines.append("#PBS -N %s" % self.job_name)
         if queue is not None:
             header_lines.append("#PBS -q %s" % queue)
-        if project is not None:
-            header_lines.append("#PBS -A %s" % project)
+        if account is not None:
+            header_lines.append("#PBS -A %s" % account)
         if resource_spec is None:
             # Compute default resources specifications
             resource_spec = "select=1:ncpus=%d" % self.worker_cores
@@ -121,6 +133,8 @@ class PBSCluster(JobQueueCluster):
     queue : str
         Destination queue for each worker job. Passed to `#PBS -q` option.
     project : str
+        Deprecated: use ``account`` instead. This parameter will be removed in a future version.
+    account : str
         Accounting string associated with each worker job. Passed to `#PBS -A` option.
     {job}
     {cluster}
@@ -136,7 +150,7 @@ class PBSCluster(JobQueueCluster):
     Examples
     --------
     >>> from dask_jobqueue import PBSCluster
-    >>> cluster = PBSCluster(queue='regular', project="myproj", cores=24,
+    >>> cluster = PBSCluster(queue='regular', account="myaccountingstring", cores=24,
     ...     memory="500 GB")
     >>> cluster.scale(jobs=10)  # ask for 10 jobs
 

@@ -19,7 +19,7 @@ object is instantiated:
         local_directory='$TMPDIR',
         resource_spec='select=1:ncpus=24:mem=100GB',
         queue='regular',
-        project='my-project',
+        account='my-account',
         walltime='02:00:00',
    )
 
