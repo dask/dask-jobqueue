@@ -1,5 +1,6 @@
 import logging
 import math
+import warnings
 
 import dask
 
@@ -20,6 +21,7 @@ class SLURMJob(Job):
         name=None,
         queue=None,
         project=None,
+        account=None,
         walltime=None,
         job_cpu=None,
         job_mem=None,
@@ -32,8 +34,22 @@ class SLURMJob(Job):
 
         if queue is None:
             queue = dask.config.get("jobqueue.%s.queue" % self.config_name)
+        if account is None:
+            account = dask.config.get("jobqueue.%s.account" % self.config_name)
         if project is None:
-            project = dask.config.get("jobqueue.%s.project" % self.config_name)
+            project = dask.config.get("jobqueue.%s.project" % self.config_name, None)
+        if project is not None:
+            warn = (
+                "project has been renamed to account as this kwarg was used wit -A option. "
+                "You are still using it (please also check config files). "
+                "If you did not set account yet, project will be respected for now, "
+                "but it will be removed in a future release. "
+                "If you already set account, project is ignored and you can remove it."
+            )
+            warnings.warn(warn, FutureWarning)
+            if not account:
+                account = project
+
         if walltime is None:
             walltime = dask.config.get("jobqueue.%s.walltime" % self.config_name)
         if job_cpu is None:
@@ -56,8 +72,8 @@ class SLURMJob(Job):
             )
         if queue is not None:
             header_lines.append("#SBATCH -p %s" % queue)
-        if project is not None:
-            header_lines.append("#SBATCH -A %s" % project)
+        if account is not None:
+            header_lines.append("#SBATCH -A %s" % account)
 
         # Init resources, always 1 task,
         # and then number of cpu is processes * threads if not set
@@ -123,7 +139,9 @@ class SLURMCluster(JobQueueCluster):
     queue : str
         Destination queue for each worker job. Passed to `#SBATCH -p` option.
     project : str
-        Accounting string associated with each worker job. Passed to `#SBATCH -A` option.
+        Deprecated: use ``account`` instead. This parameter will be removed in a future version.
+    account : str
+        Accounting string associated with each worker job. Passed to `#PBS -A` option.
     {job}
     {cluster}
     walltime : str
@@ -143,7 +161,7 @@ class SLURMCluster(JobQueueCluster):
     >>> from dask_jobqueue import SLURMCluster
     >>> cluster = SLURMCluster(
     ...     queue='regular',
-    ...     project="myproj",
+    ...     account="myaccount",
     ...     cores=24,
     ...     memory="500 GB"
     ... )

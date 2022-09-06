@@ -28,7 +28,7 @@ def test_header():
 
     with SLURMCluster(
         queue="regular",
-        project="DaskOnSlurm",
+        account="DaskOnSlurm",
         processes=4,
         cores=8,
         memory="28GB",
@@ -179,7 +179,7 @@ def test_adaptive(loop):
 def test_config_name_slurm_takes_custom_config():
     conf = {
         "queue": "myqueue",
-        "project": "myproject",
+        "account": "myaccount",
         "ncpus": 1,
         "cores": 1,
         "memory": "2 GB",
@@ -249,3 +249,67 @@ def test_worker_name_uses_cluster_name(loop):
                 "test-my-env-variable-value-0",
                 "test-my-env-variable-value-1",
             ]
+
+
+def test_deprecation_project():
+    import warnings
+
+    # test issuing of warning
+    warnings.simplefilter("always")
+
+    job_cls = SLURMCluster.job_cls
+    with warnings.catch_warnings(record=True) as w:
+        # should give a warning
+        job = job_cls(cores=1, memory="1 GB", project=["project is used"])
+        assert len(w) == 1
+        assert issubclass(w[0].category, FutureWarning)
+        assert "project has been renamed" in str(w[0].message)
+    with warnings.catch_warnings(record=True) as w:
+        # should give a warning
+        job = job_cls(
+            cores=1,
+            memory="1 GB",
+            project=["project is used"],
+            account=["account is used"],
+        )
+        assert len(w) == 1
+        assert issubclass(w[0].category, FutureWarning)
+        assert "project has been renamed" in str(w[0].message)
+    with warnings.catch_warnings(record=True) as w:
+        # should not give a warning
+        job = job_cls(
+            cores=1,
+            memory="1 GB",
+            account=["account is used, project not"],
+        )
+        assert len(w) == 0
+
+    # the rest is not about the warning but about behaviour: if account is not
+    # set, project should still be used if provided
+    warnings.simplefilter("ignore")
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        project=["project"],
+        account=["account"],
+    )
+    job_script = job.job_script()
+    assert "project" not in job_script
+    assert "account" in job_script
+
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        project=["project"],
+    )
+    job_script = job.job_script()
+    assert "project" in job_script
+
+    job = job_cls(
+        cores=1,
+        memory="1 GB",
+        project=["project"],
+        account=[],
+    )
+    job_script = job.job_script()
+    assert "project" in job_script

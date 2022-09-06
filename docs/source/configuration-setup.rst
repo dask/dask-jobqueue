@@ -100,19 +100,20 @@ based on their size and urgency.
 If you are unfamiliar with using queues on your system you should leave this
 blank, or ask your IT administrator.
 
-Project
--------
+Project or Account
+------------------
 
 You may have an allocation on your HPC system that is referenced by a
-*project*.  This is typically a short bit of text that references your group or
+*project* or *account*.  This is typically a short bit of text that references your group or
 a particular project.  This is typically given to you by your IT administrator
 when they give you an allocation of hours on the HPC system.
 
 .. code-block:: yaml
 
    project: XYZW-1234
+   #account: XYZW-1234
 
-If this sounds foreign to you or if you don't use project codes then you should
+If this sounds foreign to you or if you don't use project or account codes then you should
 leave this blank, or ask your IT administrator.
 
 

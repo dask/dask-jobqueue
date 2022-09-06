@@ -24,7 +24,7 @@ define a single job:
         # Job scheduler specific keywords
         resource_spec='select=1:ncpus=24:mem=100GB',
         queue='regular',
-        project='my-project',
+        account='my-account',
         walltime='02:00:00',
    )
 
@@ -68,7 +68,7 @@ recommend using a configuration file like the following:
 
        resource-spec: "select=1:ncpus=24:mem=100GB"
        queue: regular
-       project: my-project
+       account: my-account
        walltime: 00:30:00
 
 See :doc:`Configuration Examples <configurations>` for real-world examples.

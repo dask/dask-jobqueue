@@ -84,7 +84,7 @@ class SGECluster(JobQueueCluster):
     queue : str
         Destination queue for each worker job. Passed to `#$ -q` option.
     project : str
-        Accounting string associated with each worker job. Passed to `#$ -A` option.
+        Project associated with each worker job. Passed to `#$ -P` option.
     {job}
     {cluster}
     resource_spec : str

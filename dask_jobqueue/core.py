@@ -285,7 +285,7 @@ class Job(ProcessInterface, abc.ABC):
         if header_skip is not None:
             warn = (
                 "header_skip has been renamed to job_directives_skip. "
-                "You are still using it (even if only set to (); please also check config files). "
+                "You are still using it (even if only set to []; please also check config files). "
                 "If you did not set job_directives_skip yet, header_skip will be respected for now, "
                 "but it will be removed in a future release. "
                 "If you already set job_directives_skip, header_skip is ignored and you can remove it."

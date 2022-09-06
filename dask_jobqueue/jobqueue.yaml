@@ -48,7 +48,7 @@ jobqueue:
     # PBS resource manager options
     shebang: "#!/usr/bin/env bash"
     queue: null
-    project: null
+    account: null
     walltime: '00:30:00'
     env-extra: null
     job-script-prologue: []
@@ -110,7 +110,7 @@ jobqueue:
     # SLURM resource manager options
     shebang: "#!/usr/bin/env bash"
     queue: null
-    project: null
+    account: null
     walltime: '00:30:00'
     env-extra: null
     job-script-prologue: []
@@ -142,7 +142,7 @@ jobqueue:
     # PBS resource manager options
     shebang: "#!/usr/bin/env bash"
     queue: null
-    project: null
+    account: null
     walltime: '00:30:00'
     env-extra: null
     job-script-prologue: []

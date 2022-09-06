@@ -50,7 +50,7 @@ Geyser/Caldera).
 
        interface: ib0
 
-       project: PXYZ123
+       account: PXYZ123
        walltime: '00:30:00'
        job-extra: {-C geyser}
 
@@ -107,7 +107,7 @@ ARM Stratus
         interface: ib0
         local-directory: $localscratch
         queue: high_mem # Can also select batch or gpu_ssd
-        project: arm
+        account: arm
         walltime: 00:30:00 #Adjust this to job size
         job-extra: ['-W group_list=cades-arm']
         
@@ -134,7 +134,7 @@ Also, note that port 8787 is open both on login and computing nodes, so you can 
 
        # SLURM resource manager options
        queue: compute
-       # project: xxxxxxx # choose project other than default
+       # account: xxxxxxx # choose account other than default
        walltime: '00:30:00'
        job-mem: 120GB              # Max memory that can be requested to SLURM
 
@@ -175,7 +175,7 @@ about this ``dask-jobqueue`` config.
 
        # PBS resource manager options
        queue: mpi_1
-       project: myPROJ
+       account: myAccount
        walltime: '48:00:00'
        resource-spec: select=1:ncpus=28:mem=120GB
        # disable email

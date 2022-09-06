@@ -185,7 +185,7 @@ class LSFCluster(JobQueueCluster):
     queue : str
         Destination queue for each worker job. Passed to `#BSUB -q` option.
     project : str
-        Accounting string associated with each worker job. Passed to
+        Project associated with each worker job. Passed to
         `#BSUB -P` option.
     {job}
     ncpus : int
