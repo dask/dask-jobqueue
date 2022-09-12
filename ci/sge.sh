@@ -10,6 +10,9 @@ function jobqueue_before_install {
     ./start-sge.sh
     cd -
 
+    #Set shared space permissions
+    docker exec sge_master /bin/bash -c "chmod -R 777 /shared_space"
+
     docker ps -a
     docker images
     docker exec sge_master qconf -sq dask.q
@@ -20,7 +23,7 @@ function jobqueue_install {
 }
 
 function jobqueue_script {
-    docker exec sge_master /bin/bash -c "cd /dask-jobqueue; pytest dask_jobqueue --verbose -s -E sge"
+    docker exec sge_master /bin/bash -c "cd; pytest /dask-jobqueue/dask_jobqueue --verbose -s -E sge"
 }
 
 function jobqueue_after_script {

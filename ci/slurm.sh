@@ -10,6 +10,9 @@ function jobqueue_before_install {
     ./start-slurm.sh
     cd -
 
+    #Set shared space permissions
+    docker exec slurmctld /bin/bash -c "chmod -R 777 /shared_space"
+
     docker ps -a
     docker images
     show_network_interfaces
@@ -29,7 +32,7 @@ function jobqueue_install {
 }
 
 function jobqueue_script {
-    docker exec slurmctld /bin/bash -c "pytest /dask-jobqueue/dask_jobqueue --verbose -E slurm -s"
+    docker exec slurmctld /bin/bash -c "cd; pytest /dask-jobqueue/dask_jobqueue --verbose -E slurm -s"
 }
 
 function jobqueue_after_script {

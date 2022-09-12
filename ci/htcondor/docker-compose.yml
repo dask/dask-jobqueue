@@ -20,12 +20,14 @@ services:
     environment:
       - CONDOR_HOST=cm
       - USE_POOL_PASSWORD=yes
+      - CI_SHARED_SPACE=/shared_space
     depends_on:
       - cm
     volumes:
       - secrets:/root/secrets
       - ../..:/dask-jobqueue
       - ./condor_config.local:/etc/condor/condor_config.local
+      - shared_space:/shared_space
 
   execute1:
     image: daskdev/dask-jobqueue:htcondor-execute
@@ -41,6 +43,7 @@ services:
     volumes:
       - secrets:/root/secrets
       - ./condor_config.local:/etc/condor/condor_config.local
+      - shared_space:/shared_space
 
   execute2:
     image: daskdev/dask-jobqueue:htcondor-execute
@@ -56,6 +59,8 @@ services:
     volumes:
       - secrets:/root/secrets
       - ./condor_config.local:/etc/condor/condor_config.local
+      - shared_space:/shared_space
 
 volumes:
   secrets:
+  shared_space:

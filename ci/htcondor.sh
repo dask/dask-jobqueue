@@ -12,6 +12,9 @@ function jobqueue_before_install {
     docker-compose exec -T submit /bin/bash -c "condor_q"
     cd -
 
+    #Set shared space permissions
+    docker-compose exec -T submit /bin/bash -c "chmod -R 777 /shared_space"
+
     docker ps -a
     docker images
 }

@@ -38,12 +38,15 @@ services:
     command: ["slurmctld"]
     container_name: slurmctld
     hostname: slurmctld
+    environment:
+      - CI_SHARED_SPACE=/shared_space
     volumes:
       - etc_munge:/etc/munge
       - etc_slurm:/etc/slurm
       - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
       - ../..:/dask-jobqueue
+      - shared_space:/shared_space
     expose:
       - "6817"
     depends_on:
@@ -65,6 +68,7 @@ services:
       - etc_slurm:/etc/slurm
       - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
+      - shared_space:/shared_space
     expose:
       - "6818"
     depends_on:
@@ -86,6 +90,7 @@ services:
       - etc_slurm:/etc/slurm
       - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
+      - shared_space:/shared_space
     expose:
       - "6818"
     depends_on:
@@ -102,6 +107,7 @@ volumes:
   slurm_jobdir:
   var_lib_mysql:
   var_log_slurm:
+  shared_space:
 
 networks:
   common-network:
