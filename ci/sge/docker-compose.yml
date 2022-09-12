@@ -25,6 +25,7 @@ services:
     hostname: slave_one
     #network_mode: host
     volumes:
+      - ../..:/dask-jobqueue
       - userhome:/root
       - shared_space:/shared_space
     command: bash /dask-jobqueue/ci/sge/run-slave.sh
@@ -44,6 +45,7 @@ services:
     hostname: slave_two
     #network_mode: host
     volumes:
+      - ../..:/dask-jobqueue
       - userhome:/root
       - shared_space:/shared_space
     command: bash /dask-jobqueue/ci/sge/run-slave.sh

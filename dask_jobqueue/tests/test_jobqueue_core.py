@@ -4,6 +4,7 @@ import socket
 import sys
 import re
 import psutil
+import shutil
 
 import pytest
 
@@ -350,7 +351,11 @@ def test_wrong_parameter_error(Cluster):
 
 @pytest.mark.filterwarnings("error:Using a temporary security object:UserWarning")
 def test_security(EnvSpecificCluster, loop):
-    dirname = "/shared_space" #Shared space configured in all docker compose CIs
+    dirname = "/shared_space"  # Shared space configured in all docker compose CIs
+    # Copy security files into the shared folder
+    test_dir = os.path.dirname(__file__)
+    shutil.copy2(os.path.join(test_dir, "key.pem"), dirname)
+    shutil.copy2(os.path.join(test_dir, "ca.pem"), dirname)
     key = os.path.join(dirname, "key.pem")
     cert = os.path.join(dirname, "ca.pem")
     security = Security(
@@ -395,7 +400,7 @@ def test_security(EnvSpecificCluster, loop):
 
 
 def test_security_temporary(EnvSpecificCluster, loop):
-    dirname = "/shared_space" #Shared space configured in all docker compose CIs
+    dirname = "/shared_space"  # Shared space configured in all docker compose CIs
     with EnvSpecificCluster(
         cores=1,
         memory="500MiB",
@@ -436,8 +441,12 @@ def test_security_temporary(EnvSpecificCluster, loop):
     # TODO assert not any([os.path.exists(f) for f in [keyfile, certfile, cafile]])
 
 
-@pytest.mark.xfail_env({"htcondor": "Submitting user do not have a shared home directory in CI"})
-@pytest.mark.xfail_env({"slurm": "Submitting user do not have a shared home directory in CI"})
+@pytest.mark.xfail_env(
+    {"htcondor": "Submitting user do not have a shared home directory in CI"}
+)
+@pytest.mark.xfail_env(
+    {"slurm": "Submitting user do not have a shared home directory in CI"}
+)
 def test_security_temporary_defaults(EnvSpecificCluster, loop):
     # test automatic behaviour if security is true and shared_temp_directory not set
     with pytest.warns(UserWarning, match="shared_temp_directory"), EnvSpecificCluster(
