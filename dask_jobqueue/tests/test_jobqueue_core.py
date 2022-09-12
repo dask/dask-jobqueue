@@ -4,7 +4,6 @@ import socket
 import sys
 import re
 import psutil
-import shutil
 
 import pytest
 
