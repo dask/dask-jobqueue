@@ -1,5 +1,7 @@
 import asyncio
 from time import time
+import sys
+import re
 
 
 from dask_jobqueue import PBSCluster, SLURMCluster, SGECluster, OARCluster
@@ -428,3 +430,27 @@ def test_deprecation_job_extra(Cluster):
     )
     job_script = job.job_script()
     assert "old_param" in job_script
+
+
+def test_jobqueue_job_call(tmpdir, Cluster):
+    cluster = Cluster(cores=1, memory="1GB")
+
+    path = tmpdir.join("test.py")
+    path.write('print("this is the stdout")')
+
+    out = cluster.job_cls._call([sys.executable, path.strpath])
+    assert out == "this is the stdout\n"
+
+    path_with_error = tmpdir.join("non-zero-exit-code.py")
+    path_with_error.write('print("this is the stdout")\n1/0')
+
+    match = (
+        "Command exited with non-zero exit code.+"
+        "Exit code: 1.+"
+        "stdout:\nthis is the stdout.+"
+        "stderr:.+ZeroDivisionError"
+    )
+
+    match = re.compile(match, re.DOTALL)
+    with pytest.raises(RuntimeError, match=match):
+        cluster.job_cls._call([sys.executable, path_with_error.strpath])
