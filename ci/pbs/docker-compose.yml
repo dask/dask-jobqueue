@@ -9,6 +9,8 @@ services:
     hostname: pbs_master
     volumes:
       - ../..:/dask-jobqueue
+      - userhome:/home/pbsuser
+      - shared_space:/shared_space
     command: bash /run-master.sh
 
   slave_one:
@@ -17,7 +19,8 @@ services:
     container_name: pbs_slave_1
     hostname: pbs_slave_1
     volumes:
-      - ../..:/dask-jobqueue
+      - userhome:/home/pbsuser
+      - shared_space:/shared_space
     entrypoint: "bash /slave-entrypoint.sh"
     command: bash /run-slave.sh
     links:
@@ -33,7 +36,8 @@ services:
     container_name: pbs_slave_2
     hostname: pbs_slave_2
     volumes:
-      - ../..:/dask-jobqueue
+      - userhome:/home/pbsuser
+      - shared_space:/shared_space
     entrypoint: "bash /slave-entrypoint.sh"
     command: bash /run-slave.sh
     links:
@@ -42,3 +46,7 @@ services:
       - PBS_MASTER=pbs_master
     depends_on:
       - master
+
+volumes:
+  userhome:
+  shared_space:

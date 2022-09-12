@@ -10,6 +10,9 @@ function jobqueue_before_install {
     ./start-sge.sh
     cd -
 
+    #Set shared space permissions
+    docker exec sge_master /bin/bash -c "chmod -R 777 /shared_space"
+
     docker ps -a
     docker images
     docker exec sge_master qconf -sq dask.q

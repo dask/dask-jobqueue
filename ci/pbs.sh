@@ -10,6 +10,10 @@ function jobqueue_before_install {
     ./start-pbs.sh
     cd -
 
+    #Set shared space permissions
+    docker exec pbs_master /bin/bash -c "chmod -R 777 /shared_space"
+    docker exec pbs_master /bin/bash -c "chown -R pbsuser:pbsuser /home/pbsuser"
+
     docker exec -u pbsuser pbs_master pbsnodes -a
     docker ps -a
     docker images
