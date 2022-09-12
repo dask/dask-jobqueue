@@ -20,7 +20,7 @@ function jobqueue_install {
 }
 
 function jobqueue_script {
-    docker exec sge_master /bin/bash -c "cd /dask-jobqueue; pytest dask_jobqueue --verbose -s -E sge"
+    docker exec sge_master /bin/bash -c "cd; pytest /dask-jobqueue/dask_jobqueue --verbose -s -E sge"
 }
 
 function jobqueue_after_script {
