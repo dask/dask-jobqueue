@@ -19,3 +19,4 @@ ci/slurm/environment.yml
 ci/pbs/environment.yml
 ci/sge/environment.yml
 ci/htcondor/environment.yml
+.vscode/

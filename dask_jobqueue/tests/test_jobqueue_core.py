@@ -169,31 +169,6 @@ def test_log_directory(Cluster, tmpdir):
         assert os.path.exists(tmpdir.strpath)
 
 
-@pytest.mark.skip
-def test_jobqueue_cluster_call(tmpdir, Cluster):
-    cluster = Cluster(cores=1, memory="1GB")
-
-    path = tmpdir.join("test.py")
-    path.write('print("this is the stdout")')
-
-    out = cluster._call([sys.executable, path.strpath])
-    assert out == "this is the stdout\n"
-
-    path_with_error = tmpdir.join("non-zero-exit-code.py")
-    path_with_error.write('print("this is the stdout")\n1/0')
-
-    match = (
-        "Command exited with non-zero exit code.+"
-        "Exit code: 1.+"
-        "stdout:\nthis is the stdout.+"
-        "stderr:.+ZeroDivisionError"
-    )
-
-    match = re.compile(match, re.DOTALL)
-    with pytest.raises(RuntimeError, match=match):
-        cluster._call([sys.executable, path_with_error.strpath])
-
-
 def test_cluster_has_cores_and_memory(Cluster):
     base_regex = r"{}.+".format(Cluster.__name__)
     with pytest.raises(ValueError, match=base_regex + r"cores=\d, memory='\d+GB'"):
