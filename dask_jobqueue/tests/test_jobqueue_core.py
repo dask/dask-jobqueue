@@ -350,7 +350,8 @@ def test_wrong_parameter_error(Cluster):
 
 @pytest.mark.filterwarnings("error:Using a temporary security object:UserWarning")
 def test_security(EnvSpecificCluster, loop):
-    dirname = "/shared_space"  # Shared space configured in all docker compose CIs
+    # Shared space configured in all docker compose CIs, fallback to current dir if does not exist (LocalCluster)
+    dirname = os.environ.get("CI_SHARED_SPACE", os.getcwd())
     # Copy security files into the shared folder
     test_dir = os.path.dirname(__file__)
     shutil.copy2(os.path.join(test_dir, "key.pem"), dirname)
@@ -399,7 +400,8 @@ def test_security(EnvSpecificCluster, loop):
 
 
 def test_security_temporary(EnvSpecificCluster, loop):
-    dirname = "/shared_space"  # Shared space configured in all docker compose CIs
+    # Shared space configured in all docker compose CIs, fallback to current dir if does not exist (LocalCluster)
+    dirname = os.environ.get("CI_SHARED_SPACE", os.getcwd())
     with EnvSpecificCluster(
         cores=1,
         memory="500MiB",

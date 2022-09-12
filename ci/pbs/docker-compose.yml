@@ -7,6 +7,8 @@ services:
     build: .
     container_name: pbs_master
     hostname: pbs_master
+    environment:
+      - CI_SHARED_SPACE=/shared_space
     volumes:
       - ../..:/dask-jobqueue
       - userhome:/home/pbsuser

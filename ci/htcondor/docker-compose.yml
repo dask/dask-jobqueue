@@ -20,6 +20,7 @@ services:
     environment:
       - CONDOR_HOST=cm
       - USE_POOL_PASSWORD=yes
+      - CI_SHARED_SPACE=/shared_space
     depends_on:
       - cm
     volumes:

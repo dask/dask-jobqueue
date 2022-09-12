@@ -38,6 +38,8 @@ services:
     command: ["slurmctld"]
     container_name: slurmctld
     hostname: slurmctld
+    environment:
+      - CI_SHARED_SPACE=/shared_space
     volumes:
       - etc_munge:/etc/munge
       - etc_slurm:/etc/slurm

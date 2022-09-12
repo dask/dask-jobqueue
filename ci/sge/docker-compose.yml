@@ -10,6 +10,8 @@ services:
     container_name: sge_master
     hostname: sge_master
     #network_mode: host
+    environment:
+      - CI_SHARED_SPACE=/shared_space
     volumes:
       - ../..:/dask-jobqueue
       - userhome:/root
