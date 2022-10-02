@@ -237,6 +237,10 @@ class Job(ProcessInterface, abc.ABC):
             warnings.warn(warn, FutureWarning)
             if not worker_extra_args:
                 worker_extra_args = extra
+        if worker_extra_args is not None:
+            # Copy worker_extra_args in order to not modify the object comming from dask.config
+            # when we'll assign new args like interface to it. See #589.
+            worker_extra_args = worker_extra_args.copy()
 
         if job_extra is None:
             job_extra = dask.config.get("jobqueue.%s.job-extra" % self.config_name, [])
