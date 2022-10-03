@@ -306,9 +306,9 @@ class Job(ProcessInterface, abc.ABC):
         self.job_header = None
 
         if interface:
-            worker_extra_args += ["--interface", interface]
+            worker_extra_args = worker_extra_args + ["--interface", interface]
         if protocol:
-            worker_extra_args += ["--protocol", protocol]
+            worker_extra_args = worker_extra_args + ["--protocol", protocol]
         if security:
             worker_security_dict = security.get_tls_config_for_role("worker")
             security_command_line_list = [
@@ -318,7 +318,7 @@ class Job(ProcessInterface, abc.ABC):
                 if key != "ciphers"
             ]
             security_command_line = sum(security_command_line_list, [])
-            worker_extra_args += security_command_line
+            worker_extra_args = worker_extra_args + security_command_line
 
         # Keep information on process, cores, and memory, for use in subclasses
         self.worker_memory = parse_bytes(memory) if memory is not None else None
