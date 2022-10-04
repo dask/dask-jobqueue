@@ -5,20 +5,29 @@ Development version
 -------------------
 
 
+0.8.1 / 2022-10-04
+------------------
+
+- Fix the multiple ``--interface`` CLI argument bug (:pr:`591`)
+- Change ``project`` to ``account`` where appropriate (PBS, Slurm) (:pr:`586`)
+- Do not skip ``job_extra_directives`` with ``header_skip`` values and rename ``header_skip`` to ``job_directives_skip`` (:pr:`584`)
+- Various CI updates, HTCondor Docker build (:pr:`588`, :pr:`587`, :pr:`583`, :pr:`582`, :pr:`581`, :pr:`580`)
+
+Thanks to `@jolange <https://github.com/jolange>`_ and `@guillaumeeb <https://github.com/guillaumeeb>`_.
 
 0.8.0 / 2022-08-29
 ------------------
 
 - Use --nworkers instead of deprecated --nprocs in the generated job scripts (:pr:`560`)
 - Drop support for Python 3.7 (:pr:`562`)
-- Rename `env_extra` kwarg to `job_script_prologue` (:pr:`575`)
-- Rename `extra` kwarg to `worker_extra_args` (:pr:`576`)
-- Rename `job_extra` kwarg to `job_extra_directives` (:pr:`577`)
+- Rename ``env_extra`` kwarg to ``job_script_prologue`` (:pr:`575`)
+- Rename ``extra`` kwarg to ``worker_extra_args`` (:pr:`576`)
+- Rename ``job_extra`` kwarg to ``job_extra_directives`` (:pr:`577`)
 - Fixing CI failures (:pr:`562`, :pr:`574`)
 - Fix behaviour of env_extra for HTCondor and other related fixes (:pr:`563`, :pr:`570`, :pr:`572`)
 - Add batch_name to match the name of the Dask worker in HTCondor (:pr:`571`)
 
-Thanks to [@jolange](https://github.com/jolange), [@ikabadzhov](https://github.com/ikabadzhov) and [@guillaumeeb](https://github.com/guillaumeeb).
+Thanks to `@jolange <https://github.com/jolange>`_, `@ikabadzhov <https://github.com/ikabadzhov>`_ and `@guillaumeeb <https://github.com/guillaumeeb>`_.
 
 0.7.4 / 2022-07-13
 ------------------
