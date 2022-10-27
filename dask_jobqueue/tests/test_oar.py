@@ -167,10 +167,7 @@ def test_oar_mem_core_property_name_none_warning():
         job = job_cls(cores=1, memory="1 GB")
         assert len(w) == 1
         assert issubclass(w[0].category, UserWarning)
-        assert (
-            "oar_mem_core_property_name is not set"
-            in str(w[0].message)
-        )
+        assert "oar_mem_core_property_name is not set" in str(w[0].message)
         job_script = job.job_script()
         assert "#OAR -p" not in job_script
 
