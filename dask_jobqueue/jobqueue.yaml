@@ -26,7 +26,8 @@ jobqueue:
     job-extra-directives: []
     job-directives-skip: []
     log-directory: null
-    
+    oar-mem-core-property-name: null
+
     # Scheduler options
     scheduler-options: {}
 
@@ -57,7 +58,7 @@ jobqueue:
     job-extra-directives: []
     job-directives-skip: []
     log-directory: null
-    
+
     # Scheduler options
     scheduler-options: {}
 
@@ -88,7 +89,7 @@ jobqueue:
     job-directives-skip: []
     log-directory: null
     resource-spec: null
-    
+
     # Scheduler options
     scheduler-options: {}
 
@@ -120,7 +121,7 @@ jobqueue:
     job-extra-directives: []
     job-directives-skip: []
     log-directory: null
-    
+
     # Scheduler options
     scheduler-options: {}
 
@@ -151,7 +152,7 @@ jobqueue:
     job-extra-directives: []
     job-directives-skip: []
     log-directory: null
-    
+
     # Scheduler options
     scheduler-options: {}
 
@@ -185,7 +186,7 @@ jobqueue:
     log-directory: null
     lsf-units: null
     use-stdin: True             # (bool) How jobs are launched, i.e. 'bsub jobscript.sh' or 'bsub < jobscript.sh'
-    
+
     # Scheduler options
     scheduler-options: {}
 
@@ -215,7 +216,7 @@ jobqueue:
     cancel-command-extra: []    # Extra condor_rm arguments
     log-directory: null
     shebang: "#!/usr/bin/env condor_submit"
-    
+
     # Scheduler options
     scheduler-options: {}
 
@@ -239,6 +240,6 @@ jobqueue:
     job-extra-directives: []
     job-directives-skip: []
     log-directory: null
-    
+
     # Scheduler options
     scheduler-options: {}
