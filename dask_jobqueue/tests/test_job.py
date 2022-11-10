@@ -142,8 +142,8 @@ def test_header_lines_dont_skip_extra_directives():
 def test_deprecation_header_skip(Cluster):
     import warnings
 
-    # test issuing of warning
-    warnings.simplefilter("always")
+    # test issuing of warning but ignore UserWarning
+    warnings.simplefilter("ignore", UserWarning)
 
     job_cls = Cluster.job_cls
     with warnings.catch_warnings(record=True) as w:
@@ -240,8 +240,8 @@ def test_docstring_cluster(Cluster):
 def test_deprecation_env_extra(Cluster):
     import warnings
 
-    # test issuing of warning
-    warnings.simplefilter("always")
+    # test issuing of warning but ignore UserWarning
+    warnings.simplefilter("ignore", UserWarning)
 
     job_cls = Cluster.job_cls
     with warnings.catch_warnings(record=True) as w:
@@ -304,8 +304,8 @@ def test_deprecation_env_extra(Cluster):
 def test_deprecation_extra(Cluster):
     import warnings
 
-    # test issuing of warning
-    warnings.simplefilter("always")
+    # test issuing of warning but ignore UserWarning
+    warnings.simplefilter("ignore", UserWarning)
 
     job_cls = Cluster.job_cls
     with warnings.catch_warnings(record=True) as w:
@@ -371,8 +371,8 @@ def test_deprecation_job_extra(Cluster):
 
     import warnings
 
-    # test issuing of warning
-    warnings.simplefilter("always")
+    # test issuing of warning but ignore UserWarning
+    warnings.simplefilter("ignore", UserWarning)
 
     job_cls = Cluster.job_cls
     with warnings.catch_warnings(record=True) as w:
