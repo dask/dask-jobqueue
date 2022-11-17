@@ -26,7 +26,7 @@ jobqueue:
     job-extra-directives: []
     job-directives-skip: []
     log-directory: null
-    mem-core-property-name: null
+    memory-per-core-property-name: null
 
     # Scheduler options
     scheduler-options: {}
