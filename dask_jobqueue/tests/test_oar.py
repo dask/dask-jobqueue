@@ -49,14 +49,14 @@ def test_header():
         assert "#OAR -p mem_core>=1024" in cluster.job_header
 
     with OARCluster(
-        cores=4,
+        cores=5,
         memory="28MiB",
         job_extra_directives=["-p gpu_count=1"],
         memory_per_core_property_name="mem_core",
     ) as cluster:
         assert "#OAR -n dask-worker" in cluster.job_header
         assert "walltime=" in cluster.job_header
-        assert "#OAR -p 'gpu_count=1 AND mem_core>=7'" in cluster.job_header
+        assert "#OAR -p 'gpu_count=1 AND mem_core>=6'" in cluster.job_header
 
 
 def test_job_script():

@@ -1,8 +1,7 @@
 import logging
 import shlex
 import warnings
-
-from dask.utils import parse_bytes
+import math
 
 import dask
 
@@ -89,14 +88,14 @@ class OARJob(Job):
             if memory_per_core_property_name is None:
                 warn = (
                     "OAR Job memory reserved resources will not be set according to Dask Worker memory limit, "
-                    "which can cause crashes."
+                    "which can cause crashes. See `memory_per_core_property_name` documentation for more details"
                 )
                 warnings.warn(warn, category=UserWarning)
             else:
                 if memory_per_core_property_name != "not_applicable":
                     # OAR expects MiB as memory unit
-                    oar_memory = int(
-                        parse_bytes(self.worker_memory / self.worker_cores) / 2**20
+                    oar_memory = math.ceil(
+                        self.worker_memory / (self.worker_cores * 2**20)
                     )
                     # OAR needs to have the properties on a single line, with SQL syntax
                     # If there are several "#OAR -p" lines, only the last one will be taken into account by OAR
@@ -162,16 +161,24 @@ class OARCluster(JobQueueCluster):
     walltime : str
         Walltime for each worker job.
     job_extra : list
-        Deprecated: use ``job_extra_directives`` instead. This parameter will be removed in a future version.
+        Deprecated: use ``job_extra_directives`` instead. This parameter will
+        be removed in a future version.
     job_extra_directives : list
-        List of other OAR options, for example `-t besteffort`. Each option will be prepended with the #OAR prefix.
+        List of other OAR options, for example `-t besteffort`. Each option
+        will be prepended with the #OAR prefix.
     memory_per_core_property_name : str
-        The memory per core property name of your OAR cluster (usually named `memcore` or `mem_core`).
-        Existing properties can be listed by executing `oarnodes` command.
+        The memory per core property name of your OAR cluster (usually
+        `memcore` or `mem_core`).
+        Existing properties can be listed by executing the `oarnodes` command.
         Note that the memory per core property might not exist on your cluster.
-        In this case, do not specify a value for memory_per_core_property_name parameter.
-        If this parameter is None, you will be warned that the memory parameter will not be taken into account by OAR.
-        You can set the parameter to `not_applicable` to silence the warning.
+        If that is the case, you can set
+        `memory_per_core_property_name="not_applicable"` to avoid getting a warning.
+        If you leave `memory_per_core_property_name` set to its default value,
+        you will get a warning.
+        `memory_per_core_property_name` is `"not_applicable"` or set to its
+        default value, allocated nodes may not have enough memory to match the
+        `memory` parameter and Dask worker memory management may not work
+        correctly.
 
     Examples
     --------
