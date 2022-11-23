@@ -28,7 +28,9 @@ def test_header():
         assert "#OAR -q regular" in cluster.job_header
         assert "#OAR -t besteffort" in cluster.job_header
 
-    with OARCluster(cores=4, memory="8GB", mem_core_property_name="memcore") as cluster:
+    with OARCluster(
+        cores=4, memory="8GB", memory_per_core_property_name="memcore"
+    ) as cluster:
         assert "#OAR -n dask-worker" in cluster.job_header
         assert "walltime=" in cluster.job_header
         assert "#OAR -p memcore" in cluster.job_header
@@ -40,21 +42,21 @@ def test_header():
         processes=4,
         cores=8,
         memory="8GiB",
-        mem_core_property_name="mem_core",
+        memory_per_core_property_name="mem_core",
     ) as cluster:
         assert "#OAR -n dask-worker" in cluster.job_header
         assert "#OAR -l /nodes=1/core=8,walltime=00:02:00" in cluster.job_header
         assert "#OAR -p mem_core>=1024" in cluster.job_header
 
     with OARCluster(
-        cores=4,
+        cores=5,
         memory="28MiB",
         job_extra_directives=["-p gpu_count=1"],
-        mem_core_property_name="mem_core",
+        memory_per_core_property_name="mem_core",
     ) as cluster:
         assert "#OAR -n dask-worker" in cluster.job_header
         assert "walltime=" in cluster.job_header
-        assert "#OAR -p 'gpu_count=1 AND mem_core>=7'" in cluster.job_header
+        assert "#OAR -p 'gpu_count=1 AND mem_core>=6'" in cluster.job_header
 
 
 def test_job_script():
@@ -63,7 +65,7 @@ def test_job_script():
         processes=4,
         cores=8,
         memory="28GB",
-        mem_core_property_name="memcore",
+        memory_per_core_property_name="memcore",
     ) as cluster:
         job_script = cluster.job_script()
         assert "#OAR" in job_script
@@ -143,7 +145,7 @@ def test_config_name_oar_takes_custom_config():
         "job-cpu": None,
         "job-mem": None,
         "resource-spec": None,
-        "mem-core-property-name": "memcore",
+        "memory-per-core-property-name": "memcore",
     }
 
     with dask.config.set({"jobqueue.oar-config-name": conf}):
@@ -151,7 +153,7 @@ def test_config_name_oar_takes_custom_config():
             assert cluster.job_name == "myname"
 
 
-def test_mem_core_property_name_none_warning():
+def test_memory_per_core_property_name_none_warning():
     import warnings
 
     # test issuing of warning
@@ -175,8 +177,20 @@ def test_mem_core_property_name_none_warning():
         job = job_cls(
             cores=1,
             memory="1 GB",
-            mem_core_property_name="memcore",
+            memory_per_core_property_name="memcore",
         )
         assert len(w) == 0
         job_script = job.job_script()
         assert "#OAR -p memcore" in job_script
+
+    with warnings.catch_warnings(record=True) as w:
+        # should not give a warning
+        # should not take into account the memory parameter either
+        job = job_cls(
+            cores=1,
+            memory="1 GB",
+            memory_per_core_property_name="not_applicable",
+        )
+        assert len(w) == 0
+        job_script = job.job_script()
+        assert "#OAR -p" not in job_script
