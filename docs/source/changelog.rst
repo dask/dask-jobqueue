@@ -4,6 +4,7 @@ Changelog
 Development version
 -------------------
 
+- Extend OARCluster implementation to let OAR take into account the memory parameter (:pr:`598`, :pr:`595`)
 
 0.8.1 / 2022-10-04
 ------------------
