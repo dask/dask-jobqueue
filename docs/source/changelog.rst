@@ -8,6 +8,7 @@ Development version
 0.8.1 / 2022-10-04
 ------------------
 
+- Extend OARCluster implementation to let OAR take into account the memory parameter (:pr:`598`, :pr:`595`)
 - Fix the multiple ``--interface`` CLI argument bug (:pr:`591`)
 - Change ``project`` to ``account`` where appropriate (PBS, Slurm) (:pr:`586`)
 - Do not skip ``job_extra_directives`` with ``header_skip`` values and rename ``header_skip`` to ``job_directives_skip`` (:pr:`584`)
