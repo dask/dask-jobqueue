@@ -73,7 +73,6 @@ job_parameters = """
         Name of Dask worker.  This is typically set by the Cluster
 """.strip()
 
-
 cluster_parameters = """
     n_workers : int
         Number of workers to start by default.  Defaults to 0.
@@ -830,3 +829,24 @@ or by setting this value in the config file found in `~/.config/dask/jobqueue.ya
         if maximum_jobs is not None:
             kwargs["maximum"] = maximum_jobs * self._dummy_job.worker_processes
         return super().adapt(*args, **kwargs)
+
+    @classmethod
+    def from_name(cls, name: str):
+        """Initialise a named Dask cluster specified in the jobqueue config.
+
+        Named clusters should specify the appropriate job scheduling system under the
+        'job-scheduling-system' key in the jobqueue config alongside specific keyword
+        arguments passed to the JobQueue cluster class on initialisation.
+
+        Parameters
+        ----------
+        name: str
+            Key in the dask jobqueue config specifying the cluster to be initialised.
+        """
+        from ._clusters import CLUSTER_CLASSES  # avoids circular import of subclasses
+        if name in CLUSTER_CLASSES:
+            return CLUSTER_CLASSES[name]()
+        else:
+            config = dask.config.get(f"jobqueue.{name}")
+            job_sheduling_system = config.pop("job-scheduling-system")
+            return CLUSTER_CLASSES[job_sheduling_system](**config)
