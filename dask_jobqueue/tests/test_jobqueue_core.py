@@ -4,6 +4,7 @@ import socket
 import sys
 import re
 import psutil
+from unittest import mock
 
 import pytest
 
@@ -12,12 +13,14 @@ import dask
 from distributed.security import Security
 from distributed import Client
 
+import dask_jobqueue
 from dask_jobqueue import (
     JobQueueCluster,
     HTCondorCluster,
 )
 from dask_jobqueue.core import Job
 from dask_jobqueue.local import LocalCluster
+from dask_jobqueue._clusters import CLUSTER_CLASSES
 
 from dask_jobqueue.sge import SGEJob
 
@@ -55,7 +58,7 @@ def test_shebang_settings(Cluster, request):
         request.node.add_marker(
             pytest.mark.xfail(
                 reason="%s has a peculiar submit script and does not have a shebang"
-                % type(Cluster).__name__
+                       % type(Cluster).__name__
             )
         )
     default_shebang = "#!/usr/bin/env bash"
@@ -244,7 +247,6 @@ def get_interface_and_port(index=0):
 
 
 def test_scheduler_options(Cluster):
-
     interface, port = get_interface_and_port()
 
     with Cluster(
@@ -321,7 +323,6 @@ def test_import_scheduler_options_from_config(Cluster):
     with dask.config.set(
         {"jobqueue.%s.scheduler-options" % default_config_name: scheduler_options}
     ):
-
         with Cluster(cores=2, memory="2GB") as cluster:
             scheduler_options = cluster.scheduler_spec["options"]
             assert scheduler_options.get("interface") == config_scheduler_interface
@@ -455,7 +456,8 @@ def test_security_temporary_defaults(EnvSpecificCluster, loop):
         memory="500MiB",
         security=True,
         protocol="tls",
-        loop=loop,  # for some reason (bug?) using the loop fixture requires using a new test case
+        loop=loop,
+        # for some reason (bug?) using the loop fixture requires using a new test case
     ) as cluster:
         assert cluster.security
         assert cluster.scheduler_spec["options"]["security"] == cluster.security
@@ -469,3 +471,45 @@ def test_security_temporary_defaults(EnvSpecificCluster, loop):
             future = client.submit(lambda x: x + 1, 10)
             result = future.result(timeout=30)
             assert result == 11
+
+
+def test_jobqueuecluster_from_name_for_existing_scheduling_systems():
+    for scheduling_system in CLUSTER_CLASSES.keys():
+        temporary_config = {
+            f"jobqueue.{scheduling_system}.cores": 8,
+            f"jobqueue.{scheduling_system}.memory": "24GB",
+            f"jobqueue.{scheduling_system}.disk": "1GB",
+        }
+        with dask.config.set(temporary_config):
+            cluster = JobQueueCluster.from_name(scheduling_system)
+            assert isinstance(cluster, CLUSTER_CLASSES[scheduling_system])
+
+
+def test_jobqueuecluster_from_name_for_custom_cluster():
+    temporary_config = {
+        "jobqueue.custom-condor-cluster.job-scheduling-system": 'htcondor',
+        "jobqueue.htcondor.cores": 8,
+        "jobqueue.htcondor.memory": "24GB",
+        "jobqueue.htcondor.disk": "1GB",
+    }
+    # check for creation of correct cluster class
+    with dask.config.set(temporary_config):
+        cluster = JobQueueCluster.from_name("custom-condor-cluster")
+        assert isinstance(cluster, HTCondorCluster)
+
+
+@mock.patch('dask_jobqueue.htcondor.HTCondorCluster.__new__')
+def test_jobqueuecluster_from_name_attribute_override(mock_cluster):
+    temporary_config = {
+        "jobqueue.custom-condor-cluster.job-scheduling-system": 'htcondor',
+        "jobqueue.htcondor.cores": 8,  # overriden in custom cluster
+        "jobqueue.custom-condor-cluster.cores": 16,
+        "jobqueue.htcondor.memory": "24GB",
+        "jobqueue.htcondor.disk": "1GB",
+    }
+
+    # check that number of cores defined in the custom cluster overrides the
+    # default specified in htcondor cluster config
+    with dask.config.set(temporary_config):
+        JobQueueCluster.from_name("custom-condor-cluster")
+        mock_cluster.assert_called_with(HTCondorCluster, cores=16)
