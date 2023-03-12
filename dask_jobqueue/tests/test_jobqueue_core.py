@@ -13,7 +13,6 @@ import dask
 from distributed.security import Security
 from distributed import Client
 
-import dask_jobqueue
 from dask_jobqueue import (
     JobQueueCluster,
     HTCondorCluster,
