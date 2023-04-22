@@ -1,0 +1,88 @@
+version: "2.2"
+
+# Shared number of replicas (workers) for build and runtime
+# This includes the broker (node-1)
+x-shared-workers:
+  &workers
+  replicas: 3
+
+# Build args that go into building container
+x-shared-build-args: &shared-build-args
+  flux_sched_version: focal
+  <<: *workers
+
+# Shared environment for runtime
+x-shared-environment: &shared-environment
+  SPL_BROKER_URL: amqp://fluxuser:fluxrabbit@rabbit:5672//
+  mainHost: node-1
+  workdir: /code/workdir
+  CI_SHARED_SPACE: /shared_space
+  <<: *workers
+
+x-shared-volumes: &shared-volumes
+  - ./conf/imp.toml:/etc/flux/imp/conf.d/imp.toml
+  - ./conf/broker.toml:/etc/flux/config/broker.toml
+  - ./conf/tmp:/tmp
+  - ./:/code/workdir
+  - slurm_jobdir:/data
+  - ../..:/dask-jobqueue
+  - shared_space:/shared_space
+
+services:
+  node-1:
+    build:
+      context: ./
+      args: *shared-build-args
+    hostname: node-1
+    container_name: node-1
+    environment: *shared-environment
+    volumes: *shared-volumes
+    networks:
+      common-network:
+        ipv4_address: 10.1.1.10
+    cap_add:
+      - NET_ADMIN
+
+  node-2:
+    build:
+      context: ./
+      args: *shared-build-args
+    hostname: node-2      
+    container_name: node-2
+    environment: *shared-environment
+    volumes: *shared-volumes
+    networks:
+      common-network:
+        ipv4_address: 10.1.1.11
+    cap_add:
+      - NET_ADMIN
+
+  node-3:
+    build:
+      context: ./
+      args: *shared-build-args
+    hostname: node-3
+    container_name: node-3
+    environment: *shared-environment
+    volumes: *shared-volumes
+    networks:
+      common-network:
+        ipv4_address: 10.1.1.12
+    cap_add:
+      - NET_ADMIN
+   
+volumes:
+  etc_munge:
+  etc_slurm:
+  slurm_jobdir:
+  var_lib_mysql:
+  var_log_slurm:
+  shared_space:
+
+networks:
+  common-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.1.1.0/24

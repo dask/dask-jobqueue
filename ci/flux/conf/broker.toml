@@ -1,0 +1,22 @@
+# Flux needs to know the path to the IMP executable
+[exec]
+imp = "/usr/libexec/flux/flux-imp"
+
+[access]
+allow-guest-user = true
+allow-root-owner = true
+
+# Point to resource definition generated with flux-R(1).
+[resource]
+path = "/etc/flux/system/R"
+noverify = true
+
+[bootstrap]
+curve_cert = "/mnt/curve/curve.cert"
+default_port = 8050
+default_bind = "tcp://eth0:%%p"
+default_connect = "tcp://%%h:%%p"
+# docker-compose starts counting at 1, what a monster
+hosts = [
+	{ host="node-[1-3]"},
+]

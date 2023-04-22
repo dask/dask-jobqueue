@@ -128,6 +128,7 @@ class Job(ProcessInterface, abc.ABC):
     See Also
     --------
     PBSCluster
+    FluxCluster
     SLURMCluster
     SGECluster
     OARCluster
@@ -745,7 +746,6 @@ or by setting this value in the config file found in `~/.config/dask/jobqueue.ya
         for key, value in worker_security_dict.items():
             # dump worker in-memory keys for use in job_script
             if value is not None and "\n" in value:
-
                 try:
                     f = tempfile.NamedTemporaryFile(
                         mode="wt",

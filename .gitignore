@@ -19,6 +19,8 @@ ci/slurm/environment.yml
 ci/pbs/environment.yml
 ci/sge/environment.yml
 ci/htcondor/environment.yml
+ci/flux/environment.yml
+ci/flux/conf/tmp
 .vscode/
 ca.pem
 key.pem

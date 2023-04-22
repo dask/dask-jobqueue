@@ -244,7 +244,6 @@ def get_interface_and_port(index=0):
 
 
 def test_scheduler_options(Cluster):
-
     interface, port = get_interface_and_port()
 
     with Cluster(
@@ -321,7 +320,6 @@ def test_import_scheduler_options_from_config(Cluster):
     with dask.config.set(
         {"jobqueue.%s.scheduler-options" % default_config_name: scheduler_options}
     ):
-
         with Cluster(cores=2, memory="2GB") as cluster:
             scheduler_options = cluster.scheduler_spec["options"]
             assert scheduler_options.get("interface") == config_scheduler_interface

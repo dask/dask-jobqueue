@@ -125,6 +125,39 @@ jobqueue:
     # Scheduler options
     scheduler-options: {}
 
+  flux:
+    name: dask-worker
+
+    # Dask worker options
+    cores: null
+    memory: null                
+    processes: null
+
+    interface: null
+    death-timeout: 60
+    local-directory: null
+    shared-temp-directory: null
+    extra: null
+    worker-extra-args: []
+
+    # SLURM resource manager options
+    shebang: "#!/usr/bin/env bash"
+    queue: null
+    account: null
+    walltime: '00:30:00'
+    env-extra: null
+    job-script-prologue: []
+    job-cpu: null
+    job-mem: null
+    job-extra: null
+    job-extra-directives: []
+    job-directives-skip: []
+    log-directory: null
+
+    # Scheduler options
+    scheduler-options: {}
+
+
   moab:
     name: dask-worker
 

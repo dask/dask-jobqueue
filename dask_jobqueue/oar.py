@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 
 class OARJob(Job):
-
     # Override class variables
     submit_command = "oarsub"
     cancel_command = "oardel"
