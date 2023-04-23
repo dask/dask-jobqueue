@@ -7,8 +7,24 @@ from distributed import Client
 import dask
 
 from dask_jobqueue import FluxCluster
+from dask_jobqueue.flux import timestr2seconds
 
-from . import QUEUE_WAIT
+QUEUE_WAIT = 120
+
+
+@pytest.mark.env("flux")
+def test_timestring():
+    # 2 minutes
+    assert timestr2seconds("00:02:00") == 120.0
+
+    # 60 seconds
+    assert timestr2seconds("00:00:60") == 60.0
+
+    # Two hours
+    assert timestr2seconds("02:00:00") == 7200.0
+
+    # One day, 2 hours
+    assert timestr2seconds("1-02:00:00") == 93600.0
 
 
 @pytest.mark.env("flux")
@@ -19,9 +35,9 @@ def test_header():
         assert "#flux:" in cluster.job_header
         assert "#flux: --job-name=dask-worker" in cluster.job_header
         assert "#flux: -n 1" in cluster.job_header
-        assert "#flux: --cores-per-slot=8" in cluster.job_header
         assert "--mem" not in cluster.job_header
-        assert "#flux: -t 00:02:00" in cluster.job_header
+        assert "#flux: -t 120.0" in cluster.job_header
+        assert "#flux: --cores-per-slot=8" in cluster.job_header
 
     with FluxCluster(
         queue="regular",
@@ -31,13 +47,12 @@ def test_header():
         job_cpu=16,
         job_mem="100G",
     ) as cluster:
-        assert "#flux: --cores-per-slot=16" in cluster.job_header
-        assert "#flux: --cores-per-slot=8" not in cluster.job_header
         assert "--mem=100G" not in cluster.job_header
         assert "#flux: --queue=regular" in cluster.job_header
 
     with FluxCluster(cores=4, memory="8GB") as cluster:
         assert "#flux:" in cluster.job_header
+        assert "#flux: --cores-per-slot=4" in cluster.job_header
         assert "#flux: --job-name" in cluster.job_header
         assert "#flux: -n 1" in cluster.job_header
         assert "#flux: --queue" not in cluster.job_header
@@ -51,10 +66,10 @@ def test_job_script():
         job_script = cluster.job_script()
         assert "#flux:" in job_script
         assert "#flux: --job-name=dask-worker" in job_script
+        assert "#flux: --cores-per-slot=8" in cluster.job_header
         assert "#flux: -n 1" in job_script
-        assert "#flux: --cores-per-slot=8" in job_script
         assert "--mem=27G" not in job_script
-        assert "#flux: -t 00:02:00" in job_script
+        assert "#flux: -t 120.0" in job_script
         assert "#flux: --queue" not in job_script
         assert (
             "{} -m distributed.cli.dask_worker tcp://".format(sys.executable)
@@ -93,10 +108,10 @@ def test_basic(loop):
         loop=loop,
     ) as cluster:
         with Client(cluster) as client:
-            cluster.scale(2)
+            cluster.scale(3)
 
             start = time()
-            client.wait_for_workers(2, timeout=QUEUE_WAIT)
+            client.wait_for_workers(3, timeout=QUEUE_WAIT)
 
             future = client.submit(lambda x: x + 1, 10)
             assert future.result(QUEUE_WAIT) == 11

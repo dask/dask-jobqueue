@@ -352,6 +352,8 @@ class Job(ProcessInterface, abc.ABC):
         if worker_extra_args is not None:
             command_args += worker_extra_args
 
+        # Save command args to be extended, etc.
+        self._command_args = command_args
         self._command_template = " ".join(map(str, command_args))
 
         self.log_directory = log_directory

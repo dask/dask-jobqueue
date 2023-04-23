@@ -1,8 +1,6 @@
-from contextlib import contextmanager, suppress
+from contextlib import contextmanager
 import logging
-import json
 import os
-import shlex
 import stat
 import tempfile
 import warnings
@@ -13,10 +11,42 @@ from .core import Job, JobQueueCluster, job_parameters, cluster_parameters
 logger = logging.getLogger(__name__)
 
 
+def timestr2seconds(timestr):
+    """
+    Given a timestring in two formats, return seconds (float).
+
+    DAYS-HOURS:MINUTES:SECONDS
+    0-00:00:00
+    """
+    if timestr.count(":") == 1:
+        minutes, seconds = timestr.split(":")
+        return (int(minutes) * 60) + float(seconds)
+
+    # days hours, minutes and seconds, MM:SS.mm
+    elif "-" in timestr and timestr.count(":") == 2:
+        days, rest = timestr.split("-", 1)
+        hours, minutes, seconds = rest.split(":")
+        return (
+            (int(days) * 86400)
+            + (int(hours) * 3600)
+            + (int(minutes) * 60)
+            + float(seconds)
+        )
+
+    # hours, minutes, seconds HH:MM:SS.mm
+    elif timestr.count(":") == 2:
+        hours, minutes, seconds = timestr.split(":")
+        return (int(hours) * 3600) + (int(minutes) * 60) + float(seconds)
+
+    raise ValueError(f"Unrecognized time format {timestr}")
+
+
 class FluxJob(Job):
     # Override class variables
     submit_command = "flux batch"
-    cancel_command = "flux cancel"
+
+    # This can be updated to flux cancel when release 0.48 been out a while
+    cancel_command = "flux job cancel"
     config_name = "flux"
 
     def __init__(
@@ -30,12 +60,11 @@ class FluxJob(Job):
         job_cpu=None,
         job_mem=None,
         config_name=None,
-        **base_class_kwargs
+        **base_class_kwargs,
     ):
         super().__init__(
             scheduler=scheduler, name=name, config_name=config_name, **base_class_kwargs
         )
-
         # This would better be shared logic across backends...
         if queue is None:
             queue = dask.config.get("jobqueue.%s.queue" % self.config_name)
@@ -53,30 +82,26 @@ class FluxJob(Job):
 
         header_lines = []
 
+        # Error and output files
+        error = "%s/%s-%%J.err" % (self.log_directory, self.job_name or "worker")
+        output = "%s/%s-%%J.out" % (self.log_directory, self.job_name or "worker")
+
         # Flux header build
         if self.job_name is not None:
             header_lines.append("#flux: --job-name=%s" % self.job_name)
         if self.log_directory is not None:
-            header_lines.append(
-                "#flux: --error %s/%s-%%J.err"
-                % (self.log_directory, self.job_name or "worker")
-            )
-            header_lines.append(
-                "#flux: --output %s/%s-%%J.out"
-                % (self.log_directory, self.job_name or "worker")
-            )
+            header_lines.append("#flux: --error %s" % error)
+            header_lines.append("#flux: --output %s" % output)
+
         if queue is not None:
             header_lines.append("#flux: --queue=%s" % queue)
 
-        # Init resources, always 1 task,
-        # and then number of cpu is processes * threads if not set
+        # Init resources, always 1 task
         header_lines.append("#flux: -n 1")
-        header_lines.append(
-            "#flux: --cores-per-slot=%d" % (job_cpu or self.worker_cores)
-        )
+        header_lines.append("#flux: --cores-per-slot=%s" % self.worker_cores)
 
         if walltime is not None:
-            header_lines.append("#flux: -t %s" % walltime)
+            header_lines.append("#flux: -t %s" % timestr2seconds(walltime))
 
         # Skip requested header directives
         header_lines = list(
@@ -85,7 +110,6 @@ class FluxJob(Job):
                 header_lines,
             )
         )
-
         # Add extra header directives
         header_lines.extend(["#flux: %s" % arg for arg in self.job_extra_directives])
 
@@ -95,31 +119,6 @@ class FluxJob(Job):
     def _job_id_from_submit_output(self, out):
         """The flux jobid looks like ƒBXsRhMtb"""
         return out.strip()
-
-    @classmethod
-    def _close_job(cls, job_id, cancel_command):
-        """Custom close job to also clean up script file"""
-        if job_id:
-            # Cancel the job
-            with suppress(RuntimeError):  # deleting job when job already gone
-                cls._call(shlex.split(cancel_command) + [job_id])
-            # Commented out for now - when we delete the job script, there
-            # seem to be a number of failed jobs (that continue running after
-            # the actual tasks are finished).
-            # cls._cleanup_job(job_id)
-            logger.debug("Closed job %s", job_id)
-
-    @classmethod
-    def _cleanup_job(cls, job_id):
-        """Custom cleanup method to remove script file"""
-        # Get the original script path from info
-        with suppress(RuntimeError):
-            raw = cls._call(["flux", "job", "info", "--original", job_id, "jobspec"])
-            jobspec = json.loads(raw)
-            command = jobspec["tasks"][0]["command"]
-            if command and os.path.exists(command[0]):
-                logger.debug("Cleaning up %s" % command[0])
-                os.remove(command[0])
 
     @contextmanager
     def job_file(self):

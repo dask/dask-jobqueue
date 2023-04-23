@@ -11,8 +11,8 @@ RUN mkdir -p ${STATE_DIR} /etc/flux/system /etc/flux/system/cron.d /etc/flux/con
     mkdir -p /mnt/curve && \
     flux keygen /mnt/curve/curve.cert && \
     # Important: "basic" is the directory name here
-    flux R encode --hosts="node-[1-${workers}]" > /etc/flux/system/R
-    
+    flux R encode --cores="0-1" --hosts="node-[1-${workers}]" > /etc/flux/system/R
+
 WORKDIR /home/fluxuser
 RUN pip3 install --upgrade pip && \
     pip3 install pika --upgrade
