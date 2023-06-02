@@ -141,6 +141,7 @@ def test_config_name_htcondor_takes_custom_config():
         "interface": None,
         "death-timeout": None,
         "extra": None,
+        "worker-command": None,
         "worker-extra-args": [],
         "env-extra": None,
         "job-script-prologue": [],
