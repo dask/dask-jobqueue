@@ -168,7 +168,7 @@ class Job(ProcessInterface, abc.ABC):
         death_timeout=None,
         local_directory=None,
         extra=None,
-        worker_command="distributed.cli.dask_worker",
+        worker_command=None,
         worker_extra_args=None,
         job_extra=None,
         job_extra_directives=None,
@@ -225,6 +225,10 @@ class Job(ProcessInterface, abc.ABC):
             )
         if extra is None:
             extra = dask.config.get("jobqueue.%s.extra" % self.config_name)
+        if worker_command is None:
+            worker_command = dask.config.get(
+                "jobqueue.%s.worker-command" % self.config_name
+            )
         if worker_extra_args is None:
             worker_extra_args = dask.config.get(
                 "jobqueue.%s.worker-extra-args" % self.config_name

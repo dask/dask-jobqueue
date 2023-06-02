@@ -12,6 +12,7 @@ jobqueue:
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
     shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: null                 # deprecated: use worker-extra-args
+    worker-command: "distributed.cli.dask_worker" # Command to launch a worker
     worker-extra-args: []       # Additional arguments to pass to `dask-worker`
 
     # OAR resource manager options
@@ -44,6 +45,7 @@ jobqueue:
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
     shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: null                 # deprecated: use worker-extra-args
+    worker-command: "distributed.cli.dask_worker" # Command to launch a worker
     worker-extra-args: []       # Additional arguments to pass to `dask-worker`
 
     # PBS resource manager options
@@ -75,6 +77,7 @@ jobqueue:
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
     shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: null                 # deprecated: use worker-extra-args
+    worker-command: "distributed.cli.dask_worker" # Command to launch a worker
     worker-extra-args: []       # Additional arguments to pass to `dask-worker`
 
     # SGE resource manager options
@@ -106,6 +109,7 @@ jobqueue:
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
     shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: null                 # deprecated: use worker-extra-args
+    worker-command: "distributed.cli.dask_worker" # Command to launch a worker
     worker-extra-args: []       # Additional arguments to pass to `dask-worker`
 
     # SLURM resource manager options
@@ -138,6 +142,7 @@ jobqueue:
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
     shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: null                 # deprecated: use worker-extra-args
+    worker-command: "distributed.cli.dask_worker" # Command to launch a worker
     worker-extra-args: []       # Additional arguments to pass to `dask-worker`
 
     # PBS resource manager options
@@ -169,6 +174,7 @@ jobqueue:
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
     shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: null                 # deprecated: use worker-extra-args
+    worker-command: "distributed.cli.dask_worker" # Command to launch a worker
     worker-extra-args: []       # Additional arguments to pass to `dask-worker`
 
     # LSF resource manager options
@@ -203,6 +209,7 @@ jobqueue:
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
     shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: null                 # deprecated: use worker-extra-args
+    worker-command: "distributed.cli.dask_worker" # Command to launch a worker
     worker-extra-args: []       # Additional arguments to pass to `dask-worker`
 
     # HTCondor Resource Manager options
@@ -232,6 +239,7 @@ jobqueue:
     local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
     shared-temp-directory: null       # Shared directory currently used to dump temporary security objects for workers
     extra: null                 # deprecated: use worker-extra-args
+    worker-command: "distributed.cli.dask_worker" # Command to launch a worker
     worker-extra-args: []       # Additional arguments to pass to `dask-worker`
 
     env-extra: null
