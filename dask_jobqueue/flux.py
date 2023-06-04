@@ -149,18 +149,12 @@ class FluxCluster(JobQueueCluster):
     ----------
     queue : str
         Destination queue for each worker job. Passed to `#SBATCH -p` option.
-    project : str
-        Deprecated: use ``account`` instead. This parameter will be removed in a future version.
-    account : str
-        Flux does not have support for an account
     {job}
     {cluster}
     walltime : str
         Walltime for each worker job.
     job_cpu : int
         Number of cpu to book in Flux, if None, defaults to worker `threads * processes`
-    job_mem : str
-        Flux does not have support to control memory.
     job_extra : list
         Deprecated: use ``job_extra_directives`` instead. This parameter will be removed in a future version.
     job_extra_directives : list

@@ -13,17 +13,6 @@ brokerOptions="-Scron.directory=/etc/flux/system/cron.d \
   -Slog-stderr-level=6 \
   -Slog-stderr-mode=local"
 
-# quorum settings influence how the instance treats missing ranks
-#   by default all ranks must be online before work is run, but
-#   we want it to be OK to run when a few are down
-# These are currently removed because we want the main rank to
-# wait for all the others, and then they clean up nicely
-#  -Sbroker.quorum=0 \
-#  -Sbroker.quorum-timeout=none \
-
-# This should be added to keep running as a service
-#  -Sbroker.rc2_none \
-
 # Derive hostname (this is a hack to get the one defined by the docker-compose network)
 address=$(echo $( nslookup "$( hostname -i )" | head -n 1 ))
 parts=(${address//=/ })
