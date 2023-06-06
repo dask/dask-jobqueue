@@ -105,7 +105,6 @@ def test_job_script():
         assert ("--nworkers 4" in job_script)
         assert (f"--memory-limit {formatted_bytes}" in job_script)
 
-
     with LSFCluster(
         queue="general",
         project="DaskOnLSF",

@@ -346,7 +346,7 @@ class Job(ProcessInterface, abc.ABC):
 
         command_args = [dask_worker_command, self.scheduler]
 
-        # common 
+        # common
         command_args += ["--name", str(name)]
         command_args += ["--nthreads", self.worker_process_threads]
         command_args += ["--memory-limit", self.worker_process_memory]
@@ -356,7 +356,6 @@ class Job(ProcessInterface, abc.ABC):
             if processes is not None and processes > 1:
                 command_args += ["--nworkers", processes]
             command_args += ["--nanny" if nanny else "--no-nanny"]
-
 
         if death_timeout is not None:
             command_args += ["--death-timeout", death_timeout]
