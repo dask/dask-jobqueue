@@ -4,9 +4,8 @@ import math
 import os
 import re
 import shlex
-import subprocess
+import asyncio
 import sys
-import weakref
 import abc
 import tempfile
 import copy
@@ -390,8 +389,7 @@ class Job(ProcessInterface, abc.ABC):
             yield fn
 
     async def _submit_job(self, script_filename):
-        # Should we make this async friendly?
-        return self._call(shlex.split(self.submit_command) + [script_filename])
+        return await self._call(shlex.split(self.submit_command) + [script_filename])
 
     @property
     def worker_process_threads(self):
@@ -410,8 +408,6 @@ class Job(ProcessInterface, abc.ABC):
         with self.job_file() as fn:
             out = await self._submit_job(fn)
             self.job_id = self._job_id_from_submit_output(out)
-
-        weakref.finalize(self, self._close_job, self.job_id, self.cancel_command)
 
         logger.debug("Starting job: %s", self.job_id)
         await super().start()
@@ -439,18 +435,18 @@ class Job(ProcessInterface, abc.ABC):
 
     async def close(self):
         logger.debug("Stopping worker: %s job: %s", self.name, self.job_id)
-        self._close_job(self.job_id, self.cancel_command)
+        await self._close_job(self.job_id, self.cancel_command)
 
     @classmethod
-    def _close_job(cls, job_id, cancel_command):
+    async def _close_job(cls, job_id, cancel_command):
         if job_id:
             with suppress(RuntimeError):  # deleting job when job already gone
-                cls._call(shlex.split(cancel_command) + [job_id])
+                await cls._call(shlex.split(cancel_command) + [job_id])
             logger.debug("Closed job %s", job_id)
 
     @staticmethod
-    def _call(cmd, **kwargs):
-        """Call a command using subprocess.Popen.
+    async def _call(cmd, **kwargs):
+        """Call a command using asyncio.create_subprocess_exec.
 
         This centralizes calls out to the command line, providing consistent
         outputs, logging, and an opportunity to go asynchronous in the future.
@@ -459,7 +455,7 @@ class Job(ProcessInterface, abc.ABC):
         ----------
         cmd: List(str))
             A command, each of which is a list of strings to hand to
-            subprocess.Popen
+            asyncio.create_subprocess_exec
 
         Examples
         --------
@@ -478,11 +474,14 @@ class Job(ProcessInterface, abc.ABC):
             "Executing the following command to command line\n{}".format(cmd_str)
         )
 
-        proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, **kwargs
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            **kwargs
         )
 
-        out, err = proc.communicate()
+        out, err = await proc.communicate()
         out, err = out.decode(), err.decode()
 
         if proc.returncode != 0:
