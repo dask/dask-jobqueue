@@ -48,6 +48,8 @@ job_parameters = """
         Seconds to wait for a scheduler before closing workers
     extra : list
         Deprecated: use ``worker_extra_args`` instead. This parameter will be removed in a future version.
+    worker_command : list
+        Command to run when launching a worker.  Defaults to "distributed.cli.dask_worker"
     worker_extra_args : list
         Additional arguments to pass to `dask-worker`
     env_extra : list
@@ -166,6 +168,7 @@ class Job(ProcessInterface, abc.ABC):
         death_timeout=None,
         local_directory=None,
         extra=None,
+        worker_command=None,
         worker_extra_args=None,
         job_extra=None,
         job_extra_directives=None,
@@ -222,6 +225,10 @@ class Job(ProcessInterface, abc.ABC):
             )
         if extra is None:
             extra = dask.config.get("jobqueue.%s.extra" % self.config_name)
+        if worker_command is None:
+            worker_command = dask.config.get(
+                "jobqueue.%s.worker-command" % self.config_name
+            )
         if worker_extra_args is None:
             worker_extra_args = dask.config.get(
                 "jobqueue.%s.worker-extra-args" % self.config_name
@@ -332,17 +339,23 @@ class Job(ProcessInterface, abc.ABC):
         self._job_script_prologue = job_script_prologue
 
         # dask-worker command line build
-        dask_worker_command = "%(python)s -m distributed.cli.dask_worker" % dict(
-            python=python
+        dask_worker_command = "%(python)s -m %(worker_command)s" % dict(
+            python=python,
+            worker_command=worker_command
         )
-        command_args = [dask_worker_command, self.scheduler]
-        command_args += ["--nthreads", self.worker_process_threads]
-        if processes is not None and processes > 1:
-            command_args += ["--nworkers", processes]
 
-        command_args += ["--memory-limit", self.worker_process_memory]
+        command_args = [dask_worker_command, self.scheduler]
+
+        # common
         command_args += ["--name", str(name)]
-        command_args += ["--nanny" if nanny else "--no-nanny"]
+        command_args += ["--nthreads", self.worker_process_threads]
+        command_args += ["--memory-limit", self.worker_process_memory]
+
+        #  distributed.cli.dask_worker specific
+        if worker_command == "distributed.cli.dask_worker":
+            if processes is not None and processes > 1:
+                command_args += ["--nworkers", processes]
+            command_args += ["--nanny" if nanny else "--no-nanny"]
 
         if death_timeout is not None:
             command_args += ["--death-timeout", death_timeout]

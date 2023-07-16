@@ -49,6 +49,9 @@ def test_command_template(Cluster):
         assert " --local-directory /scratch" in cluster._dummy_job._command_template
         assert " --preload mymodule" in cluster._dummy_job._command_template
 
+    with Cluster(cores=2, memory="4GB", worker_command="dask_cuda.cli") as cluster:
+        assert "dask_cuda.cli" in cluster._dummy_job._command_template
+
 
 def test_shebang_settings(Cluster, request):
     if Cluster is HTCondorCluster or Cluster is LocalCluster:

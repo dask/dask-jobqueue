@@ -58,6 +58,7 @@ def test_config_name_sge_takes_custom_config():
         "local-directory": "/foo",
         "shared-temp-directory": None,
         "extra": None,
+        "worker-command": None,
         "worker-extra-args": [],
         "env-extra": None,
         "job-script-prologue": [],
