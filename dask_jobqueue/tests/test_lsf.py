@@ -17,7 +17,6 @@ from . import QUEUE_WAIT
 
 def test_header():
     with LSFCluster(walltime="00:02", processes=4, cores=8, memory="8GB") as cluster:
-
         assert "#BSUB" in cluster.job_header
         assert "#BSUB -J dask-worker" in cluster.job_header
         assert "#BSUB -n 8" in cluster.job_header
@@ -35,7 +34,6 @@ def test_header():
         ncpus=24,
         mem=100000000000,
     ) as cluster:
-
         assert "#BSUB -q general" in cluster.job_header
         assert "#BSUB -J dask-worker" in cluster.job_header
         assert "#BSUB -n 24" in cluster.job_header
@@ -54,7 +52,6 @@ def test_header():
         ncpus=24,
         mem=100000000000,
     ) as cluster:
-
         assert "#BSUB -q general" in cluster.job_header
         assert "#BSUB -J dask-worker" in cluster.job_header
         assert "#BSUB -n 24" in cluster.job_header
@@ -65,7 +62,6 @@ def test_header():
         assert '#BSUB -P "Dask On LSF"' in cluster.job_header
 
     with LSFCluster(cores=4, memory="8GB") as cluster:
-
         assert "#BSUB -n" in cluster.job_header
         assert "#BSUB -W" in cluster.job_header
         assert "#BSUB -M" in cluster.job_header
@@ -75,7 +71,6 @@ def test_header():
     with LSFCluster(
         cores=4, memory="8GB", job_extra_directives=["-u email@domain.com"]
     ) as cluster:
-
         assert "#BSUB -u email@domain.com" in cluster.job_header
         assert "#BSUB -n" in cluster.job_header
         assert "#BSUB -W" in cluster.job_header
@@ -86,7 +81,6 @@ def test_header():
 
 def test_job_script():
     with LSFCluster(walltime="00:02", processes=4, cores=8, memory="28GB") as cluster:
-
         job_script = cluster.job_script()
         assert "#BSUB" in job_script
         assert "#BSUB -J dask-worker" in job_script
@@ -114,7 +108,6 @@ def test_job_script():
         ncpus=24,
         mem=100000000000,
     ) as cluster:
-
         job_script = cluster.job_script()
         assert "#BSUB -q general" in cluster.job_header
         assert "#BSUB -J dask-worker" in cluster.job_header
@@ -141,7 +134,6 @@ def test_job_script():
         project="Dask On LSF",
         job_extra_directives=["-R rusage[mem=16GB]"],
     ) as cluster:
-
         job_script = cluster.job_script()
 
         assert "#BSUB -J dask-worker" in cluster.job_header

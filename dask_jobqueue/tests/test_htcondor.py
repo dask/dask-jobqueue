@@ -106,7 +106,6 @@ def test_extra_args_broken_cancel(loop):
         cancel_command_extra=["-name", "wrong.docker"],
     ) as cluster:
         with Client(cluster) as client:
-
             cluster.scale(2)
 
             client.wait_for_workers(2, timeout=QUEUE_WAIT)
