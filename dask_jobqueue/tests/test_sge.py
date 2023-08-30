@@ -16,7 +16,6 @@ def test_basic(loop):
         walltime="00:02:00", cores=8, processes=4, memory="2GiB", loop=loop
     ) as cluster:
         with Client(cluster, loop=loop) as client:
-
             cluster.scale(2)
 
             start = time()

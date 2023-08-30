@@ -432,25 +432,25 @@ def test_deprecation_job_extra(Cluster):
     assert "old_param" in job_script
 
 
-def test_jobqueue_job_call(tmpdir, Cluster):
-    cluster = Cluster(cores=1, memory="1GB")
+@pytest.mark.asyncio
+async def test_jobqueue_job_call(tmpdir, Cluster):
+    async with Cluster(cores=1, memory="1GB", asynchronous=True) as cluster:
+        path = tmpdir.join("test.py")
+        path.write('print("this is the stdout")')
 
-    path = tmpdir.join("test.py")
-    path.write('print("this is the stdout")')
+        out = await cluster.job_cls._call([sys.executable, path.strpath])
+        assert out == "this is the stdout\n"
 
-    out = cluster.job_cls._call([sys.executable, path.strpath])
-    assert out == "this is the stdout\n"
+        path_with_error = tmpdir.join("non-zero-exit-code.py")
+        path_with_error.write('print("this is the stdout")\n1/0')
 
-    path_with_error = tmpdir.join("non-zero-exit-code.py")
-    path_with_error.write('print("this is the stdout")\n1/0')
+        match = (
+            "Command exited with non-zero exit code.+"
+            "Exit code: 1.+"
+            "stdout:\nthis is the stdout.+"
+            "stderr:.+ZeroDivisionError"
+        )
 
-    match = (
-        "Command exited with non-zero exit code.+"
-        "Exit code: 1.+"
-        "stdout:\nthis is the stdout.+"
-        "stderr:.+ZeroDivisionError"
-    )
-
-    match = re.compile(match, re.DOTALL)
-    with pytest.raises(RuntimeError, match=match):
-        cluster.job_cls._call([sys.executable, path_with_error.strpath])
+        match = re.compile(match, re.DOTALL)
+        with pytest.raises(RuntimeError, match=match):
+            await cluster.job_cls._call([sys.executable, path_with_error.strpath])

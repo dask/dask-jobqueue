@@ -18,7 +18,6 @@ def test_header(Cluster):
     with Cluster(
         walltime="00:02:00", processes=4, cores=8, memory="28GB", name="dask-worker"
     ) as cluster:
-
         assert "#PBS" in cluster.job_header
         assert "#PBS -N dask-worker" in cluster.job_header
         assert "#PBS -l select=1:ncpus=8:mem=27GB" in cluster.job_header
@@ -34,7 +33,6 @@ def test_header(Cluster):
         resource_spec="select=1:ncpus=24:mem=100GB",
         memory="28GB",
     ) as cluster:
-
         assert "#PBS -q regular" in cluster.job_header
         assert "#PBS -N dask-worker" in cluster.job_header
         assert "#PBS -l select=1:ncpus=24:mem=100GB" in cluster.job_header
@@ -43,7 +41,6 @@ def test_header(Cluster):
         assert "#PBS -A DaskOnPBS" in cluster.job_header
 
     with Cluster(cores=4, memory="8GB") as cluster:
-
         assert "#PBS -j oe" not in cluster.job_header
         assert "#PBS -N" in cluster.job_header
         assert "#PBS -l walltime=" in cluster.job_header
@@ -51,7 +48,6 @@ def test_header(Cluster):
         assert "#PBS -q" not in cluster.job_header
 
     with Cluster(cores=4, memory="8GB", job_extra_directives=["-j oe"]) as cluster:
-
         assert "#PBS -j oe" in cluster.job_header
         assert "#PBS -N" in cluster.job_header
         assert "#PBS -l walltime=" in cluster.job_header
@@ -62,7 +58,6 @@ def test_header(Cluster):
 @pytest.mark.parametrize("Cluster", [PBSCluster, MoabCluster])
 def test_job_script(Cluster):
     with Cluster(walltime="00:02:00", processes=4, cores=8, memory="28GB") as cluster:
-
         job_script = cluster.job_script()
         assert "#PBS" in job_script
         assert "#PBS -N dask-worker" in job_script
@@ -88,7 +83,6 @@ def test_job_script(Cluster):
         resource_spec="select=1:ncpus=24:mem=100GB",
         memory="28GB",
     ) as cluster:
-
         job_script = cluster.job_script()
         assert "#PBS -q regular" in job_script
         assert "#PBS -N dask-worker" in job_script
@@ -119,7 +113,6 @@ def test_basic(loop):
         loop=loop,
     ) as cluster:
         with Client(cluster) as client:
-
             cluster.scale(2)
             client.wait_for_workers(2, timeout=QUEUE_WAIT)
 
@@ -154,7 +147,6 @@ def test_scale_cores_memory(loop):
         loop=loop,
     ) as cluster:
         with Client(cluster) as client:
-
             cluster.scale(cores=2)
             client.wait_for_workers(1, timeout=QUEUE_WAIT)
 
@@ -188,7 +180,6 @@ def test_basic_scale_edge_cases(loop):
         job_extra_directives=["-V"],
         loop=loop,
     ) as cluster:
-
         cluster.scale(2)
         cluster.scale(0)
 
@@ -299,7 +290,6 @@ def test_scale_grouped(loop):
         loop=loop,
     ) as cluster:
         with Client(cluster) as client:
-
             cluster.scale(4)  # Start 2 jobs
 
             start = time()
