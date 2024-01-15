@@ -177,7 +177,7 @@ class Job(ProcessInterface, abc.ABC):
         job_directives_skip=None,
         log_directory=None,
         shebang=None,
-        python=sys.executable,
+        python=None,
         job_name=None,
         config_name=None,
     ):
@@ -205,6 +205,11 @@ class Job(ProcessInterface, abc.ABC):
                     cluster_class_name, cores or 8, memory or "24GB"
                 )
             )
+
+        if python is None:
+            python = dask.config.get("jobqueue.%s.python" % self.config_name)
+            if python is None:
+                python = sys.executable
 
         if job_name is None:
             job_name = dask.config.get("jobqueue.%s.name" % self.config_name)
