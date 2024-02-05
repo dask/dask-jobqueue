@@ -66,6 +66,7 @@ def test_config_name_sge_takes_custom_config():
         "job-cpu": None,
         "job-mem": None,
         "resource-spec": None,
+        "python": None,
     }
 
     with dask.config.set({"jobqueue.sge-config-name": conf}):

@@ -147,6 +147,7 @@ def test_config_name_oar_takes_custom_config():
         "job-mem": None,
         "resource-spec": None,
         "memory-per-core-property-name": "memcore",
+        "python": None,
     }
 
     with dask.config.set({"jobqueue.oar-config-name": conf}):

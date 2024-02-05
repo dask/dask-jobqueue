@@ -196,6 +196,7 @@ def test_config_name_slurm_takes_custom_config():
         "shebang": "#!/usr/bin/env bash",
         "job-cpu": None,
         "job-mem": None,
+        "python": None,
     }
 
     with dask.config.set({"jobqueue.slurm-config-name": conf}):

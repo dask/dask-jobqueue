@@ -321,6 +321,7 @@ def test_config_name_lsf_takes_custom_config():
         "log-directory": None,
         "shebang": "#!/usr/bin/env bash",
         "use-stdin": None,
+        "python": None,
     }
 
     with dask.config.set({"jobqueue.lsf-config-name": conf}):

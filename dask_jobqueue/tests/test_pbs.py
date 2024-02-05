@@ -360,6 +360,7 @@ def test_config_name_pbs_takes_custom_config():
         "job-cpu": None,
         "job-mem": None,
         "resource-spec": None,
+        "python": None,
     }
 
     with dask.config.set({"jobqueue.pbs-config-name": conf}):
