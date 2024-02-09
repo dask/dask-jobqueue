@@ -141,7 +141,7 @@ class SLURMCluster(JobQueueCluster):
     project : str
         Deprecated: use ``account`` instead. This parameter will be removed in a future version.
     account : str
-        Accounting string associated with each worker job. Passed to `#PBS -A` option.
+        Accounting string associated with each worker job. Passed to `#SBATCH -A` option.
     {job}
     {cluster}
     walltime : str
