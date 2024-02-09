@@ -95,9 +95,9 @@ def test_job_script():
             in job_script
         )
         formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
-        assert ("--nthreads 2" in job_script)
-        assert ("--nworkers 4" in job_script)
-        assert (f"--memory-limit {formatted_bytes}" in job_script)
+        assert "--nthreads 2" in job_script
+        assert "--nworkers 4" in job_script
+        assert f"--memory-limit {formatted_bytes}" in job_script
 
     with LSFCluster(
         queue="general",
@@ -123,9 +123,9 @@ def test_job_script():
             in job_script
         )
         formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
-        assert ("--nthreads 2" in job_script)
-        assert ("--nworkers 4" in job_script)
-        assert (f"--memory-limit {formatted_bytes}" in job_script)
+        assert "--nthreads 2" in job_script
+        assert "--nworkers 4" in job_script
+        assert f"--memory-limit {formatted_bytes}" in job_script
 
     with LSFCluster(
         walltime="1:00",
@@ -321,6 +321,7 @@ def test_config_name_lsf_takes_custom_config():
         "log-directory": None,
         "shebang": "#!/usr/bin/env bash",
         "use-stdin": None,
+        "python": None,
     }
 
     with dask.config.set({"jobqueue.lsf-config-name": conf}):

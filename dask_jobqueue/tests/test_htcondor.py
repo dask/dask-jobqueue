@@ -148,6 +148,7 @@ def test_config_name_htcondor_takes_custom_config():
         "shebang": "#!/usr/bin/env condor_submit",
         "local-directory": "/tmp",
         "shared-temp-directory": None,
+        "python": None,
     }
 
     with dask.config.set({"jobqueue.htcondor-config-name": conf}):

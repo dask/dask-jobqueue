@@ -71,9 +71,9 @@ def test_job_script(Cluster):
             in job_script
         )
         formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
-        assert ("--nthreads 2" in job_script)
-        assert ("--nworkers 4" in job_script)
-        assert (f"--memory-limit {formatted_bytes}" in job_script)
+        assert "--nthreads 2" in job_script
+        assert "--nworkers 4" in job_script
+        assert f"--memory-limit {formatted_bytes}" in job_script
 
     with Cluster(
         queue="regular",
@@ -96,9 +96,9 @@ def test_job_script(Cluster):
             in job_script
         )
         formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
-        assert ("--nthreads 2" in job_script)
-        assert ("--nworkers 4" in job_script)
-        assert (f"--memory-limit {formatted_bytes}" in job_script)
+        assert "--nthreads 2" in job_script
+        assert "--nworkers 4" in job_script
+        assert f"--memory-limit {formatted_bytes}" in job_script
 
 
 @pytest.mark.env("pbs")
@@ -360,6 +360,7 @@ def test_config_name_pbs_takes_custom_config():
         "job-cpu": None,
         "job-mem": None,
         "resource-spec": None,
+        "python": None,
     }
 
     with dask.config.set({"jobqueue.pbs-config-name": conf}):

@@ -82,9 +82,9 @@ def test_job_script():
             in job_script
         )
         formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
-        assert ("--nthreads 2" in job_script)
-        assert ("--nworkers 4" in job_script)
-        assert (f"--memory-limit {formatted_bytes}" in job_script)
+        assert "--nthreads 2" in job_script
+        assert "--nworkers 4" in job_script
+        assert f"--memory-limit {formatted_bytes}" in job_script
 
     with OARCluster(
         walltime="00:02:00",
@@ -115,9 +115,9 @@ def test_job_script():
             in job_script
         )
         formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
-        assert ("--nthreads 2" in job_script)
-        assert ("--nworkers 4" in job_script)
-        assert (f"--memory-limit {formatted_bytes}" in job_script)
+        assert "--nthreads 2" in job_script
+        assert "--nworkers 4" in job_script
+        assert f"--memory-limit {formatted_bytes}" in job_script
 
 
 def test_config_name_oar_takes_custom_config():
@@ -147,6 +147,7 @@ def test_config_name_oar_takes_custom_config():
         "job-mem": None,
         "resource-spec": None,
         "memory-per-core-property-name": "memcore",
+        "python": None,
     }
 
     with dask.config.set({"jobqueue.oar-config-name": conf}):
