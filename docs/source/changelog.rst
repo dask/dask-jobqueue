@@ -5,7 +5,7 @@ Development version
 -------------------
 
 
-0.8.4 / 2024-02-22
+0.8.5 / 2024-02-22
 ------------------
 
 - Update versioneer for 3.12 compatibility (:pr:`618`)
