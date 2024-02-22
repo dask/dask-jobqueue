@@ -4,7 +4,7 @@ Changelog
 Development version
 -------------------
 
-0.8.3 / 2024-02-22
+0.8.5 / 2024-02-22
 ------------------
 
 - Make cli worker parameter flexible (:pr:`606`)
