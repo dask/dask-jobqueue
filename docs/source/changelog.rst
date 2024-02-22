@@ -4,6 +4,18 @@ Changelog
 Development version
 -------------------
 
+0.8.3 / 2024-02-22
+------------------
+
+- Make cli worker parameter flexible (:pr:`606`)
+- Asynchronous job submission and removal (:pr:`610`)
+- Python executable from config file (:pr:`623`)
+- Small doc fixes and housekeeping (:pr:`621`, :pr:`625`)
+
+Thanks to `@hmacdope <https://github.com/hmacdope>`_, `@jrueb <https://github.com/jrueb>`_, 
+`@Andrew-S-Rosen <https://github.com/Andrew-S-Rosen>`_, `@fnattino <https://github.com/fnattino>`_
+and `@eckhrd <https://github.com/eckhrd>`_.
+
 0.8.2 / 2023-06-15
 ------------------
 
