@@ -73,9 +73,9 @@ def test_job_script():
             in job_script
         )
         formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
-        assert ("--nthreads 2" in job_script)
-        assert ("--nworkers 4" in job_script)
-        assert (f"--memory-limit {formatted_bytes}" in job_script)
+        assert "--nthreads 2" in job_script
+        assert "--nworkers 4" in job_script
+        assert f"--memory-limit {formatted_bytes}" in job_script
 
     with SLURMCluster(
         walltime="00:02:00",
@@ -107,9 +107,9 @@ def test_job_script():
             in job_script
         )
         formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
-        assert ("--nthreads 2" in job_script)
-        assert ("--nworkers 4" in job_script)
-        assert (f"--memory-limit {formatted_bytes}" in job_script)
+        assert "--nthreads 2" in job_script
+        assert "--nworkers 4" in job_script
+        assert f"--memory-limit {formatted_bytes}" in job_script
 
 
 @pytest.mark.env("slurm")

@@ -10,4 +10,5 @@ from .oar import OARCluster
 from .htcondor import HTCondorCluster
 
 from . import _version
-__version__ = _version.get_versions()['version']
+
+__version__ = _version.get_versions()["version"]

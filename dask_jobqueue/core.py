@@ -339,8 +339,7 @@ class Job(ProcessInterface, abc.ABC):
 
         # dask-worker command line build
         dask_worker_command = "%(python)s -m %(worker_command)s" % dict(
-            python=python,
-            worker_command=worker_command
+            python=python, worker_command=worker_command
         )
 
         command_args = [dask_worker_command, self.scheduler]
