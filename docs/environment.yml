@@ -6,6 +6,6 @@ dependencies:
   - distributed
   - numpydoc
   - ipython
-  - sphinx
+  - sphinx>=5
   - pip:
     - dask-sphinx-theme>=3.0.0
