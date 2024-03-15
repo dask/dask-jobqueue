@@ -20,11 +20,11 @@ function jobqueue_before_install {
 }
 
 function jobqueue_install {
-    docker exec pbs_master /bin/bash -c "cd /dask-jobqueue; pip install -e .; chown -R pbsuser ."
+    docker exec pbs_master /bin/bash -c "conda activate dask-jobqueue; cd /dask-jobqueue; pip install -e .; chown -R pbsuser ."
 }
 
 function jobqueue_script {
-    docker exec -u pbsuser pbs_master /bin/bash -c "cd; pytest /dask-jobqueue/dask_jobqueue --verbose -s -E pbs"
+    docker exec -u pbsuser pbs_master /bin/bash -c "cd; conda activate dask-jobqueue; pytest /dask-jobqueue/dask_jobqueue --verbose -s -E pbs"
 }
 
 function jobqueue_after_script {
