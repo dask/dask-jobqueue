@@ -33,7 +33,7 @@ RUN curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-L
 # environment.yml file is copied by CI script. If manually building, you should copy it too from parent directory
 COPY environment.yml .
 RUN conda env create --file environment.yml
-RUN conda init --system --all -v
+SHELL ["conda", "run", "-n", "dask-jobqueue", "/bin/bash", "-c"]
 
 # Copy entrypoint and other needed scripts
 COPY ./*.sh /

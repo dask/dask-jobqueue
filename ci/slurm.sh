@@ -22,17 +22,17 @@ function show_network_interfaces {
     for c in slurmctld c1 c2; do
         echo '------------------------------------------------------------'
         echo docker container: $c
-        docker exec $c python -c 'import psutil; print(psutil.net_if_addrs().keys())'
+        docker exec $c conda run -n dask-jobqueue python -c 'import psutil; print(psutil.net_if_addrs().keys())'
         echo '------------------------------------------------------------'
     done
 }
 
 function jobqueue_install {
-    docker exec slurmctld /bin/bash -c "conda activate dask-jobqueue; cd /dask-jobqueue; pip install -e ."
+    docker exec slurmctld conda run -n dask-jobqueue /bin/bash -c "cd /dask-jobqueue; pip install -e ."
 }
 
 function jobqueue_script {
-    docker exec slurmctld /bin/bash -c "cd; conda activate dask-jobqueue; pytest /dask-jobqueue/dask_jobqueue --verbose -E slurm -s"
+    docker exec slurmctld conda run -n dask-jobqueue /bin/bash -c "cd; pytest /dask-jobqueue/dask_jobqueue --verbose -E slurm -s"
 }
 
 function jobqueue_after_script {
