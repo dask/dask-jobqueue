@@ -10,6 +10,7 @@ ENV PATH /opt/anaconda/bin:$PATH
 # environment.yml file is copied by CI script. If manually building, you should copy it too from parent directory
 COPY environment.yml .
 RUN conda env create --file environment.yml
+RUN conda init --system --all -v
 
 ENV LC_ALL en_US.UTF-8
 
