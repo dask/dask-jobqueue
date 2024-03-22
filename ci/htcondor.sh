@@ -21,13 +21,13 @@ function jobqueue_before_install {
 
 function jobqueue_install {
     cd ./ci/htcondor
-    docker-compose exec -T submit /bin/bash -c "cd /dask-jobqueue; pip3 install -e .;chown -R submituser ."
+    docker-compose exec -T submit conda run -n dask-jobqueue /bin/bash -c "cd /dask-jobqueue; pip3 install -e .;chown -R submituser ."
     cd -
 }
 
 function jobqueue_script {
     cd ./ci/htcondor
-    docker-compose exec -T --user submituser submit /bin/bash -c "cd; pytest /dask-jobqueue/dask_jobqueue --log-cli-level DEBUG --capture=tee-sys --verbose -E htcondor "
+    docker-compose exec -T --user submituser submit conda run -n dask-jobqueue /bin/bash -c "cd; pytest /dask-jobqueue/dask_jobqueue --log-cli-level DEBUG --capture=tee-sys --verbose -E htcondor "
     cd -
 }
 
