@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class SLURMJob(Job):
     # Override class variables
     submit_command = "sbatch"
-    cancel_command = "scancel"
+    cancel_command = "scancel --signal=SIGTERM"
     config_name = "slurm"
 
     def __init__(
