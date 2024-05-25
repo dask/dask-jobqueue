@@ -4,6 +4,7 @@ import logging
 import math
 import os
 import re
+import shlex
 import subprocess
 import toolz
 
@@ -53,6 +54,28 @@ class LSFJob(Job):
         if use_stdin is None:
             use_stdin = dask.config.get("jobqueue.%s.use-stdin" % self.config_name)
         self.use_stdin = use_stdin
+
+        if self.submit_command_extra is None:
+            self.submit_command_extra = dask.config.get(
+                "jobqueue.%s.submit-command-extra" % self.config_name, []
+            )
+
+        self.submit_command = (
+            LSFJob.submit_command
+            + " "
+            + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
+        )
+
+        if self.cancel_command_extra is None:
+            self.cancel_command_extra = dask.config.get(
+                "jobqueue.%s.cancel-command-extra" % self.config_name, []
+            )
+
+        self.cancel_command = (
+            LSFJob.cancel_command
+            + " "
+            + " ".join(shlex.quote(arg) for arg in self.cancel_command_extra)
+        )
 
         header_lines = []
         # LSF header build

@@ -1,4 +1,5 @@
 import logging
+import shlex
 
 import dask
 
@@ -37,6 +38,28 @@ class SGEJob(Job):
             )
         if walltime is None:
             walltime = dask.config.get("jobqueue.%s.walltime" % self.config_name)
+
+        if self.submit_command_extra is None:
+            self.submit_command_extra = dask.config.get(
+                "jobqueue.%s.submit-command-extra" % self.config_name, []
+            )
+
+        self.submit_command = (
+            SGEJob.submit_command
+            + " "
+            + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
+        )
+
+        if self.cancel_command_extra is None:
+            self.cancel_command_extra = dask.config.get(
+                "jobqueue.%s.cancel-command-extra" % self.config_name, []
+            )
+
+        self.cancel_command = (
+            SGEJob.cancel_command
+            + " "
+            + " ".join(shlex.quote(arg) for arg in self.cancel_command_extra)
+        )
 
         header_lines = []
         if self.job_name is not None:
