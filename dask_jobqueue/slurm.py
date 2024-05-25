@@ -1,5 +1,6 @@
 import logging
 import math
+import shlex
 import warnings
 
 import dask
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 class SLURMJob(Job):
     # Override class variables
     submit_command = "sbatch"
-    cancel_command = "scancel --signal=SIGTERM"
+    cancel_command = "scancel"
     config_name = "slurm"
 
     def __init__(
@@ -26,6 +27,7 @@ class SLURMJob(Job):
         job_cpu=None,
         job_mem=None,
         config_name=None,
+        cancel_command_extra=["--signal=SIGTERM"],
         **base_class_kwargs
     ):
         super().__init__(
@@ -56,6 +58,28 @@ class SLURMJob(Job):
             job_cpu = dask.config.get("jobqueue.%s.job-cpu" % self.config_name)
         if job_mem is None:
             job_mem = dask.config.get("jobqueue.%s.job-mem" % self.config_name)
+
+        if self.submit_command_extra is None:
+            self.submit_command_extra = dask.config.get(
+                "jobqueue.%s.submit-command-extra" % self.config_name, []
+            )
+
+        self.submit_command = (
+            SLURMJob.submit_command
+            + " "
+            + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
+        )
+
+        if cancel_command_extra is None:
+            cancel_command_extra = dask.config.get(
+                "jobqueue.%s.cancel-command-extra" % self.config_name, []
+            )
+
+        self.cancel_command = (
+            SLURMJob.cancel_command
+            + " "
+            + " ".join(shlex.quote(arg) for arg in cancel_command_extra)
+        )
 
         header_lines = []
         # SLURM header build
