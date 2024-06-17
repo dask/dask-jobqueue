@@ -44,7 +44,7 @@ class OARJob(Job):
         if walltime is None:
             walltime = dask.config.get("jobqueue.%s.walltime" % self.config_name)
 
-        if self.submit_command_extra is None:
+        if self.submit_command_extra is None or self.submit_command_extra == []:
             self.submit_command_extra = dask.config.get(
                 "jobqueue.%s.submit-command-extra" % self.config_name, []
             )
@@ -55,7 +55,7 @@ class OARJob(Job):
             + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
         )
 
-        if self.cancel_command_extra is None:
+        if self.cancel_command_extra is None or self.cancel_command_extra == []:
             self.cancel_command_extra = dask.config.get(
                 "jobqueue.%s.cancel-command-extra" % self.config_name, []
             )

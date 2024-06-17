@@ -84,7 +84,7 @@ class PBSJob(Job):
             if not account:
                 account = project
 
-        if self.submit_command_extra is None:
+        if self.submit_command_extra is None or self.submit_command_extra == []:
             self.submit_command_extra = dask.config.get(
                 "jobqueue.%s.submit-command-extra" % self.config_name, []
             )
@@ -95,7 +95,7 @@ class PBSJob(Job):
             + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
         )
 
-        if self.cancel_command_extra is None:
+        if self.cancel_command_extra is None or self.cancel_command_extra == []:
             self.cancel_command_extra = dask.config.get(
                 "jobqueue.%s.cancel-command-extra" % self.config_name, []
             )

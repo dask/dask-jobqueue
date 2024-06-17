@@ -281,17 +281,20 @@ class Job(ProcessInterface, abc.ABC):
             submit_command_extra = dask.config.get(
                 "jobqueue.%s.submit-command-extra" % self.config_name, []
             )
+        logger.critical(f"{submit_command_extra=}")
+        self.submit_command_extra = submit_command_extra
 
         self.submit_command = (
             Job.submit_command
             + " "
-            + " ".join(shlex.quote(arg) for arg in submit_command_extra)
+            + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
         )
 
         if self.cancel_command_extra is None:
             self.cancel_command_extra = dask.config.get(
                 "jobqueue.%s.cancel-command-extra" % self.config_name, []
             )
+        self.cancel_command_extra = cancel_command_extra
 
         self.cancel_command = (
             Job.cancel_command

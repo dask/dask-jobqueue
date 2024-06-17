@@ -15,6 +15,7 @@ class SLURMJob(Job):
     submit_command = "sbatch"
     cancel_command = "scancel"
     config_name = "slurm"
+    cancel_command_extra = ["--signal=SIGTERM"]
 
     def __init__(
         self,
@@ -27,7 +28,6 @@ class SLURMJob(Job):
         job_cpu=None,
         job_mem=None,
         config_name=None,
-        cancel_command_extra=["--signal=SIGTERM"],
         **base_class_kwargs
     ):
         super().__init__(
@@ -59,7 +59,7 @@ class SLURMJob(Job):
         if job_mem is None:
             job_mem = dask.config.get("jobqueue.%s.job-mem" % self.config_name)
 
-        if self.submit_command_extra is None:
+        if self.submit_command_extra is None or self.submit_command_extra == []:
             self.submit_command_extra = dask.config.get(
                 "jobqueue.%s.submit-command-extra" % self.config_name, []
             )
@@ -70,7 +70,7 @@ class SLURMJob(Job):
             + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
         )
 
-        if cancel_command_extra is None:
+        if self.cancel_command_extra is None or self.cancel_command_extra == []:
             cancel_command_extra = dask.config.get(
                 "jobqueue.%s.cancel-command-extra" % self.config_name, []
             )
