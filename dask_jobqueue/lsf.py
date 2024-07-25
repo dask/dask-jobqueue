@@ -1,11 +1,6 @@
-from distutils.version import LooseVersion
-
 import logging
 import math
 import os
-import re
-import subprocess
-import toolz
 
 import dask
 
@@ -240,9 +235,3 @@ class LSFCluster(JobQueueCluster):
     )
     job_cls = LSFJob
 
-
-@toolz.memoize
-def lsf_version():
-    out, _ = subprocess.Popen("lsid", stdout=subprocess.PIPE).communicate()
-    version = re.search(r"(\d+\.)+\d+", out.decode()).group()
-    return LooseVersion(version)
