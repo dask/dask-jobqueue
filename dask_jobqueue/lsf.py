@@ -108,7 +108,7 @@ class LSFJob(Job):
     async def _submit_job(self, script_filename):
         if self.use_stdin:
             piped_cmd = [self.submit_command + "< " + script_filename + " 2> /dev/null"]
-            return self._call(piped_cmd, shell=True)
+            return await self._call(piped_cmd)
         else:
             result = await super()._submit_job(script_filename)
             return result
