@@ -1,17 +1,23 @@
+# .readthedocs.yaml
+# Read the Docs configuration file
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
 version: 2
 
 build:
   os: "ubuntu-22.04"
   tools:
-    python: "mambaforge-latest"
+    python: "3.10"
 
 sphinx:
   configuration: docs/source/conf.py
-
-conda:
     environment: docs/environment.yml
 
 python:
   install:
+    - requirements: docs/requirements-docs.txt
     - method: pip
       path: .
+
+submodules:
+  include: all
