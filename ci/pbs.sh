@@ -2,11 +2,11 @@
 
 function jobqueue_before_install {
     docker version
-    docker-compose version
+    docker compose version
 
     # start pbs cluster
     cd ./ci/pbs
-    docker-compose pull
+    docker compose pull
     ./start-pbs.sh
     cd -
 

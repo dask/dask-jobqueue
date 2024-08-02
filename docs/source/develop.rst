@@ -67,9 +67,9 @@ This is basically a simplified version of what is in the ci/*.sh files.
 For example with Slurm::
 
    cd ci/slurm
-   docker-compose pull
+   docker compose pull
    # Start a Slurm dockerized cluster
-   ./start-slurm.sh #which is doing docker-compose up -d --no-build
+   ./start-slurm.sh #which is doing docker compose up -d --no-build
    # Install dask-jobqueue in Docker container
    docker exec slurmctld /bin/bash -c "cd /dask-jobqueue; pip install -e ."
    # Run the tests for slurm
@@ -77,7 +77,7 @@ For example with Slurm::
 
 You can then shutdown the dockerized cluster and remove all the containers from your computer::
 
-   docker-compose down
+   docker compose down
 
 Test on a real Job queuing system
 ---------------------------------
@@ -107,12 +107,12 @@ For Slurm for example::
 
    cd ci/slurm
    cp ../environment.yml environment.yml #The Dockerfile needs the reference Conda environment file in its context to build
-   docker-compose build
+   docker compose build
 
 You might want to stop your dockerized cluster and refresh the build if you have done this previously::
 
-   docker-compose down
-   docker-compose build --no-cache
+   docker compose down
+   docker compose build --no-cache
 
 Update Docker images for CI tests
 ---------------------------------
