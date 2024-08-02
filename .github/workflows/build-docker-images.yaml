@@ -22,13 +22,13 @@ jobs:
       - name: Check versions
         run: |
           docker version
-          docker-compose version
+          docker compose version
       - name: Building Image
         shell: bash -l {0}
         run: |
           cd ./ci/${{ matrix.jobqueue }}
           cp ../environment.yml environment.yml
-          docker-compose build
+          docker compose build
       - name: List images
         run: |
           docker ps -a
