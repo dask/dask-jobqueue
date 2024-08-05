@@ -96,7 +96,6 @@ async def test_adapt(EnvSpecificCluster):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip
 async def test_adapt_parameters(EnvSpecificCluster):
     job_cls = EnvSpecificCluster.job_cls
     async with JobQueueCluster(
