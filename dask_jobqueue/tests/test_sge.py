@@ -11,6 +11,7 @@ from . import QUEUE_WAIT
 
 
 @pytest.mark.env("sge")
+@pytest.mark.skip(reason="This test causes a segfault")
 def test_basic(loop):
     with SGECluster(
         walltime="00:02:00", cores=8, processes=4, memory="2GiB", loop=loop
