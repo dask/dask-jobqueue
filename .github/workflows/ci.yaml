@@ -40,6 +40,7 @@ jobs:
       - name: Setup Job queuing system
         if: matrix.jobqueue != 'none'
         run: |
+          cp ci/environment.yml ci/${{ matrix.jobqueue }}/environment.yml
           source ci/${{ matrix.jobqueue }}.sh
           jobqueue_before_install
 
