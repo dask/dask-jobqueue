@@ -401,7 +401,6 @@ def test_security(EnvSpecificCluster, loop):
         assert "tls://" in job_script
 
 
-@pytest.mark.skip
 def test_security_temporary(EnvSpecificCluster, loop):
     # Shared space configured in all docker compose CIs, fallback to current dir if does not exist (LocalCluster)
     dirname = os.environ.get("CI_SHARED_SPACE", os.getcwd())
