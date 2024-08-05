@@ -6,7 +6,7 @@ function jobqueue_before_install {
 
     # start htcondor cluster
     cd ./ci/htcondor
-    docker compose pull
+    docker compose build
     ./start-htcondor.sh
     docker compose exec -T submit /bin/bash -c "condor_status"
     docker compose exec -T submit /bin/bash -c "condor_q"
