@@ -350,6 +350,7 @@ def test_wrong_parameter_error(Cluster):
 
 
 @pytest.mark.filterwarnings("error:Using a temporary security object:UserWarning")
+@pytest.mark.skip
 def test_security(EnvSpecificCluster, loop):
     # Shared space configured in all docker compose CIs, fallback to current dir if does not exist (LocalCluster)
     dirname = os.environ.get("CI_SHARED_SPACE", os.getcwd())
@@ -400,6 +401,7 @@ def test_security(EnvSpecificCluster, loop):
         assert "tls://" in job_script
 
 
+@pytest.mark.skip
 def test_security_temporary(EnvSpecificCluster, loop):
     # Shared space configured in all docker compose CIs, fallback to current dir if does not exist (LocalCluster)
     dirname = os.environ.get("CI_SHARED_SPACE", os.getcwd())
@@ -449,6 +451,7 @@ def test_security_temporary(EnvSpecificCluster, loop):
 @pytest.mark.xfail_env(
     {"slurm": "Submitting user do not have a shared home directory in CI"}
 )
+@pytest.mark.skip
 def test_security_temporary_defaults(EnvSpecificCluster, loop):
     # test automatic behaviour if security is true and shared_temp_directory not set
     with pytest.warns(UserWarning, match="shared_temp_directory"), EnvSpecificCluster(

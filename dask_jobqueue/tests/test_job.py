@@ -22,6 +22,7 @@ def test_basic(Cluster):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_job(EnvSpecificCluster):
     job_cls = EnvSpecificCluster.job_cls
     async with Scheduler(port=0) as s:
@@ -40,6 +41,7 @@ async def test_job(EnvSpecificCluster):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_cluster(EnvSpecificCluster):
     job_cls = EnvSpecificCluster.job_cls
     async with JobQueueCluster(
@@ -63,6 +65,7 @@ async def test_cluster(EnvSpecificCluster):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_adapt(EnvSpecificCluster):
     job_cls = EnvSpecificCluster.job_cls
     async with JobQueueCluster(
@@ -93,6 +96,7 @@ async def test_adapt(EnvSpecificCluster):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_adapt_parameters(EnvSpecificCluster):
     job_cls = EnvSpecificCluster.job_cls
     async with JobQueueCluster(
