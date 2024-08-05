@@ -112,7 +112,6 @@ def test_job_script(tmpdir):
 
 
 @pytest.mark.env("sge")
-@pytest.mark.skip
 def test_complex_cancel_command(loop):
     with SGECluster(
         walltime="00:02:00", cores=1, processes=1, memory="2GB", loop=loop
