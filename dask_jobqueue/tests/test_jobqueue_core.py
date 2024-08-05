@@ -451,7 +451,6 @@ def test_security_temporary(EnvSpecificCluster, loop):
 @pytest.mark.xfail_env(
     {"slurm": "Submitting user do not have a shared home directory in CI"}
 )
-@pytest.mark.skip
 def test_security_temporary_defaults(EnvSpecificCluster, loop):
     # test automatic behaviour if security is true and shared_temp_directory not set
     with pytest.warns(UserWarning, match="shared_temp_directory"), EnvSpecificCluster(
