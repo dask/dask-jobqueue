@@ -7,7 +7,7 @@ hostname=$(hostname)
 sed -i "s/PBS_SERVER=.*/PBS_SERVER=$hostname/" $pbs_conf_file
 sed -i "s/\$clienthost .*/\$clienthost $hostname/" $mom_conf_file
 
-# start PBS Pro
+# start openpbs
 /etc/init.d/pbs start
 
 # create default non-root user

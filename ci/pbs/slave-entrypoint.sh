@@ -16,7 +16,7 @@ sed -i "s/PBS_START_MOM=.*/PBS_START_MOM=1/" $pbs_conf_file
 echo "\$usecp *:/home/ /home/" >> $mom_conf_file
 echo "\$usecp *:/dask-jobqueue/ /tmp/" >> $mom_conf_file
 
-# start PBS Pro
+# start openpbs
 /etc/init.d/pbs start
 
 # create default non-root user
