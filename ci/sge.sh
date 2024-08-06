@@ -6,7 +6,7 @@ function jobqueue_before_install {
 
     # start sge cluster
     cd ./ci/sge
-    docker compose pull
+    docker compose build
     ./start-sge.sh
     cd -
 
