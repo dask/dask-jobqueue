@@ -12,6 +12,7 @@ extras_require = {}
 
 extras_require["test"] = [
     "pytest",
+    "pytest-asyncio",
     "anyio",
     "cryptography",
 ]
