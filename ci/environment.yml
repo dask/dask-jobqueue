@@ -9,5 +9,5 @@ dependencies:
   - flake8
   - black
   - pytest
-  - pytest-asyncio
+  - anyio
   - cryptography
