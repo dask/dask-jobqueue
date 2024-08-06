@@ -2,11 +2,11 @@
 
 function jobqueue_before_install {
     docker version
-    docker-compose version
+    docker compose version
 
     # start slurm cluster
     cd ./ci/slurm
-    docker-compose pull
+    docker compose build
     ./start-slurm.sh
     cd -
 

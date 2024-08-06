@@ -22,3 +22,4 @@ ci/htcondor/environment.yml
 .vscode/
 ca.pem
 key.pem
+*.out
