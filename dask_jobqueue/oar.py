@@ -163,7 +163,7 @@ class OARJob(Job):
         inline_script = "".join(inline_script_lines)
         oarsub_command = " ".join([self.submit_command] + oarsub_options)
         oarsub_command_split = shlex.split(oarsub_command) + [inline_script]
-        return self._call(oarsub_command_split)
+        return await self._call(oarsub_command_split)
 
 
 class OARCluster(JobQueueCluster):

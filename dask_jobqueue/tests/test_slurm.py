@@ -206,6 +206,10 @@ def test_config_name_slurm_takes_custom_config():
 
 @pytest.mark.env("slurm")
 def test_different_interfaces_on_scheduler_and_workers(loop):
+    import psutil
+
+    if "eth0" not in psutil.net_if_addrs():
+        pytest.skip("No eth0 interface found")
     with SLURMCluster(
         walltime="00:02:00",
         cores=1,
