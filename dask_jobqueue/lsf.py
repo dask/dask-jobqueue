@@ -1,11 +1,6 @@
-from distutils.version import LooseVersion
-
 import logging
 import math
 import os
-import re
-import subprocess
-import toolz
 
 import dask
 
@@ -113,7 +108,7 @@ class LSFJob(Job):
     async def _submit_job(self, script_filename):
         if self.use_stdin:
             piped_cmd = [self.submit_command + "< " + script_filename + " 2> /dev/null"]
-            return self._call(piped_cmd, shell=True)
+            return await self._call(piped_cmd)
         else:
             result = await super()._submit_job(script_filename)
             return result
@@ -239,10 +234,3 @@ class LSFCluster(JobQueueCluster):
         job=job_parameters, cluster=cluster_parameters
     )
     job_cls = LSFJob
-
-
-@toolz.memoize
-def lsf_version():
-    out, _ = subprocess.Popen("lsid", stdout=subprocess.PIPE).communicate()
-    version = re.search(r"(\d+\.)+\d+", out.decode()).group()
-    return LooseVersion(version)
