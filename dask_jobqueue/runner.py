@@ -36,7 +36,7 @@ class BaseRunner(SyncMethodMixin):
     To implement this class, you must provide
 
     1.  A ``get_role`` method which returns a role from the ``Role`` enum.
-    2.  A ``set_scheduler_address`` method for the scheduler process to communicate its address.
+    2.  Optionally, a ``set_scheduler_address`` method for the scheduler process to communicate its address.
     3.  A ``get_scheduler_address`` method for all other processed to recieve the scheduler address.
     4.  Optionally, a ``get_worker_name`` to provide a platform specific name to the workers.
     5.  Optionally, a ``before_scheduler_start`` to perform any actions before the scheduler is created.
@@ -90,7 +90,7 @@ class BaseRunner(SyncMethodMixin):
         raise NotImplementedError()
 
     async def set_scheduler_address(self, scheduler: Scheduler) -> None:
-        raise NotImplementedError()
+        raise None
 
     async def get_scheduler_address(self) -> str:
         raise NotImplementedError()

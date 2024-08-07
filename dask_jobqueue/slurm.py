@@ -253,11 +253,5 @@ class SLURMRunner(BaseRunner):
         cfg = json.loads(self.scheduler_file.read_text())
         return cfg["address"]
 
-    async def on_scheduler_start(self, scheduler: Scheduler) -> None:
-        return
-
     async def get_worker_name(self) -> str:
         return self.proc_id
-
-    async def _close(self):
-        await super()._close()
