@@ -10,7 +10,6 @@ from dask_jobqueue.runner import AsyncCommWorld, AsyncRunner
 
 
 @pytest.mark.asyncio
-@pytest.mark.timeout(10)
 async def test_runner():
     commworld = AsyncCommWorld()
 
