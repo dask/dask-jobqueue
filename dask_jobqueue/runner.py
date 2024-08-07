@@ -4,7 +4,7 @@ import os
 import signal
 from contextlib import suppress
 from enum import Enum
-from typing import Dict
+from typing import Dict, Optional
 import warnings
 from tornado.ioloop import IOLoop
 
@@ -114,7 +114,7 @@ class BaseRunner(SyncMethodMixin):
         return None
 
     @property
-    def loop(self) -> IOLoop | None:
+    def loop(self) -> Optional[IOLoop]:
         loop = self.__loop
         if loop is None:
             # If the loop is not running when this is called, the LoopRunner.loop
