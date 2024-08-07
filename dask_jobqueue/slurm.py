@@ -63,11 +63,6 @@ class SLURMJob(Job):
         if job_mem is None:
             job_mem = dask.config.get("jobqueue.%s.job-mem" % self.config_name)
 
-        if self.submit_command_extra is None or self.submit_command_extra == []:
-            self.submit_command_extra = dask.config.get(
-                "jobqueue.%s.submit-command-extra" % self.config_name, []
-            )
-
         header_lines = []
         # SLURM header build
         if self.job_name is not None:
