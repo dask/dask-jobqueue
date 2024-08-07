@@ -16,9 +16,15 @@ from . import QUEUE_WAIT
 
 def slurm_cores():
     "Use sinfo to get the number of available CPU cores"
-    return int(
-        subprocess.check_output(["sinfo", "-o", "%C"]).split()[1].decode().split("/")[1]
-    )
+    try:
+        return int(
+            subprocess.check_output(["sinfo", "-o", "%C"])
+            .split()[1]
+            .decode()
+            .split("/")[1]
+        )
+    except FileNotFoundError:
+        return 0
 
 
 def test_header():
