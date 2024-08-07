@@ -1,6 +1,5 @@
 import logging
 import re
-import shlex
 
 import dask
 from dask.utils import parse_bytes

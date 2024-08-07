@@ -1,6 +1,5 @@
 import logging
 import math
-import shlex
 import warnings
 
 import dask
@@ -31,10 +30,10 @@ class SLURMJob(Job):
         **base_class_kwargs
     ):
         super().__init__(
-            scheduler=scheduler, 
-            name=name, 
-            config_name=config_name, 
-            cancel_command_extra=cancel_command_extra, 
+            scheduler=scheduler,
+            name=name,
+            config_name=config_name,
+            cancel_command_extra=cancel_command_extra,
             **base_class_kwargs
         )
 

@@ -276,7 +276,7 @@ class Job(ProcessInterface, abc.ABC):
 
         if env_extra is None:
             env_extra = dask.config.get("jobqueue.%s.env-extra" % self.config_name)
-    
+
         if submit_command_extra is None:
             submit_command_extra = dask.config.get(
                 "jobqueue.%s.submit-command-extra" % self.config_name, []
@@ -284,9 +284,8 @@ class Job(ProcessInterface, abc.ABC):
         self.submit_command_extra = submit_command_extra
 
         if self.submit_command is not None:
-            self.submit_command += (
-                " "
-                + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
+            self.submit_command += " " + " ".join(
+                shlex.quote(arg) for arg in self.submit_command_extra
             )
 
         if cancel_command_extra is None:
@@ -296,9 +295,8 @@ class Job(ProcessInterface, abc.ABC):
         self.cancel_command_extra = cancel_command_extra
 
         if self.cancel_command is not None:
-            self.cancel_command += (
-                " "
-                + " ".join(shlex.quote(arg) for arg in self.cancel_command_extra)
+            self.cancel_command += " " + " ".join(
+                shlex.quote(arg) for arg in self.cancel_command_extra
             )
 
         if job_script_prologue is None:

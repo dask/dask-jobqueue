@@ -1,7 +1,6 @@
 import logging
 import math
 import os
-import shlex
 import warnings
 
 import dask
