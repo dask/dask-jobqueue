@@ -68,23 +68,6 @@ class SLURMJob(Job):
                 "jobqueue.%s.submit-command-extra" % self.config_name, []
             )
 
-        # self.submit_command = (
-        #     SLURMJob.submit_command
-        #     + " "
-        #     + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
-        # )
-
-        # if self.cancel_command_extra is None or self.cancel_command_extra == []:
-        #     cancel_command_extra = dask.config.get(
-        #         "jobqueue.%s.cancel-command-extra" % self.config_name, []
-        #     )
-
-        # self.cancel_command = (
-        #     SLURMJob.cancel_command
-        #     + " "
-        #     + " ".join(shlex.quote(arg) for arg in cancel_command_extra)
-        # )
-
         header_lines = []
         # SLURM header build
         if self.job_name is not None:
