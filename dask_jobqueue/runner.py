@@ -52,7 +52,7 @@ class BaseRunner(SyncMethodMixin):
 
     """
 
-    __loop: IOLoop | None = None
+    __loop: Optional[IOLoop] = None
 
     def __init__(
         self,
