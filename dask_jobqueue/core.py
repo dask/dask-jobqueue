@@ -283,10 +283,10 @@ class Job(ProcessInterface, abc.ABC):
             )
         self.submit_command_extra = submit_command_extra
 
+        self.submit_command = Job.submit_command
         if self.submit_command is not None:
-            self.submit_command = (
-                self.submit_command
-                + " "
+            self.submit_command += (
+                " "
                 + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
             )
 
@@ -296,10 +296,10 @@ class Job(ProcessInterface, abc.ABC):
             )
         self.cancel_command_extra = cancel_command_extra
 
+        self.cancel_command = Job.cancel_command
         if self.cancel_command is not None:
-            self.cancel_command = (
-                self.cancel_command
-                + " "
+            self.cancel_command += (
+                " "
                 + " ".join(shlex.quote(arg) for arg in self.cancel_command_extra)
             )
 
