@@ -93,28 +93,6 @@ Queue
         if self.job_extra_directives:
             self.job_header_dict.update(self.job_extra_directives)
 
-        if self.submit_command_extra is None or self.submit_command_extra == []:
-            self.submit_command_extra = dask.config.get(
-                "jobqueue.%s.submit-command-extra" % self.config_name, []
-            )
-
-        self.submit_command = (
-            HTCondorJob.submit_command
-            + " "
-            + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
-        )
-
-        if self.cancel_command_extra is None or self.cancel_command_extra == []:
-            self.cancel_command_extra = dask.config.get(
-                "jobqueue.%s.cancel-command-extra" % self.config_name, []
-            )
-
-        self.cancel_command = (
-            HTCondorJob.cancel_command
-            + " "
-            + " ".join(shlex.quote(arg) for arg in self.cancel_command_extra)
-        )
-
     def job_script(self):
         """Construct a job submission script"""
         quoted_arguments = quote_arguments(["-c", self._command_template])

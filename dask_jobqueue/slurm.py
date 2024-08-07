@@ -15,7 +15,6 @@ class SLURMJob(Job):
     submit_command = "sbatch"
     cancel_command = "scancel"
     config_name = "slurm"
-    cancel_command_extra = ["--signal=SIGTERM"]
 
     def __init__(
         self,
@@ -28,10 +27,15 @@ class SLURMJob(Job):
         job_cpu=None,
         job_mem=None,
         config_name=None,
+        cancel_command_extra=["--signal=SIGTERM"],
         **base_class_kwargs
     ):
         super().__init__(
-            scheduler=scheduler, name=name, config_name=config_name, **base_class_kwargs
+            scheduler=scheduler, 
+            name=name, 
+            config_name=config_name, 
+            cancel_command_extra=cancel_command_extra, 
+            **base_class_kwargs
         )
 
         if queue is None:
@@ -64,22 +68,22 @@ class SLURMJob(Job):
                 "jobqueue.%s.submit-command-extra" % self.config_name, []
             )
 
-        self.submit_command = (
-            SLURMJob.submit_command
-            + " "
-            + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
-        )
+        # self.submit_command = (
+        #     SLURMJob.submit_command
+        #     + " "
+        #     + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
+        # )
 
-        if self.cancel_command_extra is None or self.cancel_command_extra == []:
-            cancel_command_extra = dask.config.get(
-                "jobqueue.%s.cancel-command-extra" % self.config_name, []
-            )
+        # if self.cancel_command_extra is None or self.cancel_command_extra == []:
+        #     cancel_command_extra = dask.config.get(
+        #         "jobqueue.%s.cancel-command-extra" % self.config_name, []
+        #     )
 
-        self.cancel_command = (
-            SLURMJob.cancel_command
-            + " "
-            + " ".join(shlex.quote(arg) for arg in cancel_command_extra)
-        )
+        # self.cancel_command = (
+        #     SLURMJob.cancel_command
+        #     + " "
+        #     + " ".join(shlex.quote(arg) for arg in cancel_command_extra)
+        # )
 
         header_lines = []
         # SLURM header build

@@ -283,7 +283,6 @@ class Job(ProcessInterface, abc.ABC):
             )
         self.submit_command_extra = submit_command_extra
 
-        self.submit_command = Job.submit_command
         if self.submit_command is not None:
             self.submit_command += (
                 " "
@@ -296,7 +295,6 @@ class Job(ProcessInterface, abc.ABC):
             )
         self.cancel_command_extra = cancel_command_extra
 
-        self.cancel_command = Job.cancel_command
         if self.cancel_command is not None:
             self.cancel_command += (
                 " "

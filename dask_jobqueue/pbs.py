@@ -84,28 +84,6 @@ class PBSJob(Job):
             if not account:
                 account = project
 
-        if self.submit_command_extra is None or self.submit_command_extra == []:
-            self.submit_command_extra = dask.config.get(
-                "jobqueue.%s.submit-command-extra" % self.config_name, []
-            )
-
-        self.submit_command = (
-            PBSJob.submit_command
-            + " "
-            + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
-        )
-
-        if self.cancel_command_extra is None or self.cancel_command_extra == []:
-            self.cancel_command_extra = dask.config.get(
-                "jobqueue.%s.cancel-command-extra" % self.config_name, []
-            )
-
-        self.cancel_command = (
-            PBSJob.cancel_command
-            + " "
-            + " ".join(shlex.quote(arg) for arg in self.cancel_command_extra)
-        )
-
         header_lines = []
         # PBS header build
         if self.job_name is not None:
