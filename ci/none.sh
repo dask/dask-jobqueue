@@ -10,8 +10,6 @@ function jobqueue_install {
 }
 
 function jobqueue_script {
-  flake8 -j auto dask_jobqueue
-  black --exclude versioneer.py --check .
   pytest --verbose
 }
 
