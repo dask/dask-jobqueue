@@ -99,7 +99,7 @@ Queue
             )
 
         self.submit_command = (
-            HTCondorJob.submit_commsand
+            HTCondorJob.submit_command
             + " "
             + " ".join(shlex.quote(arg) for arg in self.submit_command_extra)
         )
