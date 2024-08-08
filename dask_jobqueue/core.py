@@ -53,6 +53,10 @@ job_parameters = """
         Additional arguments to pass to `dask-worker`
     env_extra : list
         Deprecated: use ``job_script_prologue`` instead. This parameter will be removed in a future version.
+    submit_command_extra : list
+        Extra arguments to pass to the job scheduler submit command
+    cancel_command_extra : list
+        Extra arguments to pass to the job scheduler cancel command
     job_script_prologue : list
         Other commands to add to script before launching worker.
     header_skip : list
@@ -172,6 +176,8 @@ class Job(ProcessInterface, abc.ABC):
         job_extra=None,
         job_extra_directives=None,
         env_extra=None,
+        submit_command_extra=None,
+        cancel_command_extra=None,
         job_script_prologue=None,
         header_skip=None,
         job_directives_skip=None,
@@ -270,6 +276,29 @@ class Job(ProcessInterface, abc.ABC):
 
         if env_extra is None:
             env_extra = dask.config.get("jobqueue.%s.env-extra" % self.config_name)
+
+        if submit_command_extra is None:
+            submit_command_extra = dask.config.get(
+                "jobqueue.%s.submit-command-extra" % self.config_name, []
+            )
+        self.submit_command_extra = submit_command_extra
+
+        if self.submit_command is not None:
+            self.submit_command += " " + " ".join(
+                shlex.quote(arg) for arg in self.submit_command_extra
+            )
+
+        if cancel_command_extra is None:
+            cancel_command_extra = dask.config.get(
+                "jobqueue.%s.cancel-command-extra" % self.config_name, []
+            )
+        self.cancel_command_extra = cancel_command_extra
+
+        if self.cancel_command is not None:
+            self.cancel_command += " " + " ".join(
+                shlex.quote(arg) for arg in self.cancel_command_extra
+            )
+
         if job_script_prologue is None:
             job_script_prologue = dask.config.get(
                 "jobqueue.%s.job-script-prologue" % self.config_name

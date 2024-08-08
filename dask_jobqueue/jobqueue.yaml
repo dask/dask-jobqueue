@@ -122,6 +122,8 @@ jobqueue:
     account: null
     walltime: '00:30:00'
     env-extra: null
+    submit-command-extra: []    # Extra sbatch arguments
+    cancel-command-extra: ["--signal=SIGTERM"]    # Extra scancel arguments
     job-script-prologue: []
     job-cpu: null
     job-mem: null
