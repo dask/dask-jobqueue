@@ -15,5 +15,3 @@ echo "SLURM properly configured"
 docker exec slurmctld ip addr add 10.1.1.20/24 dev eth0 label eth0:scheduler
 docker exec c1 ip addr add 10.1.1.21/24 dev eth0 label eth0:worker
 docker exec c2 ip addr add 10.1.1.22/24 dev eth0 label eth0:worker
-docker exec c3 ip addr add 10.1.1.23/24 dev eth0 label eth0:worker
-docker exec c4 ip addr add 10.1.1.24/24 dev eth0 label eth0:worker
