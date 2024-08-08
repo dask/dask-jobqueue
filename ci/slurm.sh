@@ -28,7 +28,9 @@ function show_network_interfaces {
 }
 
 function jobqueue_install {
-    docker exec slurmctld conda run -n dask-jobqueue /bin/bash -c "cd /dask-jobqueue; pip install -e ."
+    for c in slurmctld c1 c2; do
+        docker exec $c conda run -n dask-jobqueue /bin/bash -c "cd /dask-jobqueue; pip install -e ."
+    done
 }
 
 function jobqueue_script {

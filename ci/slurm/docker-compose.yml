@@ -69,6 +69,7 @@ services:
       - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
       - shared_space:/shared_space
+      - ../..:/dask-jobqueue
     expose:
       - "6818"
     depends_on:
@@ -91,6 +92,7 @@ services:
       - slurm_jobdir:/data
       - var_log_slurm:/var/log/slurm
       - shared_space:/shared_space
+      - ../..:/dask-jobqueue
     expose:
       - "6818"
     depends_on:
