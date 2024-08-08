@@ -103,6 +103,52 @@ services:
     cap_add:
       - NET_ADMIN
 
+  c3:
+    image: daskdev/dask-jobqueue:slurm
+    build: .
+    command: ["slurmd"]
+    hostname: c3
+    container_name: c3
+    volumes:
+      - etc_munge:/etc/munge
+      - etc_slurm:/etc/slurm
+      - slurm_jobdir:/data
+      - var_log_slurm:/var/log/slurm
+      - shared_space:/shared_space
+      - ../..:/dask-jobqueue
+    expose:
+      - "6818"
+    depends_on:
+      - "slurmctld"
+    networks:
+      common-network:
+        ipv4_address: 10.1.1.13
+    cap_add:
+      - NET_ADMIN
+
+  c4:
+    image: daskdev/dask-jobqueue:slurm
+    build: .
+    command: ["slurmd"]
+    hostname: c4
+    container_name: c4
+    volumes:
+      - etc_munge:/etc/munge
+      - etc_slurm:/etc/slurm
+      - slurm_jobdir:/data
+      - var_log_slurm:/var/log/slurm
+      - shared_space:/shared_space
+      - ../..:/dask-jobqueue
+    expose:
+      - "6818"
+    depends_on:
+      - "slurmctld"
+    networks:
+      common-network:
+        ipv4_address: 10.1.1.14
+    cap_add:
+      - NET_ADMIN
+
 volumes:
   etc_munge:
   etc_slurm:
