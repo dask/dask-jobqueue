@@ -339,7 +339,7 @@ def test_slurm_runner():
     )
 
     output = subprocess.check_output(
-        ["srun", "--mpi=none", "-vvvv", "-n", "4", sys.executable, script_file]
+        ["srun", "--mpi=none", "-vv", "-n", "4", sys.executable, script_file]
     )
     output = output.decode()
     assert "Test passed" in output
