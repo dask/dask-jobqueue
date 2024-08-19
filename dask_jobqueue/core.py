@@ -462,7 +462,7 @@ class Job(ProcessInterface, abc.ABC):
             logger.debug("Closed job %s", job_id)
 
     @staticmethod
-    async def _call(cmd, **kwargs):
+    async def _call(cmd, *, shell=False, **kwargs):
         """Call a command using asyncio.create_subprocess_exec.
 
         This centralizes calls out to the command line, providing consistent
@@ -470,13 +470,17 @@ class Job(ProcessInterface, abc.ABC):
 
         Parameters
         ----------
-        cmd: List(str))
+        cmd: List(str)
             A command, each of which is a list of strings to hand to
             asyncio.create_subprocess_exec
+        shell: bool
+            Use asyncio.create_subprocess_shell instead to run the command
+            in a shell?
 
         Examples
         --------
         >>> self._call(['ls', '/foo'])
+        >>> self._call(['ls /foo'], shell=True)
 
         Returns
         -------
@@ -491,7 +495,12 @@ class Job(ProcessInterface, abc.ABC):
             "Executing the following command to command line\n{}".format(cmd_str)
         )
 
-        proc = await asyncio.create_subprocess_exec(
+        if shell:
+            create_subproc = asyncio.create_subprocess_shell
+        else:
+            create_subproc = asyncio.create_subprocess_exec
+
+        proc = await create_subproc(
             *cmd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
