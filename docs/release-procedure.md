@@ -21,13 +21,7 @@ git tag -a x.x.x -m 'Version x.x.x'
 git push --tags upstream
 ````
 
-* Build the wheel/dist and upload to PyPI:
-
-````
-git clean -xfd
-python setup.py sdist bdist_wheel --universal
-twine upload dist/*
-````
+* A [GitHub Actions workflow](../.github/workflows/release.yaml) will build the wheel/dist and upload to PyPI
 
 * The Conda Forge bots should pick up the change automatically within an hour
 or two. Then follow the instructions from the automatic e-mail that you will
