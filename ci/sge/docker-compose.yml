@@ -41,8 +41,6 @@ services:
     build:
       context: .
       target: slave
-      args:
-        PYTHON_VERSION: 3.9
     container_name: slave_two
     hostname: slave_two
     #network_mode: host
