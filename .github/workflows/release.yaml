@@ -22,5 +22,5 @@ jobs:
           python-version: "3.10"
       - name: Build package
         run: pip install build && pyproject-build
-      - name: Publish kr8s
+      - name: Publish
         uses: pypa/gh-action-pypi-publish@release/v1
