@@ -26,10 +26,15 @@ class SLURMJob(Job):
         job_cpu=None,
         job_mem=None,
         config_name=None,
+        cancel_command_extra=["--signal=SIGTERM"],
         **base_class_kwargs
     ):
         super().__init__(
-            scheduler=scheduler, name=name, config_name=config_name, **base_class_kwargs
+            scheduler=scheduler,
+            name=name,
+            config_name=config_name,
+            cancel_command_extra=cancel_command_extra,
+            **base_class_kwargs
         )
 
         if queue is None:

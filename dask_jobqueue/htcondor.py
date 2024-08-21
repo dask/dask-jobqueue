@@ -1,6 +1,5 @@
 import logging
 import re
-import shlex
 
 import dask
 from dask.utils import parse_bytes
@@ -38,8 +37,6 @@ Queue
         name=None,
         disk=None,
         config_name=None,
-        submit_command_extra=None,
-        cancel_command_extra=None,
         **base_class_kwargs
     ):
         super().__init__(
@@ -94,28 +91,6 @@ Queue
 
         if self.job_extra_directives:
             self.job_header_dict.update(self.job_extra_directives)
-
-        if submit_command_extra is None:
-            submit_command_extra = dask.config.get(
-                "jobqueue.%s.submit-command-extra" % self.config_name, []
-            )
-
-        self.submit_command = (
-            HTCondorJob.submit_command
-            + " "
-            + " ".join(shlex.quote(arg) for arg in submit_command_extra)
-        )
-
-        if cancel_command_extra is None:
-            cancel_command_extra = dask.config.get(
-                "jobqueue.%s.cancel-command-extra" % self.config_name, []
-            )
-
-        self.cancel_command = (
-            HTCondorJob.cancel_command
-            + " "
-            + " ".join(shlex.quote(arg) for arg in cancel_command_extra)
-        )
 
     def job_script(self):
         """Construct a job submission script"""
@@ -227,10 +202,6 @@ class HTCondorCluster(JobQueueCluster):
     job_extra_directives : dict
         Extra submit file attributes for the job as key-value pairs.
         They will be inserted as ``key = value``.
-    submit_command_extra : list of str
-        Extra arguments to pass to condor_submit
-    cancel_command_extra : list of str
-        Extra arguments to pass to condor_rm
     {job}
     {cluster}
 
