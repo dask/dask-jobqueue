@@ -47,7 +47,7 @@ This pattern works well on clusters where it is favourable to submit many small 
 - Workloads in intaractive environments can scale up and down as users run code manually.
 - You don't need to wait for all nodes to be available before your workload starts, so jobs often start sooner.
 
-To learn more see the `Dynamic Cluster documentation <clusters-overview>`_.
+To learn more see the `Dynamic Cluster documentation <clusters-overview.html>`_.
 
 Batch Runners
 -------------
@@ -84,7 +84,7 @@ This pattern works well where large jobs are prioritised and node locality is im
 - Clusters comprised of one large allocation tends to be more reliable than many small allocations.
 - All processes have the same start and wall time.
 
-To learn more see the `Batch Runner documentation <runners-overview>`_.
+To learn more see the `Batch Runner documentation <runners-overview.html>`_.
 
 More details
 ------------
