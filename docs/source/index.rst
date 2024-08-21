@@ -4,49 +4,87 @@ Dask-Jobqueue
 *Easily deploy Dask on job queuing systems like PBS, Slurm, MOAB, SGE, LSF, and HTCondor.*
 
 
-The Dask-jobqueue project makes it easy to deploy Dask on common job queuing
+The ``dask-jobqueue`` project makes it easy to deploy Dask on common job queuing
 systems typically found in high performance supercomputers, academic research
-institutions, and other clusters.  It provides a convenient interface that is
-accessible from interactive systems like Jupyter notebooks, or batch jobs.
+institutions, and other clusters.  
+
+There are two common deployment patterns for Dask on HPC, **Dynamic Clusters** and **Batch Runners**, and ``dask-jobqueue`` has support for both.
+
+Dynamic Clusters
+----------------
+
+A **Dynamic Cluster** is a Dask cluster where new workers can be added dynamically while the cluster is running.
+
+In an HPC environment this generally means that the Dask Scheduler is run in the same location as the client code,
+usually on a single compute node. Then workers for the Dask cluster are submitted as additional jobs to the job
+queue scheduler.
+
+This pattern works well on clusters where it is favourable to submit many small jobs.
 
 
-.. _example:
+.. code-block:: bash
 
-Example
--------
+   srun -n 1 dynamic_workload.py
 
 .. code-block:: python
 
-   from dask_jobqueue import PBSCluster
-   cluster = PBSCluster()
-   cluster.scale(jobs=10)    # Deploy ten single-node jobs
+   # dynamic_workload.py
+   from dask_jobqueue.slurm import SLURMCluster
+   cluster = SLURMCluster()
+   cluster.adapt(minimum=1, maximum=10)  # Tells Dask to call `srun -n 1 ...` when it needs new workers
 
    from dask.distributed import Client
    client = Client(cluster)  # Connect this local process to remote workers
 
-   # wait for jobs to arrive, depending on the queue, this may take some time
+   import dask.array as da
+   x = ...  # Dask commands now use these distributed resources
+
+**Benefits**
+
+- Clusters can autoscale as a workload progresses.
+- Small gaps in the HPC that would be otherwise unused can be backfilled.
+- A workload can run slowly with a few workers during busy times and then scale up during quiet times.
+- Workloads in intaractive environments can scale up and down as users run code manually.
+- You don't need to wait for all nodes to be available before your workload starts, so jobs often start sooner.
+
+To learn more see the `Dynamic Cluster documentation <clusters-overview>`_.
+
+Batch Runners
+-------------
+
+A **Batch Runner** is a Dask cluster where the whole workload, including the client code, scheduler and workers
+are submitted as a single allocation to the job queue scheduler. All of the processes within the workload coordinate
+during startup and then work together to compute the Dask workload.
+
+This pattern works well where large jobs are prioritised and node locality is important.
+
+.. code-block:: bash
+
+   srun -n 12 batch_workload.py
+
+.. code-block:: python
+
+   # batch_workload.py
+   from dask_jobqueue.slurm import SLURMRunner
+   cluster = SLURMRunner()  # Boostraps all the processes into a client + scheduler + 10 workers
+
+   # Only the client process will continue past this point
+
+   from dask.distributed import Client
+   client = Client(cluster)  # Connect this client process to remote workers
 
    import dask.array as da
    x = ...                   # Dask commands now use these distributed resources
 
-.. raw:: html
+**Benefits**
 
-   <iframe width="560" height="315"
-           src="https://www.youtube.com/embed/FXsgmwpRExM?rel=0"
-           frameborder="0" allow="autoplay; encrypted-media"
-           allowfullscreen></iframe>
+- Workers are generally colocated physically on the machine, so communication is faster, expecially with `UCX <https://blog.dask.org/2019/06/09/ucx-dgx>`_.
+- Submitting many small jobs can be frowned upon on some HPCs, submitting a single large job is more typical of other HPC workloads. 
+- All workers are guaranteed to be available when the job starts which can avoid oversubscribing workers.
+- Clusters comprised of one large allocation tends to be more reliable than many small allocations.
+- All processes have the same start and wall time.
 
-Adaptivity
-----------
-
-Dask jobqueue can also adapt the cluster size dynamically based on current
-load.  This helps to scale up the cluster when necessary but scale it down and
-save resources when not actively computing.
-
-.. code-block:: python
-
-   cluster.adapt(minimum_jobs=10, maximum_jobs=100)  # auto-scale between 10 and 100 jobs
-   cluster.adapt(maximum_memory="10 TB")  # or use core/memory limits
+To learn more see the `Batch Runner documentation <runners-overview>`_.
 
 More details
 ------------
@@ -58,20 +96,29 @@ A good entry point to know more about how to use ``dask-jobqueue`` is
    :caption: Getting Started
 
    install
-   interactive
    talks-and-tutorials
-   howitworks
-   configuration
 
 .. toctree::
    :maxdepth: 1
-   :caption: Detailed use
+   :caption: Dynamic Clusters
 
-   configuration-setup
-   examples
-   configurations
-   advanced-tips-and-tricks
-   api
+   clusters-overview
+   clusters-interactive
+   clusters-howitworks
+   clusters-configuration
+   clusters-configuration-setup
+   clusters-example-deployments
+   clusters-configuration-examples
+   clusters-advanced-tips-and-tricks
+   clusters-api
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Batch Runners
+
+   runners-overview
+   runners-implementing-new
+   runners-api
 
 .. toctree::
    :maxdepth: 1

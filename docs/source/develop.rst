@@ -62,7 +62,7 @@ Testing without CI scripts
 
 You can also manually launch tests with dockerized jobs schedulers (without CI commands), 
 for a better understanding of what is going on.
-This is basically a simplified version of what is in the ci/*.sh files.
+This is basically a simplified version of what is in the ``ci/*.sh`` files.
 
 For example with Slurm::
 

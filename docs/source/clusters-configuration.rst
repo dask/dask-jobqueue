@@ -71,7 +71,7 @@ recommend using a configuration file like the following:
        account: my-account
        walltime: 00:30:00
 
-See :doc:`Configuration Examples <configurations>` for real-world examples.
+See :doc:`Configuration Examples <clusters-configuration-examples>` for real-world examples.
 
 If you place this in your ``~/.config/dask/`` directory then Dask-jobqueue will
 use these values by default.  You can then construct a cluster object without
