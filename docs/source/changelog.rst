@@ -4,6 +4,19 @@ Changelog
 Development version
 -------------------
 
+0.9.0 / 2024-08-22
+------------------
+
+- Add SLURMRunner from jacobtomlinson/dask-hpc-runners (:pr:`659`)
+- Bump minimum Python to 3.10 (:pr:`662`)
+- Fixed LSFCluster stdin job setup not being run in a shell (:pr:`661`)
+- Remove unused lsf_version function for Python 3.12 and fix never awaited error for LSFCluster (:pr:`646`)
+- Handle outdated root certificates (:pr:`651`)
+- Migrate Slurm tests to use rockylinux (:pr:`650`)
+- Migrate PBS tests to rocklinux 8 and openpbs 23.06 (:pr:`649`)
+- Fix bug in OARJob where Job._call is not awaited (:pr:`642`)
+
+Thanks to `@aiudirog <https://github.com/aiudirog>`_, `@tcztzy <https://github.com/tcztzy>`_ and `@sjdv1982 <https://github.com/sjdv1982>`_.
 
 0.8.5 / 2024-02-22
 ------------------
