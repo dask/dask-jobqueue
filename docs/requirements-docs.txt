@@ -2,6 +2,7 @@ distributed
 numpydoc
 ipython
 sphinx<5
+sphinx-reredirects
 dask-sphinx-theme>=3.0.0
 # FIXME: This workaround is required until we have sphinx>=5, as enabled by
 #        dask-sphinx-theme no longer pinning sphinx-book-theme==0.2.0. This is

@@ -48,7 +48,20 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.extlinks",
     "numpydoc",
+    "sphinx_reredirects",
 ]
+
+redirects = {
+    "interactive": "clusters-interactive.html",
+    "advanced-tips-and-tricks": "clusters-advanced-tips-and-tricks.html",
+    "configuration": "clusters-configuration.html",
+    "howitworks": "clusters-howitworks.html",
+    "api": "clusters-api.html",
+    "configuration-setup": "clusters-configuration-setup.html",
+    "interactive": "clusters-interactive.html",
+    "configurations": "clusters-configuration-examples.html",
+    "examples": "clusters-example-deployments.html",
+}
 
 autosummary_generate = True
 
