@@ -11,7 +11,7 @@ This page is an attempt to document tips and tricks that are likely to be useful
 on some clusters (strictly more than one ideally although hard to be sure ...).
 
 Skipping unrecognised line in submission script with ``job_directives_skip``
---------------------------------------------------------------------
+----------------------------------------------------------------------------
 
 *Note: the parameter* ``job_directives_skip`` *was named* ``header_skip`` *until version 0.8.0.* ``header_skip`` *can still
 be used, but is considered deprecated and will be removed in a future version.*

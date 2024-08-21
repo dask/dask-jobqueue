@@ -1,10 +1,10 @@
-.. _api:
+.. _clusters_api:
 
 .. currentmodule:: dask_jobqueue
 
 
-API
-===
+Clusters API
+============
 
 .. autosummary::
    :toctree: generated/

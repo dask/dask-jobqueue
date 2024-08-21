@@ -1,3 +1,5 @@
+import os
+import subprocess
 import sys
 from time import sleep, time
 
@@ -10,6 +12,19 @@ from dask.utils import format_bytes, parse_bytes
 from dask_jobqueue import SLURMCluster
 
 from . import QUEUE_WAIT
+
+
+def slurm_cores():
+    "Use sinfo to get the number of available CPU cores"
+    try:
+        return int(
+            subprocess.check_output(["sinfo", "-o", "%C"])
+            .split()[1]
+            .decode()
+            .split("/")[1]
+        )
+    except FileNotFoundError:
+        return 0
 
 
 def test_header():
@@ -314,3 +329,17 @@ def test_deprecation_project():
     )
     job_script = job.job_script()
     assert "project" in job_script
+
+
+@pytest.mark.env("slurm")
+@pytest.mark.skipif(slurm_cores() < 4, reason="Need at least 4 CPUs to run this test")
+def test_slurm_runner():
+    script_file = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), "slurm_runner", "basic.py"
+    )
+
+    output = subprocess.check_output(
+        ["srun", "--mpi=none", "-vv", "-n", "4", sys.executable, script_file]
+    )
+    output = output.decode()
+    assert "Test passed" in output

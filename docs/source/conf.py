@@ -48,7 +48,20 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.extlinks",
     "numpydoc",
+    "sphinx_reredirects",
 ]
+
+redirects = {
+    "interactive": "clusters-interactive.html",
+    "advanced-tips-and-tricks": "clusters-advanced-tips-and-tricks.html",
+    "configuration": "clusters-configuration.html",
+    "howitworks": "clusters-howitworks.html",
+    "api": "clusters-api.html",
+    "configuration-setup": "clusters-configuration-setup.html",
+    "interactive": "clusters-interactive.html",
+    "configurations": "clusters-configuration-examples.html",
+    "examples": "clusters-example-deployments.html",
+}
 
 autosummary_generate = True
 
@@ -72,7 +85,7 @@ master_doc = "index"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
