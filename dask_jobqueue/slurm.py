@@ -205,7 +205,7 @@ class SLURMRunner(BaseRunner):
         if not scheduler_file:
             raise RuntimeError(
                 "scheduler_file must be specified in either the "
-                "scheduler_options or as keyword argument to SlurmRunner."
+                "scheduler_options or as keyword argument to SLURMRunner."
             )
 
         # Encourage filename uniqueness by inserting the job ID
