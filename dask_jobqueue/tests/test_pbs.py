@@ -378,7 +378,7 @@ def test_informative_errors():
     assert "cores" in str(info.value)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_adapt(loop):
     async with PBSCluster(cores=1, memory="1 GB", asynchronous=True) as cluster:
         cluster.adapt()
