@@ -16,6 +16,8 @@ from distributed.worker import Worker
 
 
 # Close gracefully when receiving a SIGINT
+# We use SIGINT to shut down because the scheduler and worker hang
+# if we call sys.exit() see https://github.com/dask/distributed/issues/8644
 if threading.current_thread() is threading.main_thread():
     signal.signal(signal.SIGINT, lambda *_: sys.exit())
 
