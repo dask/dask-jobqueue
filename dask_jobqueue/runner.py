@@ -4,6 +4,7 @@ import os
 import signal
 from contextlib import suppress
 from enum import Enum
+import threading
 from typing import Dict, Optional
 import warnings
 from tornado.ioloop import IOLoop
@@ -15,7 +16,8 @@ from distributed.worker import Worker
 
 
 # Close gracefully when receiving a SIGINT
-signal.signal(signal.SIGINT, lambda *_: sys.exit())
+if threading.current_thread() is threading.main_thread():
+    signal.signal(signal.SIGINT, lambda *_: sys.exit())
 
 
 class Role(Enum):
