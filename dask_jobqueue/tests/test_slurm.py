@@ -10,6 +10,7 @@ import dask
 from dask.utils import format_bytes, parse_bytes
 
 from dask_jobqueue import SLURMCluster
+from dask_jobqueue.slurm import slurm_format_bytes_ceil
 
 from . import QUEUE_WAIT
 
@@ -343,3 +344,18 @@ def test_slurm_runner():
     )
     output = output.decode()
     assert "Test passed" in output
+
+
+@pytest.mark.parametrize(
+    ["input", "expected_output"],
+    [
+        (12, "1K"),
+        (1234, "2K"),
+        (12345678, "12M"),
+        (15000000000, "14G"),
+    ],
+)
+def test_slurm_format_bytes_ceil(input, expected_output):
+    actual_output = slurm_format_bytes_ceil(input)
+
+    assert actual_output == expected_output
