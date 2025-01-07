@@ -116,6 +116,7 @@ def slurm_format_bytes_ceil(n):
     """Format bytes as text.
 
     SLURM expects KiB, MiB or Gib, but names it KB, MB, GB. SLURM does not handle Bytes, only starts at KB.
+    Thus minimum returned value is '1K'.
 
     Parameters
     ----------
@@ -129,7 +130,7 @@ def slurm_format_bytes_ceil(n):
 
     Examples
     --------
-    >>> slurm_format_bytes_ceil(1)
+    >>> slurm_format_bytes_ceil(12)
     '1K'
     >>> slurm_format_bytes_ceil(1234)
     '2K'
@@ -146,7 +147,7 @@ def slurm_format_bytes_ceil(n):
         return "%dM" % math.ceil(n / (1024**2))
     if n >= 1024:
         return "%dK" % math.ceil(n / 1024)
-    return "%sK" % n
+    return "1K"
 
 
 class SLURMCluster(JobQueueCluster):

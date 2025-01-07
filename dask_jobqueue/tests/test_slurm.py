@@ -349,7 +349,7 @@ def test_slurm_runner():
 @pytest.mark.parametrize(
     ["input", "expected_output"],
     [
-        (1, "1K"),
+        (12, "1K"),
         (1234, "2K"),
         (12345678, "12M"),
         (15000000000, "14G"),
