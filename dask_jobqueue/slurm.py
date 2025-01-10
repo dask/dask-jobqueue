@@ -166,10 +166,11 @@ class SLURMCluster(JobQueueCluster):
     walltime : str
         Walltime for each worker job.
     job_cpu : int
-        Number of cpu to book in SLURM, if None, defaults to worker `threads * processes`
+        Number of CPUs to request in SLURM for each job.
+        This option might be useful to request more CPUs than total number of worker threads
+        for some complex non-python code. If None, defaults to ``cores``.
     job_mem : str
-        Amount of memory to request in SLURM. If None, defaults to worker
-        processes * memory
+        Amount of memory to request in SLURM for each job, If None, defaults to ``memory``.
     job_extra : list
         Deprecated: use ``job_extra_directives`` instead. This parameter will be removed in a future version.
     job_extra_directives : list

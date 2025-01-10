@@ -25,9 +25,12 @@ logger = logging.getLogger(__name__)
 
 job_parameters = """
     cores : int
-        Total number of cores per job
+        Total number of CPU cores on which all worker threads inside a job will run.
+        The number of threads per worker process are determined using the formula ``cores / processes``.
+        Used by job queuing system by default as amount of CPUs per job.
     memory: str
-        Total amount of memory per job
+        Total amount of memory to be used by all workers inside a job.
+        Used by job queuing system by default as amount of memory per job.
     processes : int
         Cut the job up into this many processes. Good for GIL workloads or for
         nodes with many cores.
