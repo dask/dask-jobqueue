@@ -33,6 +33,9 @@ def test_job_script():
             "cd /some/path/",
             "source venv/bin/activate",
         ],
+        job_script_epilogue=[
+            'echo "Job finished"',
+        ],
         job_extra_directives={"+Extra": "True"},
         submit_command_extra=["-verbose"],
         cancel_command_extra=["-forcex"],
@@ -64,6 +67,7 @@ def test_job_script():
         assert f"--memory-limit {formatted_bytes}" in job_script
         assert "--nthreads 2" in job_script
         assert "--nworkers 2" in job_script
+        assert 'echo ""Job finished""' in job_script
 
 
 @pytest.mark.env("htcondor")
@@ -144,6 +148,7 @@ def test_config_name_htcondor_takes_custom_config():
         "worker-extra-args": [],
         "env-extra": None,
         "job-script-prologue": [],
+        "job-script-epilogue": [],
         "log-directory": None,
         "shebang": "#!/usr/bin/env condor_submit",
         "local-directory": "/tmp",

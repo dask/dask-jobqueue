@@ -62,6 +62,12 @@ Queue
                 self._job_script_prologue + [self._command_template]
             )
 
+        if self._job_script_epilogue is not None:
+            # Overwrite command template: append commands from job_script_epilogue separated by semicolon.
+            self._command_template = "; ".join(
+                [self._command_template] + self._job_script_epilogue
+            )
+
         self.job_header_dict = {
             "MY.DaskWorkerName": '"htcondor--$F(MY.JobId)--"',
             "batch_name": self.name,
