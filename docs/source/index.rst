@@ -60,7 +60,7 @@ This pattern works well where large jobs are prioritised and node locality is im
 
 .. code-block:: bash
 
-   srun -n 12 batch_workload.py
+   srun -n 12 python batch_workload.py
 
 .. code-block:: python
 
