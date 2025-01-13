@@ -318,6 +318,7 @@ def test_config_name_lsf_takes_custom_config():
         "worker-extra-args": [],
         "env-extra": None,
         "job-script-prologue": [],
+        "job-script-epilogue": [],
         "log-directory": None,
         "shebang": "#!/usr/bin/env bash",
         "use-stdin": None,

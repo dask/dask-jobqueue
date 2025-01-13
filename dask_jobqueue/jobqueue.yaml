@@ -23,6 +23,7 @@ jobqueue:
     walltime: '00:30:00'
     env-extra: null
     job-script-prologue: []
+    job-script-epilogue: []
     resource-spec: null
     job-extra: null
     job-extra-directives: []
@@ -57,6 +58,7 @@ jobqueue:
     walltime: '00:30:00'
     env-extra: null
     job-script-prologue: []
+    job-script-epilogue: []
     resource-spec: null
     job-extra: null
     job-extra-directives: []
@@ -90,6 +92,7 @@ jobqueue:
     walltime: '00:30:00'
     env-extra: null
     job-script-prologue: []
+    job-script-epilogue: []
     job-extra: null
     job-extra-directives: []
     job-directives-skip: []
@@ -123,6 +126,7 @@ jobqueue:
     walltime: '00:30:00'
     env-extra: null
     job-script-prologue: []
+    job-script-epilogue: []
     job-cpu: null
     job-mem: null
     job-extra: null
@@ -157,6 +161,7 @@ jobqueue:
     walltime: '00:30:00'
     env-extra: null
     job-script-prologue: []
+    job-script-epilogue: []
     resource-spec: null
     job-extra: null
     job-extra-directives: []
@@ -190,6 +195,7 @@ jobqueue:
     walltime: '00:30'
     env-extra: null
     job-script-prologue: []
+    job-script-epilogue: []
     ncpus: null
     mem: null
     job-extra: null
@@ -223,6 +229,7 @@ jobqueue:
     disk: null                  # Total amount of disk per job
     env-extra: null
     job-script-prologue: []
+    job-script-epilogue: []
     job-extra: null             # Extra submit attributes
     job-extra-directives: {}    # Extra submit attributes
     job-directives-skip: []
@@ -252,6 +259,7 @@ jobqueue:
 
     env-extra: null
     job-script-prologue: []
+    job-script-epilogue: []
     job-extra: null
     job-extra-directives: []
     job-directives-skip: []
