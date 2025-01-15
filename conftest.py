@@ -26,6 +26,11 @@ from dask_jobqueue.local import LocalCluster
 import warnings
 
 
+@pytest.fixture
+def anyio_backend():
+    return "asyncio"
+
+
 def pytest_addoption(parser):
     parser.addoption(
         "-E",
