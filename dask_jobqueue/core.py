@@ -58,6 +58,8 @@ job_parameters = """
         Deprecated: use ``job_script_prologue`` instead. This parameter will be removed in a future version.
     job_script_prologue : list
         Other commands to add to script before launching worker.
+    job_script_epilogue : list
+        Commands to add to script which will run after the worker command has exited.
     header_skip : list
         Deprecated: use ``job_directives_skip`` instead. This parameter will be removed in a future version.
     job_directives_skip : list
@@ -147,6 +149,7 @@ class Job(ProcessInterface, abc.ABC):
 %(job_header)s
 %(job_script_prologue)s
 %(worker_command)s
+%(job_script_epilogue)s
 """.lstrip()
 
     # Following class attributes should be overridden by extending classes.
@@ -176,6 +179,7 @@ class Job(ProcessInterface, abc.ABC):
         job_extra_directives=None,
         env_extra=None,
         job_script_prologue=None,
+        job_script_epilogue=None,
         header_skip=None,
         job_directives_skip=None,
         log_directory=None,
@@ -277,6 +281,10 @@ class Job(ProcessInterface, abc.ABC):
             job_script_prologue = dask.config.get(
                 "jobqueue.%s.job-script-prologue" % self.config_name
             )
+        if job_script_epilogue is None:
+            job_script_epilogue = dask.config.get(
+                "jobqueue.%s.job-script-epilogue" % self.config_name
+            )
         if env_extra is not None:
             warn = (
                 "env_extra has been renamed to job_script_prologue. "
@@ -344,6 +352,7 @@ class Job(ProcessInterface, abc.ABC):
         self.shebang = shebang
 
         self._job_script_prologue = job_script_prologue
+        self._job_script_epilogue = job_script_epilogue
 
         # dask-worker command line build
         dask_worker_command = "%(python)s -m %(worker_command)s" % dict(
@@ -396,6 +405,7 @@ class Job(ProcessInterface, abc.ABC):
             "job_header": self.job_header,
             "job_script_prologue": "\n".join(filter(None, self._job_script_prologue)),
             "worker_command": self._command_template,
+            "job_script_epilogue": "\n".join(filter(None, self._job_script_epilogue)),
         }
         return self._script_template % pieces
 

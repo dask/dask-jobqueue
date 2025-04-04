@@ -61,6 +61,7 @@ def test_config_name_sge_takes_custom_config():
         "worker-extra-args": [],
         "env-extra": None,
         "job-script-prologue": [],
+        "job-script-epilogue": [],
         "log-directory": None,
         "shebang": "#!/usr/bin/env bash",
         "job-cpu": None,
@@ -84,6 +85,9 @@ def test_job_script(tmpdir):
         project="my-project",
         walltime="02:00:00",
         job_script_prologue=["export MY_VAR=my_var"],
+        job_script_epilogue=[
+            'echo "Job finished"',
+        ],
         job_extra_directives=["-w e", "-m e"],
         log_directory=log_directory,
         resource_spec="h_vmem=12G,mem_req=12G",
@@ -106,6 +110,7 @@ def test_job_script(tmpdir):
             "-l h_vmem=12G,mem_req=12G",
             "#$ -cwd",
             "#$ -j y",
+            'echo "Job finished"',
         ]:
             assert each in job_script
 
