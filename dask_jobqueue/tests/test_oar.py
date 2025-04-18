@@ -96,6 +96,9 @@ def test_job_script():
             'export LANGUAGE="en_US.utf8"',
             'export LC_ALL="en_US.utf8"',
         ],
+        job_script_epilogue=[
+            'echo "Job finished"',
+        ],
     ) as cluster:
         job_script = cluster.job_script()
         assert "#OAR" in job_script
@@ -118,6 +121,7 @@ def test_job_script():
         assert "--nthreads 2" in job_script
         assert "--nworkers 4" in job_script
         assert f"--memory-limit {formatted_bytes}" in job_script
+        assert 'echo "Job finished"' in job_script
 
 
 def test_config_name_oar_takes_custom_config():
@@ -141,6 +145,7 @@ def test_config_name_oar_takes_custom_config():
         "worker-extra-args": [],
         "env-extra": None,
         "job-script-prologue": [],
+        "job-script-epilogue": [],
         "log-directory": None,
         "shebang": "#!/usr/bin/env bash",
         "job-cpu": None,

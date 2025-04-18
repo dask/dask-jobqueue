@@ -104,6 +104,7 @@ parameter in the submit description file. The relevant lines will look like this
 For other batch systems (``*Cluster`` classes) the additional commands will be inserted as separate lines
 in the submission script.
 
+Similarly, if you need to run some commands after the worker has exited, then use ``job_script_epilogue`` parameter.
 
 How to handle job queueing system walltime killing workers
 ----------------------------------------------------------
