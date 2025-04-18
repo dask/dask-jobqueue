@@ -81,9 +81,10 @@ class SLURMJob(Job):
         if account is not None:
             header_lines.append("#SBATCH -A %s" % account)
 
-        # Init resources, always 1 task,
+        # Init resources, always 1 task, 1 node,
         # and then number of cpu is processes * threads if not set
         header_lines.append("#SBATCH -n 1")
+        header_lines.append("#SBATCH -N 1")
         header_lines.append(
             "#SBATCH --cpus-per-task=%d" % (job_cpu or self.worker_cores)
         )
