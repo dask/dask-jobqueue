@@ -119,7 +119,7 @@ Reaching walltime can be troublesome in several cases:
   killed before reaching the end. In this case, you'll want to use adaptive clusters so 
   that Dask ensures some workers are always up.
 
-If you don't set the proper parameters, you'll run into KilleWorker exception in those two cases.
+If you don't set the proper parameters, you'll run into KilledWorker exception in those two cases.
 
 The solution to this problem is to tell Dask up front that the workers have a finite lifetime:
 
