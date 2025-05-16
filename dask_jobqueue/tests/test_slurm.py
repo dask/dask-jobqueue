@@ -35,6 +35,7 @@ def test_header():
         assert "#SBATCH" in cluster.job_header
         assert "#SBATCH -J dask-worker" in cluster.job_header
         assert "#SBATCH -n 1" in cluster.job_header
+        assert "#SBATCH -N 1" in cluster.job_header
         assert "#SBATCH --cpus-per-task=8" in cluster.job_header
         assert "#SBATCH --mem=27G" in cluster.job_header
         assert "#SBATCH -t 00:02:00" in cluster.job_header
@@ -61,6 +62,7 @@ def test_header():
         assert "#SBATCH" in cluster.job_header
         assert "#SBATCH -J " in cluster.job_header
         assert "#SBATCH -n 1" in cluster.job_header
+        assert "#SBATCH -N 1" in cluster.job_header
         assert "#SBATCH -t " in cluster.job_header
         assert "#SBATCH -p" not in cluster.job_header
         # assert "#SBATCH -A" not in cluster.job_header
@@ -76,6 +78,7 @@ def test_job_script():
         formatted_bytes = format_bytes(parse_bytes("7GB")).replace(" ", "")
         assert f"--memory-limit {formatted_bytes}" in job_script
         assert "#SBATCH -n 1" in job_script
+        assert "#SBATCH -N 1" in cluster.job_header
         assert "#SBATCH --cpus-per-task=8" in job_script
         assert "#SBATCH --mem=27G" in job_script
         assert "#SBATCH -t 00:02:00" in job_script
@@ -111,6 +114,7 @@ def test_job_script():
         assert "#SBATCH" in job_script
         assert "#SBATCH -J dask-worker" in job_script
         assert "#SBATCH -n 1" in job_script
+        assert "#SBATCH -N 1" in cluster.job_header
         assert "#SBATCH --cpus-per-task=8" in job_script
         assert "#SBATCH --mem=27G" in job_script
         assert "#SBATCH -t 00:02:00" in job_script
