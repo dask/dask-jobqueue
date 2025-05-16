@@ -21,7 +21,7 @@ def test_basic(Cluster):
     assert "127.0.0.1:12345" in job.job_script()
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_job(EnvSpecificCluster):
     job_cls = EnvSpecificCluster.job_cls
     async with Scheduler(port=0) as s:
@@ -39,7 +39,7 @@ async def test_job(EnvSpecificCluster):
             assert time() < start + 10
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_cluster(EnvSpecificCluster):
     job_cls = EnvSpecificCluster.job_cls
     async with JobQueueCluster(
@@ -62,7 +62,7 @@ async def test_cluster(EnvSpecificCluster):
                 assert time() < start + 10
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_adapt(EnvSpecificCluster):
     job_cls = EnvSpecificCluster.job_cls
     async with JobQueueCluster(
@@ -92,7 +92,7 @@ async def test_adapt(EnvSpecificCluster):
             assert not cluster.workers
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_adapt_parameters(EnvSpecificCluster):
     job_cls = EnvSpecificCluster.job_cls
     async with JobQueueCluster(
@@ -205,7 +205,7 @@ def test_deprecation_header_skip(Cluster):
     assert "jobname" not in job_script
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_nworkers_scale():
     async with LocalCluster(
         cores=2, memory="4GB", processes=2, asynchronous=True
@@ -432,7 +432,7 @@ def test_deprecation_job_extra(Cluster):
     assert "old_param" in job_script
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_jobqueue_job_call(tmpdir, Cluster):
     async with Cluster(cores=1, memory="1GB", asynchronous=True) as cluster:
         path = tmpdir.join("test.py")
