@@ -575,6 +575,7 @@ class JobQueueCluster(SpecCluster):
         protocol=None,
         # Job keywords
         config_name=None,
+        queue=None,  # <-- Add queue parameter
         **job_kwargs
     ):
         self.status = Status.created
@@ -662,6 +663,10 @@ class JobQueueCluster(SpecCluster):
         job_kwargs["interface"] = interface
         job_kwargs["protocol"] = protocol
         job_kwargs["security"] = self._get_worker_security(security)
+        
+        self.queue = queue
+        if queue is not None:
+            job_kwargs["queue"] = queue
 
         self._job_kwargs = job_kwargs
 
