@@ -10,4 +10,5 @@ dependencies:
   - black
   - pytest
   - pytest-asyncio
+  - anyio
   - cryptography

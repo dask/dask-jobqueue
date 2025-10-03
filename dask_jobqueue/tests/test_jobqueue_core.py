@@ -184,7 +184,7 @@ def test_cluster_has_cores_and_memory(Cluster):
         Cluster(cores=4)
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_config_interface():
     net_if_addrs = psutil.net_if_addrs()
     interface = list(net_if_addrs.keys())[0]
