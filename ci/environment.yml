@@ -10,6 +10,6 @@ dependencies:
   - pytest-asyncio
   - cryptography
   - pip:
-      - pip install git+https://github.com/dask/dask.git
-      - pip install git+https://github.com/dask/distributed.git@refs/pull/9121/head
+      - git+https://github.com/dask/dask.git
+      - git+https://github.com/dask/distributed.git@refs/pull/9121/head
 
