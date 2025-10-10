@@ -4,10 +4,12 @@ channels:
   - nodefaults
 dependencies:
   - python=3.10
-  - dask
-  - distributed
   - flake8
   - black
   - pytest
   - pytest-asyncio
   - cryptography
+  - pip:
+      - pip install git+https://github.com/dask/dask.git
+      - pip install git+https://github.com/dask/distributed.git@refs/pull/9121/head
+
