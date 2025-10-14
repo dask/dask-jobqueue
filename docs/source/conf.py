@@ -40,7 +40,6 @@ release = version
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["sphinx.ext.autodoc", "sphinx.ext.intersphinx", "sphinx.ext.mathjax"]
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.mathjax",
@@ -210,6 +209,6 @@ intersphinx_mapping = {
 # Link to GitHub issues and pull requests using :pr:`1234` and :issue:`1234`
 # syntax
 extlinks = {
-    "issue": ("https://github.com/dask/dask-jobqueue/issues/%s", "GH#"),
-    "pr": ("https://github.com/dask/dask-jobqueue/pull/%s", "GH#"),
+    "issue": ("https://github.com/dask/dask-jobqueue/issues/%s", "GH#%s"),
+    "pr": ("https://github.com/dask/dask-jobqueue/pull/%s", "GH#%s"),
 }

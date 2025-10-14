@@ -663,7 +663,7 @@ class JobQueueCluster(SpecCluster):
         job_kwargs["interface"] = interface
         job_kwargs["protocol"] = protocol
         job_kwargs["security"] = self._get_worker_security(security)
-        
+
         self.queue = queue
         if queue is not None:
             job_kwargs["queue"] = queue
