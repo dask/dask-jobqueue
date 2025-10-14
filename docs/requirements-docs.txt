@@ -3,4 +3,4 @@ numpydoc
 ipython
 sphinx>=8
 sphinx-reredirects
-dask-sphinx-theme>=3.0.0
+dask-sphinx-theme>=4.0.0
