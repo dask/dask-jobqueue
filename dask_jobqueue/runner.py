@@ -15,13 +15,6 @@ from distributed.utils import LoopRunner, import_term, SyncMethodMixin
 from distributed.worker import Worker
 
 
-# Close gracefully when receiving a SIGINT
-# We use SIGINT to shut down because the scheduler and worker hang
-# if we call sys.exit() see https://github.com/dask/distributed/issues/8644
-if threading.current_thread() is threading.main_thread():
-    signal.signal(signal.SIGINT, lambda *_: sys.exit())
-
-
 class Role(Enum):
     """
     This Enum contains the various roles processes can be.
@@ -68,6 +61,11 @@ class BaseRunner(SyncMethodMixin):
         asynchronous: bool = False,
         loop: asyncio.BaseEventLoop = None,
     ):
+        # Close gracefully when receiving a SIGINT
+        # We use SIGINT to shut down because the scheduler and worker hang
+        # if we call sys.exit() see https://github.com/dask/distributed/issues/8644
+        if threading.current_thread() is threading.main_thread():
+            signal.signal(signal.SIGINT, lambda *_: sys.exit())
         self.status = Status.created
         self.scheduler = scheduler
         self.scheduler_address = None
