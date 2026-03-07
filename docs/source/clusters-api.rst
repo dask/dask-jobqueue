@@ -16,3 +16,4 @@ Clusters API
    PBSCluster
    SGECluster
    SLURMCluster
+   FluxCluster
