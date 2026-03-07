@@ -153,6 +153,10 @@ class FluxCluster(JobQueueCluster):
     {cluster}
     walltime : str
         Walltime for each worker job in Flux standard duration syntax.
+    memory : str
+        Total memory budget exposed to Dask for each submitted job.
+        This value is used to derive the Dask worker ``--memory-limit`` setting,
+        but Flux itself does not enforce or reserve memory from this parameter.
     job_cpu : int
         Number of CPU cores to allocate per Flux slot.
     job_nodes : int

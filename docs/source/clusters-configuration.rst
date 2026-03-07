@@ -32,6 +32,11 @@ Note that the ``cores`` and ``memory`` keywords above correspond not to your
 full desired deployment, but rather to the size of a *single job* which should
 be no larger than the size of a single machine in your cluster.
 
+For most schedulers both values influence the scheduler request. Flux is the
+main exception: ``memory`` is still required because it controls the Dask worker
+``--memory-limit``, but Flux itself does not currently reserve or enforce memory
+from that parameter.
+
 Separately you will specify how many jobs to deploy using the scale method.
 You can either specify the number of workers, or the total number of cores or
 memory that you want.
