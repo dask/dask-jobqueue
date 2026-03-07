@@ -137,6 +137,41 @@ jobqueue:
     # Scheduler options
     scheduler-options: {}
 
+  flux:
+    name: dask-worker
+
+    # Dask worker options
+    cores: null                 # Total number of cores per job
+    memory: null                # Total amount of memory per job
+    processes: null             # Number of Python processes per job
+
+    python: null                # Python executable
+    interface: null             # Network interface to use like eth0 or ib0
+    death-timeout: 60           # Number of seconds to wait if a worker can not find a scheduler
+    local-directory: null       # Location of fast local storage like /scratch or $TMPDIR
+    shared-temp-directory: null # Shared directory currently used to dump temporary security objects for workers
+    extra: null                 # deprecated: use worker-extra-args
+    worker-command: "distributed.cli.dask_worker" # Command to launch a worker
+    worker-extra-args: []       # Additional arguments to pass to `dask-worker`
+
+    # Flux resource manager options
+    shebang: "#!/usr/bin/env bash"
+    queue: null
+    account: null
+    walltime: '30m'
+    env-extra: null
+    job-script-prologue: []
+    job-script-epilogue: []
+    job-cpu: null
+    job-nodes: 1
+    job-extra: null
+    job-extra-directives: []
+    job-directives-skip: []
+    log-directory: null
+
+    # Scheduler options
+    scheduler-options: {}
+
   moab:
     name: dask-worker
 
