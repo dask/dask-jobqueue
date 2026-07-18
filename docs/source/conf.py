@@ -57,7 +57,6 @@ redirects = {
     "howitworks": "clusters-howitworks.html",
     "api": "clusters-api.html",
     "configuration-setup": "clusters-configuration-setup.html",
-    "interactive": "clusters-interactive.html",
     "configurations": "clusters-configuration-examples.html",
     "examples": "clusters-example-deployments.html",
 }
