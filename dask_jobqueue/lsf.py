@@ -87,7 +87,7 @@ class LSFJob(Job):
             memory_string = lsf_format_bytes_ceil(mem, lsf_units=lsf_units)
             header_lines.append("#BSUB -M %s" % memory_string)
         if walltime is not None:
-            header_lines.append("#BSUB -W %s" % walltime)
+            header_lines.append("#BSUB -W %s" % lsf_format_walltime(walltime))
 
         # Skip requested header directives
         header_lines = list(
@@ -134,6 +134,37 @@ def lsf_format_bytes_ceil(n, lsf_units="mb"):
     lsf_units = lsf_units.lower()[0]
     converter = {"k": 1, "m": 2, "g": 3, "t": 4, "p": 5, "e": 6, "z": 7}
     return "%d" % math.ceil(n / (1000 ** converter[lsf_units]))
+
+
+def lsf_format_walltime(walltime):
+    """Format a walltime as ``[hour:]minute``, which is what LSF requires
+
+    The ``HH:MM:SS`` format accepted by the other job schedulers is converted,
+    rounding any leftover seconds up to the next minute so that the job is
+    never given less time than requested. Any other value is returned
+    unchanged.
+
+    Parameters
+    ----------
+    walltime: str
+        Walltime of the job
+
+    Examples
+    --------
+    >>> lsf_format_walltime("01:30:00")
+    '01:30'
+    >>> lsf_format_walltime("00:00:30")
+    '00:01'
+    >>> lsf_format_walltime("01:30")
+    '01:30'
+    """
+    parts = str(walltime).split(":")
+    if len(parts) != 3 or not all(part.isdigit() for part in parts):
+        return walltime
+    hours, minutes, seconds = (int(part) for part in parts)
+    total_minutes = hours * 60 + minutes + math.ceil(seconds / 60)
+    hours, minutes = divmod(total_minutes, 60)
+    return "%02d:%02d" % (hours, minutes)
 
 
 def lsf_detect_units():
@@ -188,7 +219,8 @@ class LSFCluster(JobQueueCluster):
     mem : int
         Request memory in bytes. Passed to `#BSUB -M` option.
     walltime : str
-        Walltime for each worker job in HH:MM. Passed to `#BSUB -W` option.
+        Walltime for each worker job in HH:MM. A walltime given as HH:MM:SS is
+        converted to HH:MM, rounding up. Passed to `#BSUB -W` option.
     {cluster}
     job_extra : list
         Deprecated: use ``job_extra_directives`` instead. This parameter will be removed in a future version.

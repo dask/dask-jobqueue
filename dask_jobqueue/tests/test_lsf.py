@@ -79,6 +79,27 @@ def test_header():
         assert "#BSUB -P" not in cluster.job_header
 
 
+@pytest.mark.parametrize(
+    "walltime, expected",
+    [
+        ("01:00:00", "01:00"),
+        ("00:30:00", "00:30"),
+        ("2:15:00", "02:15"),
+        ("00:00:30", "00:01"),
+        ("01:59:01", "02:00"),
+        ("48:00:00", "48:00"),
+        ("01:00", "01:00"),
+        ("1:00", "1:00"),
+        ("90", "90"),
+    ],
+)
+def test_walltime_format(walltime, expected):
+    assert lsf.lsf_format_walltime(walltime) == expected
+
+    with LSFCluster(walltime=walltime, cores=1, memory="1GB") as cluster:
+        assert "#BSUB -W %s" % expected in cluster.job_header.splitlines()
+
+
 def test_job_script():
     with LSFCluster(walltime="00:02", processes=4, cores=8, memory="28GB") as cluster:
         job_script = cluster.job_script()

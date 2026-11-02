@@ -4,6 +4,8 @@ Changelog
 Development version
 -------------------
 
+- Fixed ``LSFCluster`` generating an invalid ``#BSUB -W`` directive for a walltime in ``HH:MM:SS`` format (:issue:`703`)
+
 0.9.0 / 2024-08-22
 ------------------
 
