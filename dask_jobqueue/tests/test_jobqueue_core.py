@@ -172,6 +172,21 @@ def test_log_directory(Cluster, tmpdir):
         assert os.path.exists(tmpdir.strpath)
 
 
+def test_log_directory_already_created(Cluster, tmpdir, monkeypatch):
+    # Another process can create the directory between a check for its
+    # existence and the creation itself, make sure this is not an error
+    real_makedirs = os.makedirs
+
+    def makedirs_after_race(name, *args, **kwargs):
+        real_makedirs(name, exist_ok=True)
+        return real_makedirs(name, *args, **kwargs)
+
+    log_directory = os.path.join(tmpdir.strpath, "logs")
+    monkeypatch.setattr(os, "makedirs", makedirs_after_race)
+    with Cluster(cores=1, memory="1GB", log_directory=log_directory):
+        assert os.path.isdir(log_directory)
+
+
 def test_cluster_has_cores_and_memory(Cluster):
     base_regex = r"{}.+".format(Cluster.__name__)
     with pytest.raises(ValueError, match=base_regex + r"cores=\d, memory='\d+GB'"):

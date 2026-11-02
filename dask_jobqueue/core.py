@@ -383,8 +383,7 @@ class Job(ProcessInterface, abc.ABC):
 
         self.log_directory = log_directory
         if self.log_directory is not None:
-            if not os.path.exists(self.log_directory):
-                os.makedirs(self.log_directory)
+            os.makedirs(self.log_directory, exist_ok=True)
 
     @classmethod
     def default_config_name(cls):
