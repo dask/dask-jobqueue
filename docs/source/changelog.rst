@@ -4,6 +4,8 @@ Changelog
 Development version
 -------------------
 
+- Fixed a ``FileExistsError`` when several clusters create the same ``log_directory`` at the same time (:issue:`692`)
+
 0.9.0 / 2024-08-22
 ------------------
 
